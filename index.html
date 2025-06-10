@@ -1,18 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Ryan Rochmanofenna</title>
-	<style>
-		body { font-family: system-ui, sans-serif; margin: 2rem; }
-		h1  { color: #0b66ff; }
-	</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ryan · Low-Latency AI</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500&family=Lexend:wght@600&display=swap" rel="stylesheet">
+
+  <!-- Wavesurfer -->
+  <script src="https://unpkg.com/wavesurfer.js@7"></script>
+
+  <style>
+    /* ---------- GLOBAL ---------- */
+    :root {
+      --bg-grad: linear-gradient(135deg,#0E1727 0%,#0B5664 50%,#2BD9C9 100%);
+      --card-bg: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.1);
+      --txt: #F4F7FA;
+      --accent: #2BD9C9;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      font-family: 'Inter',sans-serif; color:var(--txt);
+      background:var(--bg-grad); line-height:1.6;
+    }
+    h1,h2 { font-family:'Lexend',sans-serif; }
+    h1 { font-size:clamp(2.5rem,4vw,4rem); margin-bottom:.5rem; }
+    section { padding:4rem 6vw; position:relative; }
+    hr.wave-divider { border:none; height:140px; background:url(#wave-svg) repeat-x bottom/1200px 140px; }
+    /* ---------- HERO ---------- */
+    #hero { text-align:center; padding-top:6rem; }
+    #slogan { font-size:1.25rem; opacity:.8; }
+    /* ---------- MODULES ---------- */
+    .grid { display:grid; gap:2rem; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); }
+    .card {
+      background:var(--card-bg); padding:2rem; border:1px solid var(--border);
+      border-radius:12px; backdrop-filter:blur(8px);
+      transition:transform .3s ease, box-shadow .3s ease;
+    }
+    .card:hover { transform:translateY(-6px); box-shadow:0 8px 24px rgba(0,0,0,.25);}
+    .card h3 { margin-bottom:.75rem; color:var(--accent);}
+    /* ---------- AUDIO VIS ---------- */
+    #waveform { width:100%; height:96px; cursor:pointer; margin-top:2rem;}
+  </style>
 </head>
 <body>
-	<header>
-		<h1>Engineering reality, first principles thinker.</h1>
-		<p>This page was handwritten in the terminal. Hardcore only.</p>
-	</header>
+
+  <!-- HERO -->
+  <header id="hero">
+    <h1>Engineering Reality <span style="color:var(--accent)">Live</span></h1>
+    <p id="slogan">Low-latency AI ✦ Trading Infra ✦ Music Tech</p>
+
+    <!-- audio wave -->
+    <div id="waveform"></div>
+  </header>
+
+  <!-- DIVIDER -->
+  <hr class="wave-divider">
+
+  <!-- MODULE SECTIONS -->
+  <section id="modules">
+    <h2 style="text-align:center;margin-bottom:3rem">Pipelines</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>BICEP</h3>
+        <p>Brownian-inspired kernels optimised for ultra-efficient parallelisation. <br><em>GPU × quant randomness.</em></p>
+      </div>
+      <div class="card">
+        <h3>Fusion Alpha</h3>
+        <p>Sentiment + technical contradiction engine fused by attention to surface hidden alpha.</p>
+      </div>
+      <div class="card">
+        <h3>Nimbus Book</h3>
+        <p>Living research notebook: derivations, experiments, and visualisations poured into a Jupyter Book.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIVIDER -->
+  <hr class="wave-divider">
+
+  <!-- INTEGRATION SECTION -->
+  <section id="integration">
+    <h2 style="text-align:center;margin-bottom:3rem">Unified Flow</h2>
+    <p style="max-width:720px;margin:auto;text-align:center">
+      Data cascades from <strong>BICEP</strong> kernels → real-time features feed <strong>Fusion Alpha</strong> →
+      insights and ablations recorded in <strong>Nimbus Book</strong>. Everything ships in a single Docker orchestration.<br><br>
+      <em>One repo, one command, full stack.</em>
+    </p>
+  </section>
+
+  <!-- FOOTER -->
+  <section style="text-align:center;font-size:.875rem;opacity:.7">
+    © 2025 Ryan Rochmanofenna
+  </section>
+
+  <!-- ---------- JS ---------- -->
+  <script>
+    /* animated hero wave */
+    const wavesurfer = WaveSurfer.create({
+      container: '#waveform',
+      waveColor: 'rgba(255,255,255,.3)',
+      progressColor: 'var(--accent)',
+      cursorColor: 'transparent',
+      barWidth: 3,
+      height: 96,
+      interact: true,
+      hideScrollbar: true,
+    })
+    wavesurfer.load('anjunadeep_loop.mp3')   // drop a 15-sec loop in repo
+    wavesurfer.on('ready', () => {
+      wavesurfer.setMute(true)               // start muted
+    })
+    document.getElementById('waveform').addEventListener('click', () => {
+      if (wavesurfer.isPlaying()) { wavesurfer.pause() }
+      else { wavesurfer.setMute(false); wavesurfer.play() }
+    })
+  </script>
+
+  <!-- inline SVG pattern for dividers -->
+  <svg width="0" height="0">
+    <defs>
+      <pattern id="wave-svg" width="1200" height="140" patternUnits="userSpaceOnUse">
+        <path d="M0 67 C 273 133  546 0   1200 67 L 1200 140 L 0 140 Z" fill="rgba(255,255,255,0.05)"/>
+      </pattern>
+    </defs>
+  </svg>
 </body>
 </html>

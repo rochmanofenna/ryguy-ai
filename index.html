@@ -277,6 +277,25 @@
       opacity: 0.8;
     }
     
+    /* Card link styles */
+    .card-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    
+    .card-action {
+      display: block;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      transition: color 0.3s ease;
+    }
+    
+    .card-link:hover .card-action {
+      color: var(--accent);
+    }
+    
     /* ------------ FLOW SECTION ------------ */
     #flow {
       position: relative;
@@ -369,11 +388,14 @@
   <section id="projects">
     <h2 style="text-align:center" class="section-title">Pipelines</h2>
     <div class="grid">
-      <div class="card">
-        <h3>BICEP</h3>
-        <p>Brownian-inspired CUDA kernels for ultra-efficient parallelisation.</p>
-        <em>GPU × quant randomness</em>
-      </div>
+      <a href="bicep-demo.html" target="_blank" class="card-link">
+        <div class="card">
+          <h3>BICEP</h3>
+          <p>Brownian-inspired CUDA kernels for ultra-efficient parallelisation.</p>
+          <em>GPU × quant randomness</em>
+          <span class="card-action">→ Interactive Demo</span>
+        </div>
+      </a>
       <div class="card">
         <h3>Fusion Alpha</h3>
         <p>Contradiction engine fusing sentiment &amp; technicals via attention to surface hidden alpha.</p>

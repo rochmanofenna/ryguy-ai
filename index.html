@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ryan Rochmanofenna · Low-Latency AI</title>
 
-  <!-- Lexend for titles -->
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@600&display=swap" rel="stylesheet">
+  <!-- Lexend for titles, Inter for body -->
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
   <!-- Wavesurfer (optional) -->
   <script src="https://unpkg.com/wavesurfer.js@7"></script>
@@ -14,88 +14,386 @@
   <style>
     /* ------------ THEME ------------ */
     :root {
-      --bg: #0d0d0d;
-      --grid: rgba(255,255,255,0.045);   /* pattern lines */
-      --card-bg: rgba(255,255,255,0.04);
-      --border: rgba(255,255,255,0.12);
-      --text: #f5f7fa;
-      --accent: #00e0c5;
+      --bg: #0a0a0a;
+      --bg-gradient: radial-gradient(ellipse at top, #0d1117 0%, #0a0a0a 60%);
+      --grid: rgba(255,255,255,0.03);
+      --card-bg: rgba(255,255,255,0.03);
+      --card-hover: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.08);
+      --text: #e8eaed;
+      --text-muted: rgba(232,234,237,0.6);
+      --accent: #00ffcc;
+      --accent-dim: rgba(0,255,204,0.15);
+      --gradient-1: linear-gradient(135deg, #00ffcc 0%, #00d9ff 100%);
+      --gradient-2: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
+    
     /* ------------ GLOBAL ------------ */
     *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    
+    html { scroll-behavior: smooth; }
+    
     body{
-      font-family: system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg-gradient);
+      color:var(--text); 
+      line-height:1.7;
+      min-height:100vh; 
+      display:flex; 
+      flex-direction:column;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
       background:
-        repeating-linear-gradient(0deg,   var(--grid) 0 1px, transparent 1px 8px),
-        repeating-linear-gradient(90deg,  var(--grid) 0 1px, transparent 1px 8px),
-        var(--bg);
-      color:var(--text); line-height:1.6;
-      min-height:100vh; display:flex; flex-direction:column;
+        repeating-linear-gradient(0deg, var(--grid) 0 1px, transparent 1px 60px),
+        repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 60px);
+      pointer-events: none;
+      z-index: 1;
     }
-    h1,h2,h3{ font-family:'Lexend',sans-serif; }
-    h1{ font-size:clamp(2.75rem,5vw,4.25rem); letter-spacing:-.5px; }
-    h2{ font-size:1.75rem; margin-bottom:2rem; }
-    section{ width:100%; padding:4.5rem 6vw; }
+    
+    /* Typography */
+    h1,h2,h3{ 
+      font-family:'Lexend',sans-serif; 
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    
+    h1{ 
+      font-size:clamp(3rem,6vw,5rem); 
+      letter-spacing:-1.5px;
+      font-weight: 700;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+      display: inline-block;
+    }
+    
+    h2{ 
+      font-size:2rem; 
+      margin-bottom:3rem;
+      letter-spacing: -0.5px;
+      font-weight: 300;
+    }
+    
+    h3 {
+      font-size: 1.25rem;
+      letter-spacing: -0.3px;
+    }
+    
+    p {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    
+    section{ 
+      width:100%; 
+      padding:6rem 5vw; 
+      position: relative;
+      z-index: 2;
+    }
+    
+    /* ------------ ANIMATIONS ------------ */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .fade-in {
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out forwards;
+    }
+    
+    .fade-in-delay-1 { animation-delay: 0.1s; }
+    .fade-in-delay-2 { animation-delay: 0.2s; }
+    .fade-in-delay-3 { animation-delay: 0.3s; }
+    
     /* ------------ HERO ------------ */
-    #hero{ text-align:center; flex:0 0 auto; padding-top:7vh; }
-    #tagline{ opacity:.8; font-size:1.1rem; margin-top:.75rem; }
+    #hero{ 
+      text-align:center; 
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem 5vw;
+      position: relative;
+    }
+    
+    #hero::before {
+      content: '';
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent-dim) 0%, transparent 70%);
+      filter: blur(80px);
+      opacity: 0.5;
+      pointer-events: none;
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    #tagline{ 
+      font-size:1.25rem; 
+      margin-top:1.5rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      max-width: 600px;
+    }
+    
     /* ------------ WAVEFORM ------------ */
-    #waveform{ width:100%; max-width:520px; height:90px; margin:3.5rem auto 0; cursor:pointer;}
+    #waveform{ 
+      width:100%; 
+      max-width:600px; 
+      height:120px; 
+      margin:4rem auto 0; 
+      cursor:pointer;
+      position: relative;
+      padding: 1rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    #waveform:hover {
+      transform: scale(1.02);
+      border-color: var(--accent);
+      box-shadow: 0 0 30px var(--accent-dim);
+    }
+    
+    #waveform::before {
+      content: 'Click to play';
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    #waveform:hover::before {
+      opacity: 1;
+    }
+    
     /* ------------ GRID ------------ */
-    .grid{ display:grid; gap:2rem; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); }
+    .grid{ 
+      display:grid; 
+      gap:2rem; 
+      grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
     .card{
-      background:var(--card-bg);
+      background: var(--card-bg);
       border:1px solid var(--border);
-      border-radius:14px; padding:1.75rem 1.6rem;
-      transition:transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+      border-radius:20px; 
+      padding:2.5rem 2rem;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
+    
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--gradient-1);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    
+    .card:hover::before {
+      opacity: 1;
+    }
+    
     .card:hover{
-      transform:translateY(-6px);
-      box-shadow:0 10px 28px rgba(0,0,0,.35);
-      border-color:var(--accent);
+      transform:translateY(-8px) scale(1.02);
+      box-shadow:0 20px 40px rgba(0,0,0,.4);
+      border-color: transparent;
+      background: var(--card-hover);
     }
-    .card h3{ color:var(--accent); margin-bottom:.6rem; }
+    
+    .card h3{ 
+      color:var(--accent); 
+      margin-bottom:1rem;
+      position: relative;
+      display: inline-block;
+    }
+    
+    .card h3::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--gradient-1);
+      transition: width 0.3s ease;
+    }
+    
+    .card:hover h3::after {
+      width: 100%;
+    }
+    
+    .card p {
+      line-height: 1.8;
+    }
+    
+    .card em {
+      color: var(--accent);
+      font-style: normal;
+      font-weight: 500;
+      display: inline-block;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+    
+    /* ------------ FLOW SECTION ------------ */
+    #flow {
+      position: relative;
+      background: linear-gradient(180deg, transparent 0%, var(--card-bg) 50%, transparent 100%);
+    }
+    
+    #flow p {
+      font-size: 1.1rem;
+      line-height: 2;
+    }
+    
+    #flow strong {
+      color: var(--accent);
+      font-weight: 500;
+    }
+    
     /* ------------ FOOTER ------------ */
-    footer{ text-align:center; padding:2rem 0 3rem; font-size:.85rem; opacity:.65; margin-top:auto; }
+    footer{ 
+      text-align:center; 
+      padding:3rem 0 4rem; 
+      font-size:.9rem; 
+      color: var(--text-muted);
+      margin-top:auto;
+      border-top: 1px solid var(--border);
+      position: relative;
+      z-index: 2;
+    }
+    
+    /* ------------ SCROLL INDICATOR ------------ */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 40px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      opacity: 0.6;
+      transition: opacity 0.3s ease;
+    }
+    
+    .scroll-indicator:hover {
+      opacity: 1;
+    }
+    
+    .scroll-indicator::before {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      width: 4px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 2px;
+      transform: translateX(-50%);
+      animation: scrollBounce 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes scrollBounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(10px); }
+    }
+    
+    /* ------------ RESPONSIVE ------------ */
+    @media (max-width: 768px) {
+      h1 { font-size: clamp(2.5rem, 8vw, 4rem); }
+      h2 { font-size: 1.5rem; }
+      section { padding: 4rem 6vw; }
+      .grid { gap: 1.5rem; }
+      .card { padding: 2rem 1.5rem; }
+    }
   </style>
 </head>
 <body>
 
   <!-- HERO -->
   <header id="hero">
-    <h1>Ryan Rochmanofenna</h1>
-    <p id="tagline">Engineering Reality · Low-Latency AI, Trading Infra &amp; Music Tech</p>
+    <h1 class="fade-in">Ryan Rochmanofenna</h1>
+    <p id="tagline" class="fade-in fade-in-delay-1">Engineering Reality · Low-Latency AI, Trading Infra &amp; Music Tech</p>
 
-    <!-- Waveform (remove if not needed) -->
-    <div id="waveform"></div>
+    <!-- Waveform -->
+    <div id="waveform" class="fade-in fade-in-delay-2"></div>
+    
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator"></div>
   </header>
 
   <!-- PROJECTS -->
   <section id="projects">
-    <h2 style="text-align:center">Pipelines</h2>
+    <h2 style="text-align:center" class="section-title">Pipelines</h2>
     <div class="grid">
       <div class="card">
         <h3>BICEP</h3>
-        <p>Brownian-inspired CUDA kernels for ultra-efficient parallelisation.<br><em>GPU × quant randomness.</em></p>
+        <p>Brownian-inspired CUDA kernels for ultra-efficient parallelisation.</p>
+        <em>GPU × quant randomness</em>
       </div>
       <div class="card">
         <h3>Fusion Alpha</h3>
         <p>Contradiction engine fusing sentiment &amp; technicals via attention to surface hidden alpha.</p>
+        <em>Multi-factor synthesis</em>
       </div>
       <div class="card">
         <h3>Nimbus Book</h3>
-        <p>Living research notebook of derivations, experiments &amp; visualisations (built as a Jupyter Book).</p>
+        <p>Living research notebook of derivations, experiments &amp; visualisations built as a Jupyter Book.</p>
+        <em>Knowledge persistence</em>
       </div>
     </div>
   </section>
 
   <!-- FLOW -->
   <section id="flow">
-    <h2 style="text-align:center">Unified Flow</h2>
+    <h2 style="text-align:center" class="section-title">Unified Flow</h2>
     <p style="max-width:720px;margin:auto;text-align:center">
       Data cascades from <strong>BICEP</strong> kernels → real-time features feed
       <strong>Fusion Alpha</strong> → insights archived in <strong>Nimbus Book</strong>.
-      <br><br><em>One repo · One command · Full stack.</em>
+      <br><br><em style="color:var(--text-muted);font-weight:400;">One repo · One command · Full stack</em>
     </p>
   </section>
 
@@ -103,24 +401,111 @@
     © 2025 Ryan Rochmanofenna
   </footer>
 
-  <!-- ---------- JS (WaveSurfer) ---------- -->
+  <!-- ---------- JS ---------- -->
   <script>
-    const wavesurfer = WaveSurfer.create({
-      container:'#waveform',
-      waveColor:'rgba(255,255,255,.25)',
-      progressColor:'var(--accent)',
-      cursorColor:'transparent',
-      barWidth:3,
-      height:90,
-      interact:true,
-      hideScrollbar:true,
+    // Intersection Observer for scroll animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animate-in');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    // Observe all cards and section titles
+    document.addEventListener('DOMContentLoaded', () => {
+      const elementsToAnimate = document.querySelectorAll('.card, .section-title');
+      elementsToAnimate.forEach(el => observer.observe(el));
+      
+      // Add staggered animation to cards
+      const cards = document.querySelectorAll('.card');
+      cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+      });
     });
-    wavesurfer.load('anjunadeep_loop.mp3');  // place a 15-sec loop in repo root
-    wavesurfer.on('ready', () => wavesurfer.setMute(true));
-    document.getElementById('waveform').addEventListener('click', () => {
-      if (wavesurfer.isPlaying()) wavesurfer.pause();
-      else { wavesurfer.setMute(false); wavesurfer.play(); }
+
+    // Hide scroll indicator on scroll
+    let scrollIndicator = document.querySelector('.scroll-indicator');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 100) {
+        scrollIndicator.style.opacity = '0';
+        scrollIndicator.style.pointerEvents = 'none';
+      } else {
+        scrollIndicator.style.opacity = '0.6';
+        scrollIndicator.style.pointerEvents = 'auto';
+      }
     });
+
+    // WaveSurfer setup
+    try {
+      const wavesurfer = WaveSurfer.create({
+        container:'#waveform',
+        waveColor:'rgba(0,255,204,0.2)',
+        progressColor:'#00ffcc',
+        cursorColor:'transparent',
+        barWidth:3,
+        barGap:2,
+        barRadius:3,
+        height:100,
+        interact:true,
+        hideScrollbar:true,
+        responsive:true,
+      });
+      
+      // Try to load audio file
+      wavesurfer.load('anjunadeep_loop.mp3').catch(() => {
+        // If audio file doesn't exist, create a visual-only waveform
+        const peaks = Array.from({length: 200}, () => Math.random() * 0.8 + 0.2);
+        wavesurfer.load('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=', peaks);
+      });
+      
+      wavesurfer.on('ready', () => {
+        wavesurfer.setMute(true);
+        document.getElementById('waveform').style.opacity = '1';
+      });
+      
+      let isPlaying = false;
+      document.getElementById('waveform').addEventListener('click', () => {
+        if (wavesurfer.isPlaying()) {
+          wavesurfer.pause();
+          isPlaying = false;
+        } else { 
+          wavesurfer.setMute(false); 
+          wavesurfer.play();
+          isPlaying = true;
+        }
+      });
+    } catch (e) {
+      console.log('WaveSurfer initialization skipped');
+    }
   </script>
+
+  <style>
+    /* Additional animation styles */
+    .animate-in {
+      animation: fadeInUp 0.8s ease-out forwards;
+    }
+    
+    .section-title {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    
+    .card {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    
+    #waveform {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+  </style>
 </body>
 </html>

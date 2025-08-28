@@ -879,23 +879,85 @@
       return globalRNG.gaussian();
     }
     
-    // Map Factory - Generate different environment types
+    // Path validation using BFS
+    function hasValidPath(grid, starts, goals) {
+      const visited = new Set();
+      const queue = [...starts];
+      
+      for (const [x, y] of starts) {
+        visited.add(`${x},${y}`);
+      }
+      
+      while (queue.length > 0) {
+        const [x, y] = queue.shift();
+        
+        // Check if we reached a goal
+        for (const [gx, gy] of goals) {
+          if (Math.abs(x - gx) < 1.5 && Math.abs(y - gy) < 1.5) {
+            return true;
+          }
+        }
+        
+        // Explore neighbors
+        for (const [dx, dy] of [[-1,0], [1,0], [0,-1], [0,1]]) {
+          const nx = x + dx;
+          const ny = y + dy;
+          const key = `${nx},${ny}`;
+          
+          if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize && 
+              !grid[nx][ny] && !visited.has(key)) {
+            visited.add(key);
+            queue.push([nx, ny]);
+          }
+        }
+      }
+      
+      return false;
+    }
+    
+    // Map Factory - Generate different environment types with validation
     function generateMap(family, params, mapSeed) {
       const mapRng = new DeterministicRNG(mapSeed);
-      let newGrid = Array(gridSize).fill().map(() => Array(gridSize).fill(false));
+      let attempts = 0;
+      const maxAttempts = 10;
       
-      switch(family) {
-        case 'corridors':
-          return generateCorridor(newGrid, params.width || 4, mapRng);
-        case 'rooms_doors':
-          return generateRoomsDoors(newGrid, mapRng);
-        case 'mazes':
-          return generateMaze(newGrid, mapRng);
-        case 'random_obstacles':
-          return generateRandomObstacles(newGrid, params.density || 0.2, mapRng);
-        default:
-          return generateCorridor(newGrid, 4, mapRng);
+      while (attempts < maxAttempts) {
+        let newGrid = Array(gridSize).fill().map(() => Array(gridSize).fill(false));
+        
+        switch(family) {
+          case 'corridors':
+            newGrid = generateCorridor(newGrid, params.width || 4, mapRng);
+            break;
+          case 'rooms_doors':
+            newGrid = generateRoomsDoors(newGrid, mapRng);
+            break;
+          case 'mazes':
+            newGrid = generateMaze(newGrid, mapRng);
+            break;
+          case 'random_obstacles':
+            newGrid = generateRandomObstacles(newGrid, params.density || 0.2, mapRng);
+            break;
+          default:
+            newGrid = generateCorridor(newGrid, 4, mapRng);
+        }
+        
+        // Validate path exists using current start/goal positions
+        const testStarts = [[3, 20], [3, 19]]; // Default start region
+        const testGoals = [[36, 20], [36, 19]]; // Default goal region
+        
+        if (hasValidPath(newGrid, testStarts, testGoals)) {
+          return newGrid;
+        }
+        
+        attempts++;
+        // Reduce obstacle density for retry
+        if (params.density) params.density *= 0.8;
+        if (params.width) params.width = Math.max(params.width + 1, 6);
       }
+      
+      // Fallback: return simple corridor if all attempts fail
+      let fallbackGrid = Array(gridSize).fill().map(() => Array(gridSize).fill(false));
+      return generateCorridor(fallbackGrid, 6, mapRng);
     }
     
     function generateCorridor(newGrid, width, rng) {
@@ -1178,6 +1240,7 @@
           drawSimulation();
           drawBestPath();
           drawSparkline();
+          drawCostHistogram();
           updateStats();
           
           const active = particles.filter(p => p.alive && !p.reached).length;
@@ -2259,7 +2322,34 @@
       
       for (const test of EVAL_SUITE) {
         const testGrid = generateMap(test.family, test.params, test.mapSeed);
-        const testEnv = new GridEnvironment(testGrid, startCells, goalCells);
+        
+        // Create appropriate start/goal regions for this test grid
+        const testStarts = [];
+        const testGoals = [];
+        
+        // Start region: left side (cleared area)
+        for (let y = 10; y < 30; y++) {
+          for (let x = 0; x < 3; x++) {
+            if (!testGrid[x][y]) {
+              testStarts.push([x, y]);
+            }
+          }
+        }
+        
+        // Goal region: right side (cleared area) 
+        for (let y = 10; y < 30; y++) {
+          for (let x = gridSize - 3; x < gridSize; x++) {
+            if (!testGrid[x][y]) {
+              testGoals.push([x, y]);
+            }
+          }
+        }
+        
+        // Fallback if no valid start/goal found
+        if (testStarts.length === 0) testStarts.push([1, 20]);
+        if (testGoals.length === 0) testGoals.push([38, 20]);
+        
+        const testEnv = new GridEnvironment(testGrid, testStarts, testGoals);
         
         const trialResults = [];
         
@@ -2268,7 +2358,7 @@
           const numEpisodes = 10;
           
           for (let i = 0; i < numEpisodes; i++) {
-            const state = testEnv.reset();
+            let state = testEnv.reset();
             let steps = 0;
             
             while (!testEnv.done && steps < horizon) {
@@ -2280,8 +2370,7 @@
                 break;
               }
               
-              state.x = result.state.x;
-              state.y = result.state.y;
+              state = result.state; // Update state properly
               steps++;
             }
           }

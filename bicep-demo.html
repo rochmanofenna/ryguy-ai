@@ -725,6 +725,11 @@
             <label for="buffer-training" title="Use experience replay buffer instead of pure on-policy learning">Buffer-based training</label>
           </div>
           
+          <div class="checkbox-group" style="margin-bottom: 0.75rem;">
+            <input type="checkbox" id="use-remote-enn">
+            <label for="use-remote-enn" title="Use remote ENN model for action selection (requires server at localhost:8000)">Use Remote ENN</label>
+          </div>
+          
           <div class="action-buttons">
             <button id="train-btn">Train Agent</button>
             <button id="eval-btn" class="secondary">Evaluate</button>
@@ -1074,6 +1079,7 @@
         this.gridSize = gridSize;
         this.learningRate = learningRate;
         this.epsilon = epsilon;
+        this.initialEpsilon = epsilon;  // Store initial epsilon for decay
         this.discount = discount;
         this.qTable = new Map();
         this.actions = [[0, 1], [1, 0], [0, -1], [-1, 0]]; // right, down, left, up
@@ -1176,21 +1182,42 @@
         const newX = Math.max(0, Math.min(gridSize - 1, this.agentX + dx));
         const newY = Math.max(0, Math.min(gridSize - 1, this.agentY + dy));
         
-        let reward = -0.01; // Step penalty
+        let reward = -0.02; // Slightly stronger step penalty
         
         // Check collision
         if (this.grid[Math.floor(newX)][Math.floor(newY)]) {
           reward = -0.1; // Collision penalty
         } else {
+          // Move agent
+          const oldX = this.agentX;
+          const oldY = this.agentY;
           this.agentX = newX;
           this.agentY = newY;
+          
+          // Distance shaping: reward for getting closer to goal
+          const nearestGoalDist = this.goalCells.reduce((minDist, g) => 
+            Math.min(minDist, Math.hypot(g[0] - newX, g[1] - newY)), Infinity);
+          const prevNearestDist = this.goalCells.reduce((minDist, g) => 
+            Math.min(minDist, Math.hypot(g[0] - oldX, g[1] - oldY)), Infinity);
+          reward += Math.min(0.02, (prevNearestDist - nearestGoalDist) * 0.01);
+          
+          // Obstacle proximity penalty (encourages safer paths)
+          for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+              const nx = Math.floor(newX) + dx;
+              const ny = Math.floor(newY) + dy;
+              if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize && this.grid[nx][ny]) {
+                reward -= 0.001; // Small penalty for being near obstacles
+              }
+            }
+          }
         }
         
         // Check goal
         const gridX = Math.floor(this.agentX);
         const gridY = Math.floor(this.agentY);
         if (this.goalCells.some(g => g[0] === gridX && g[1] === gridY)) {
-          reward = 1.0; // Goal reward
+          reward = 5.0; // Bigger terminal reward
           this.done = true;
         }
         
@@ -1465,15 +1492,15 @@
               noiseX = -twin.lastNoise.x + windX;
               noiseY = -twin.lastNoise.y + windY;
             } else {
-              const z1 = globalRNG.gaussian();
-              const z2 = globalRNG.gaussian();
+              const z1 = rng.gaussian();
+              const z2 = rng.gaussian();
               noiseX = z1 * sigma * sqrtDt + windX;
               noiseY = (correlation * z1 + Math.sqrt(1 - correlation * correlation) * z2) * sigma * sqrtDt + windY;
               p.lastNoise = { x: z1 * sigma * sqrtDt, y: (correlation * z1 + Math.sqrt(1 - correlation * correlation) * z2) * sigma * sqrtDt };
             }
           } else {
-            const z1 = globalRNG.gaussian();
-            const z2 = globalRNG.gaussian();
+            const z1 = rng.gaussian();
+            const z2 = rng.gaussian();
             // Apply correlation: Y = ρX + √(1-ρ²)Z
             noiseX = z1 * sigma * sqrtDt + windX;
             noiseY = (correlation * z1 + Math.sqrt(1 - correlation * correlation) * z2) * sigma * sqrtDt + windY;
@@ -2139,6 +2166,10 @@
       runEpisode(currentBeta).then(() => {
         rlStats.episode++;
         
+        // Epsilon decay: reduce exploration as training progresses
+        const progress = rlStats.episode / rlStats.totalEpisodes;
+        rlAgent.epsilon = Math.max(0.02, rlAgent.initialEpsilon * (1 - progress));
+        
         // Update metrics
         updateRLMetrics();
         
@@ -2155,10 +2186,17 @@
       while (!rlEnvironment.done && steps < horizon) {
         let action;
         
-        // Mixture policy: (1-β)·π_RL + β·π_BICEP
+        // Check if remote ENN is enabled
+        const useRemoteENN = document.getElementById('use-remote-enn').checked;
+        
+        // Mixture policy: (1-β)·π_RL + β·π_demo/ENN
         if (globalRNG.next() < beta) {
-          // Use learned demo policy from BICEP trajectories
-          action = getDemoPolicyAction(state.x, state.y, demoBuffer);
+          // Use demo policy or remote ENN
+          if (useRemoteENN) {
+            action = await getRemoteENNAction(state);
+          } else {
+            action = getDemoPolicyAction(state.x, state.y, demoBuffer);
+          }
         } else {
           // Use RL policy
           action = rlAgent.selectAction(state.x, state.y);
@@ -2171,19 +2209,24 @@
         // Q-learning update with optional buffer training
         const useBuffer = document.getElementById('buffer-training').checked;
         if (useBuffer && rlBuffer.length > 10) {
-          // Sample mini-batch from replay buffer
-          for (let i = 0; i < 4; i++) {
-            const sample = rlBuffer[Math.floor(globalRNG.next() * rlBuffer.length)];
-            if (sample.finalState) {
-              const sampleStateKey = rlAgent.stateKey(sample.finalState.x, sample.finalState.y);
-              const sampleReward = sample.success ? 1.0 : -0.1;
-              rlAgent.update(sampleStateKey, 0, sampleReward, sampleStateKey);
-            }
+          // Sample mini-batch from replay buffer with proper transitions
+          for (let i = 0; i < 16; i++) {
+            const t = rlBuffer[Math.floor(globalRNG.next() * rlBuffer.length)];
+            const s = rlAgent.stateKey(t.sx, t.sy);
+            const ns = rlAgent.stateKey(t.nx, t.ny);
+            rlAgent.update(s, t.action, t.reward, ns);
           }
         }
         
         // Always do on-policy update
         rlAgent.update(stateKey, action, result.reward, nextStateKey);
+        
+        // Store transition in replay buffer
+        rlBuffer.push({
+          sx: Math.floor(state.x), sy: Math.floor(state.y),
+          action, reward: result.reward,
+          nx: Math.floor(result.state.x), ny: Math.floor(result.state.y)
+        });
         
         totalReward += result.reward;
         steps++;
@@ -2250,6 +2293,33 @@
     ];
     
     let trainedEnvKeys = new Set(); // Track training environments for leakage detection
+    
+    // Remote ENN action selection
+    async function getRemoteENNAction(state) {
+      try {
+        const response = await fetch('http://localhost:8000/enn/act', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            grid: grid,
+            start: startCells,
+            goal: goalCells,
+            state: { x: state.x, y: state.y },
+            use_hybrid: false
+          })
+        });
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        
+        // Map ENN actions (0=right, 1=down, 2=left, 3=up) to our format
+        return data.action;
+      } catch (error) {
+        console.warn('Remote ENN failed:', error);
+        // Fallback to demo policy
+        return getDemoPolicyAction(state.x, state.y, demoBuffer);
+      }
+    }
     
     // Demo policy: learn from BICEP demonstration waypoints
     function getDemoPolicyAction(x, y, demos) {

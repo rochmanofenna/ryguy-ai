@@ -640,6 +640,12 @@
             </div>
             <div class="param-info">Pairs: (Z, -Z) halve variance</div>
             
+            <div class="checkbox-group" style="margin-top: 0.75rem;">
+              <input type="checkbox" id="reflect-obstacles">
+              <label for="reflect-obstacles">Reflect at obstacles</label>
+            </div>
+            <div class="param-info">Bounce off walls instead of dying</div>
+            
             <div class="param-group" style="margin-top: 1rem;">
               <div class="param-header">
                 <span class="param-label" title="Correlation between X and Y noise components: ρ=0 (independent), ρ>0 (positive correlation)">Correlation ρ</span>
@@ -1524,8 +1530,36 @@
           
           // Check collision
           if (grid[gridX][gridY]) {
-            p.alive = false;
-            collisionCount++;
+            const reflectObstacles = document.getElementById('reflect-obstacles').checked;
+            
+            if (reflectObstacles) {
+              // Reflect the particle instead of killing it
+              const prevX = p.x - noiseX - pullX;
+              const prevY = p.y - noiseY - pullY;
+              
+              // Simple reflection: reverse the direction and apply damping
+              p.x = prevX - (noiseX * 0.5);
+              p.y = prevY - (noiseY * 0.5);
+              
+              // Clamp to grid bounds
+              p.x = Math.max(0.5, Math.min(gridSize - 0.5, p.x));
+              p.y = Math.max(0.5, Math.min(gridSize - 0.5, p.y));
+              
+              // Update grid position after reflection
+              const newGridX = Math.floor(p.x);
+              const newGridY = Math.floor(p.y);
+              
+              // Add reflection cost penalty
+              p.cost += 0.5;
+              
+              if (!grid[newGridX][newGridY]) {
+                p.path.push([newGridX, newGridY]);
+              }
+            } else {
+              // Original behavior: kill particle
+              p.alive = false;
+              collisionCount++;
+            }
           } else {
             p.path.push([gridX, gridY]);
             

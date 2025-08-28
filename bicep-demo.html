@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BICEP · Parallel Path Sampler Demo</title>
+  <title>BICEP · Brownian-Inspired CUDA Engine for Parallelisation</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   
@@ -14,8 +14,10 @@
       --text-muted: #6b7280;
       --accent: #10b981;
       --accent-glow: rgba(16, 185, 129, 0.5);
-      --obstacle: rgba(239, 68, 68, 0.7);
+      --obstacle: #dc2626;
       --border: rgba(255,255,255,0.08);
+      --success: #22c55e;
+      --warning: #f59e0b;
     }
     
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,14 +32,14 @@
     }
     
     .container {
-      max-width: 900px;
+      max-width: 1100px;
       margin: 0 auto;
     }
     
     h1 {
       font-size: 2rem;
       font-weight: 600;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.25rem;
       background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -45,96 +47,28 @@
     
     .subtitle {
       color: var(--text-muted);
-      margin-bottom: 2rem;
+      margin-bottom: 0.5rem;
       font-size: 0.95rem;
     }
     
-    /* Controls */
-    .controls {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    
-    .control-group {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-    
-    input[type="range"] {
-      width: 100px;
-      height: 4px;
-      background: #374151;
-      outline: none;
-      border-radius: 2px;
-      -webkit-appearance: none;
-    }
-    
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 12px;
-      height: 12px;
-      background: var(--accent);
-      cursor: pointer;
-      border-radius: 50%;
-    }
-    
-    button {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
+    .tagline {
+      color: var(--accent);
+      margin-bottom: 2rem;
       font-size: 0.875rem;
+      font-weight: 500;
     }
     
-    button:hover {
-      background: #059669;
-    }
-    
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    
-    .mode-toggle {
-      display: flex;
-      gap: 0.25rem;
-      background: #111827;
-      padding: 0.25rem;
-      border-radius: 6px;
-    }
-    
-    .mode-btn {
-      background: transparent;
-      color: var(--text-muted);
-      padding: 0.375rem 0.75rem;
-      border-radius: 4px;
-      font-size: 0.813rem;
-    }
-    
-    .mode-btn.active {
-      background: #374151;
-      color: var(--text);
+    /* Main Grid Layout */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
     }
     
     /* Canvas container */
     .canvas-container {
       position: relative;
-      width: 100%;
-      max-width: 840px;
-      margin: 0 auto;
       background: #111827;
       border-radius: 8px;
       overflow: hidden;
@@ -154,111 +88,338 @@
       height: 100%;
     }
     
-    /* Stats overlay */
-    .stats-overlay {
+    /* Floating overlays */
+    .seed-overlay {
       position: absolute;
       top: 1rem;
-      right: 1rem;
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      max-width: 300px;
-      justify-content: flex-end;
-    }
-    
-    .stat-pill {
-      background: rgba(17, 24, 39, 0.9);
+      left: 1rem;
+      background: rgba(16, 185, 129, 0.1);
       backdrop-filter: blur(8px);
-      color: var(--text);
-      padding: 0.25rem 0.75rem;
+      border: 1px solid var(--accent);
       border-radius: 999px;
-      font-size: 0.75rem;
-      border: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
     
-    .stat-pill strong {
+    .seed-overlay:hover {
+      background: rgba(16, 185, 129, 0.2);
+      transform: scale(1.05);
+    }
+    
+    .seed-overlay strong {
       color: var(--accent);
       font-weight: 600;
     }
     
-    /* Legend */
-    .legend {
+    /* Performance overlay */
+    .perf-overlay {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(17, 24, 39, 0.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-size: 0.75rem;
+      min-width: 200px;
+    }
+    
+    .perf-row {
       display: flex;
-      gap: 1.5rem;
-      margin-top: 1rem;
-      font-size: 0.813rem;
+      justify-content: space-between;
+      margin-bottom: 0.25rem;
+    }
+    
+    .perf-row:last-child {
+      margin-bottom: 0;
+    }
+    
+    .perf-row strong {
+      color: var(--accent);
+    }
+    
+    /* Success rate sparkline */
+    .sparkline-overlay {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      background: rgba(17, 24, 39, 0.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem;
+      width: 200px;
+    }
+    
+    .sparkline-title {
+      font-size: 0.65rem;
       color: var(--text-muted);
-      justify-content: center;
+      margin-bottom: 0.25rem;
     }
     
-    .legend-item {
+    .sparkline-canvas {
+      width: 100%;
+      height: 40px;
+    }
+    
+    /* Batch progress */
+    .batch-progress {
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem;
+      background: rgba(17, 24, 39, 0.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.75rem;
+      display: none;
+    }
+    
+    .batch-progress.show {
+      display: block;
+    }
+    
+    /* Side panel */
+    .side-panel {
       display: flex;
-      align-items: center;
-      gap: 0.375rem;
+      flex-direction: column;
+      gap: 1rem;
     }
     
-    .legend-color {
+    /* Controls section */
+    .control-section {
+      background: rgba(17, 24, 39, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+    }
+    
+    .section-title {
+      color: var(--accent);
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+    
+    /* Mode toggle */
+    .mode-toggle {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .mode-btn {
+      background: #1f2937;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      padding: 0.5rem;
+      border-radius: 4px;
+      font-size: 0.813rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .mode-btn.active {
+      background: #374151;
+      color: var(--text);
+      border-color: var(--accent);
+    }
+    
+    .mode-btn:hover {
+      background: #374151;
+    }
+    
+    .mode-caption {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    
+    /* Parameter controls */
+    .param-group {
+      margin-bottom: 1rem;
+    }
+    
+    .param-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .param-label {
+      font-size: 0.813rem;
+      color: var(--text);
+    }
+    
+    .param-value {
+      font-size: 0.813rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    
+    .param-slider {
+      width: 100%;
+      height: 4px;
+      background: #374151;
+      outline: none;
+      border-radius: 2px;
+      -webkit-appearance: none;
+    }
+    
+    .param-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
       width: 12px;
       height: 12px;
-      border-radius: 2px;
+      background: var(--accent);
+      cursor: pointer;
+      border-radius: 50%;
+    }
+    
+    .param-info {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+    
+    /* Action buttons */
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.625rem 1rem;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.875rem;
+      white-space: nowrap;
+    }
+    
+    button:hover:not(:disabled) {
+      background: #059669;
+      transform: translateY(-1px);
+    }
+    
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    button.secondary {
+      background: #374151;
+    }
+    
+    button.secondary:hover:not(:disabled) {
+      background: #4b5563;
     }
     
     /* Presets */
-    .presets {
-      display: flex;
+    .preset-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 0.5rem;
-      margin-top: 1rem;
     }
     
     .preset-btn {
       background: #1f2937;
+      color: var(--text);
       font-size: 0.75rem;
-      padding: 0.375rem 0.75rem;
+      padding: 0.5rem;
+      text-align: center;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
     }
     
     .preset-btn:hover {
       background: #374151;
+      border-color: var(--accent);
     }
     
-    /* Math toggle */
-    .math-toggle {
-      margin-top: 2rem;
-      border-top: 1px solid var(--border);
-      padding-top: 2rem;
+    /* Advanced controls */
+    .advanced-section {
+      background: rgba(17, 24, 39, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-top: 0.5rem;
     }
     
-    .math-header {
+    .checkbox-group {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      cursor: pointer;
-      color: var(--text-muted);
-      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
     }
     
-    .math-header:hover {
+    .checkbox-group input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+    }
+    
+    .checkbox-group label {
+      font-size: 0.813rem;
       color: var(--text);
     }
     
-    .math-content {
-      display: none;
+    /* Info panels */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
       margin-top: 1rem;
-      padding: 1rem;
-      background: #111827;
+    }
+    
+    .info-panel {
+      background: rgba(17, 24, 39, 0.5);
+      border: 1px solid var(--border);
       border-radius: 6px;
+      padding: 1rem;
       font-size: 0.875rem;
-      line-height: 1.8;
     }
     
-    .math-content.show {
-      display: block;
-    }
-    
-    .math-content code {
+    .info-title {
       color: var(--accent);
-      font-family: monospace;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
     }
     
+    .info-item {
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    
+    .info-item strong {
+      color: var(--text);
+    }
+    
+    .formula {
+      background: rgba(0,0,0,0.3);
+      padding: 0.5rem;
+      border-radius: 4px;
+      margin: 0.5rem 0;
+      font-family: monospace;
+      font-size: 0.813rem;
+      color: var(--accent);
+    }
+    
+    /* Back link */
     .back-link {
       position: fixed;
       top: 2rem;
@@ -275,6 +436,25 @@
     .back-link:hover {
       color: var(--accent);
     }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .preset-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .action-buttons {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -287,74 +467,199 @@
 
   <div class="container">
     <h1>BICEP Path Sampler</h1>
-    <p class="subtitle">Watch thousands of particles explore paths in parallel</p>
+    <p class="subtitle">High-throughput, deterministic stochastic path sampler</p>
+    <p class="tagline">Same seed → same paths • Spawn thousands of Brownian-bridge trajectories in parallel</p>
 
-    <div class="controls">
-      <div class="mode-toggle">
-        <button class="mode-btn active" data-mode="particles">Particles</button>
-        <button class="mode-btn" data-mode="heatmap">Heatmap</button>
-        <button class="mode-btn" data-mode="paths">Top Paths</button>
+    <div class="main-grid">
+      <div class="canvas-container">
+        <div class="canvas-stack">
+          <canvas id="bg-canvas"></canvas>
+          <canvas id="obs-canvas"></canvas>
+          <canvas id="sim-canvas"></canvas>
+          <canvas id="path-canvas"></canvas>
+        </div>
+        
+        <div class="seed-overlay" id="seed-overlay" title="Click to copy replay link">
+          Seed <strong id="seed-value">--</strong>
+        </div>
+        
+        <div class="perf-overlay">
+          <div class="perf-row">
+            <span>Throughput:</span>
+            <span><strong id="throughput">0</strong> p×step/s</span>
+          </div>
+          <div class="perf-row">
+            <span>Frame time:</span>
+            <span><strong id="frame-time">0</strong>ms</span>
+          </div>
+          <div class="perf-row">
+            <span>Active/Total:</span>
+            <span><strong id="active-count">0</strong>/<strong id="total-count">0</strong></span>
+          </div>
+          <div class="perf-row">
+            <span>Success rate:</span>
+            <span><strong id="success-rate">0%</strong></span>
+          </div>
+          <div class="perf-row">
+            <span>t/T:</span>
+            <span><strong id="step-counter">0</strong>/<strong id="horizon">300</strong></span>
+          </div>
+        </div>
+        
+        <div class="sparkline-overlay">
+          <div class="sparkline-title">Success Rate vs Time</div>
+          <canvas class="sparkline-canvas" id="sparkline-canvas"></canvas>
+        </div>
+        
+        <div class="batch-progress" id="batch-progress">
+          Processing batch <strong id="current-batch">1</strong> of <strong id="total-batches">1</strong>
+        </div>
       </div>
       
-      <div class="control-group">
-        <label>Particles:</label>
-        <input type="range" id="particles" min="100" max="5000" value="2000" step="100">
-        <span id="particles-value">2000</span>
+      <div class="side-panel">
+        <div class="control-section">
+          <div class="section-title">Visualization Mode</div>
+          <div class="mode-toggle">
+            <button class="mode-btn active" data-mode="particles">
+              <span>Particles</span>
+              <span class="mode-caption">live swarm</span>
+            </button>
+            <button class="mode-btn" data-mode="heatmap">
+              <span>Heatmap</span>
+              <span class="mode-caption">visit density</span>
+            </button>
+            <button class="mode-btn" data-mode="paths">
+              <span>Top Paths</span>
+              <span class="mode-caption">best K survivors</span>
+            </button>
+          </div>
+          
+          <div class="action-buttons">
+            <button id="run-btn">Run BICEP</button>
+            <button id="reset-btn" class="secondary">Reset</button>
+          </div>
+        </div>
+        
+        <div class="control-section">
+          <div class="section-title">BICEP Parameters</div>
+          
+          <div class="param-group">
+            <div class="param-header">
+              <span class="param-label">K (particles)</span>
+              <span class="param-value" id="particles-value">5000</span>
+            </div>
+            <input type="range" class="param-slider" id="particles" min="1000" max="20000" value="5000" step="1000">
+            <div class="param-info">Parallel trajectories</div>
+          </div>
+          
+          <div class="param-group">
+            <div class="param-header">
+              <span class="param-label">μ (drift strength)</span>
+              <span class="param-value" id="drift-value">1.0</span>
+            </div>
+            <input type="range" class="param-slider" id="drift" min="0.1" max="3.0" value="1.0" step="0.1">
+            <div class="param-info">Goal pull: μ·(goal-x)/(T-t)</div>
+          </div>
+          
+          <div class="param-group">
+            <div class="param-header">
+              <span class="param-label">σ (noise scale)</span>
+              <span class="param-value" id="sigma-value">0.8</span>
+            </div>
+            <input type="range" class="param-slider" id="sigma" min="0.1" max="2.0" value="0.8" step="0.1">
+            <div class="param-info">Exploration: σ·√Δt·Z</div>
+          </div>
+          
+          <div class="param-group">
+            <div class="param-header">
+              <span class="param-label">T (horizon)</span>
+              <span class="param-value" id="horizon-value">300</span>
+            </div>
+            <input type="range" class="param-slider" id="horizon-slider" min="100" max="500" value="300" step="50">
+            <div class="param-info">Max steps, Δt = 1/T</div>
+          </div>
+        </div>
+        
+        <div class="control-section">
+          <div class="section-title">Advanced Options</div>
+          <div class="advanced-section">
+            <div class="checkbox-group">
+              <input type="checkbox" id="antithetic">
+              <label for="antithetic">Antithetic sampling</label>
+            </div>
+            <div class="param-info">Pairs: (Z, -Z) halve variance</div>
+            
+            <div class="param-group" style="margin-top: 1rem;">
+              <div class="param-header">
+                <span class="param-label">Wind θ</span>
+                <span class="param-value" id="wind-value">0°</span>
+              </div>
+              <input type="range" class="param-slider" id="wind-angle" min="0" max="360" value="0">
+            </div>
+            
+            <div class="param-group">
+              <div class="param-header">
+                <span class="param-label">Wind strength</span>
+                <span class="param-value" id="wind-str-value">0.0</span>
+              </div>
+              <input type="range" class="param-slider" id="wind-strength" min="0" max="1" value="0" step="0.1">
+            </div>
+            
+            <div class="param-group">
+              <div class="param-header">
+                <span class="param-label">Batch size</span>
+                <span class="param-value" id="batch-value">2000</span>
+              </div>
+              <input type="range" class="param-slider" id="batch-size" min="500" max="5000" value="2000" step="500">
+              <div class="param-info">Streaming chunks (avoid OOM)</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="control-section">
+          <div class="section-title">Experiment Presets</div>
+          <div class="preset-grid">
+            <button class="preset-btn" data-preset="corridor">
+              Narrow Corridor
+            </button>
+            <button class="preset-btn" data-preset="maze">
+              Branching Maze
+            </button>
+            <button class="preset-btn" data-preset="sparse">
+              Sparse (high rate)
+            </button>
+            <button class="preset-btn" data-preset="dense">
+              Dense (stress test)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-panel">
+        <div class="info-title">What BICEP Does</div>
+        <div class="info-item">• Spawns <strong>K trajectories</strong> in parallel (not sequential)</div>
+        <div class="info-item">• Each follows <strong>Brownian bridge</strong> dynamics:</div>
+        <div class="formula">x_{t+Δt} = x_t + μ·(goal-x_t)/(T-t)·Δt + σ·√Δt·Z_t</div>
+        <div class="info-item">• <strong>Deterministic</strong>: same seed → identical replay</div>
+        <div class="info-item">• <strong>Streaming</strong>: processes in batches to scale</div>
       </div>
       
-      <div class="control-group">
-        <label>Sigma:</label>
-        <input type="range" id="sigma" min="0.1" max="1.5" value="0.6" step="0.1">
-        <span id="sigma-value">0.6</span>
+      <div class="info-panel">
+        <div class="info-title">Success Criteria & Cost</div>
+        <div class="info-item"><strong>Success:</strong> Reach any goal cell within T steps</div>
+        <div class="info-item"><strong>Cost:</strong> Path length + 0.1×obstacle proximity</div>
+        <div class="info-item"><strong>Ranking:</strong> Lower cost = better path</div>
+        <div class="info-item"><strong>Note:</strong> This is a sampler, not A* (shortest path)</div>
       </div>
       
-      <button id="run-btn">Run Simulation</button>
-      <button id="reset-btn">Clear</button>
-    </div>
-
-    <div class="canvas-container">
-      <div class="canvas-stack">
-        <canvas id="bg-canvas"></canvas>
-        <canvas id="obs-canvas"></canvas>
-        <canvas id="sim-canvas"></canvas>
-        <canvas id="path-canvas"></canvas>
-      </div>
-      
-      <div class="stats-overlay">
-        <div class="stat-pill">Active: <strong id="stat-active">0</strong></div>
-        <div class="stat-pill">Success: <strong id="stat-success">0</strong></div>
-        <div class="stat-pill">Step: <strong id="stat-steps">0</strong></div>
-      </div>
-    </div>
-
-    <div class="legend">
-      <div class="legend-item">
-        <div class="legend-color" style="background: #10b981"></div>
-        <span>Start → Goal</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-color" style="background: rgba(239,68,68,0.7)"></div>
-        <span>Obstacles (click to draw)</span>
-      </div>
-    </div>
-
-    <div class="presets">
-      <button class="preset-btn" data-preset="corridor">Narrow Corridor</button>
-      <button class="preset-btn" data-preset="maze">Maze</button>
-      <button class="preset=btn" data-preset="sparse">Sparse</button>
-      <button class="preset-btn" data-preset="dense">Dense</button>
-    </div>
-
-    <div class="math-toggle">
-      <div class="math-header">
-        <span>▶</span>
-        <span>Show math</span>
-      </div>
-      <div class="math-content">
-        Each particle follows Brownian bridge dynamics with goal attraction:<br>
-        <code>x_{k+1} = x_k + (goal - x_k)/(N - k) + σ·Z_k</code><br><br>
-        Where σ controls exploration vs exploitation, and Z_k is Gaussian noise.
-        BICEP runs thousands of these trajectories in parallel to find optimal paths.
+      <div class="info-panel">
+        <div class="info-title">Why BICEP vs A*</div>
+        <div class="info-item">• Handles <strong>uncertainty</strong> & stochastic environments</div>
+        <div class="info-item">• Finds <strong>distribution</strong> of paths, not just one</div>
+        <div class="info-item">• <strong>GPU-ready</strong>: embarrassingly parallel</div>
+        <div class="info-item">• <strong>Risk-aware</strong>: rank by CVaR, not just mean</div>
       </div>
     </div>
   </div>
@@ -365,11 +670,13 @@
     const obsCanvas = document.getElementById('obs-canvas');
     const simCanvas = document.getElementById('sim-canvas');
     const pathCanvas = document.getElementById('path-canvas');
+    const sparklineCanvas = document.getElementById('sparkline-canvas');
     
     const bgCtx = bgCanvas.getContext('2d');
     const obsCtx = obsCanvas.getContext('2d');
     const simCtx = simCanvas.getContext('2d');
     const pathCtx = pathCanvas.getContext('2d');
+    const sparkCtx = sparklineCanvas.getContext('2d');
     
     // Grid settings
     const gridSize = 40;
@@ -381,10 +688,37 @@
     let mode = 'particles';
     let running = false;
     let step = 0;
+    let horizon = 300;
+    let currentSeed = Math.floor(Math.random() * 1000000);
+    let rng;
+    
+    // Performance tracking
+    let frameStart = 0;
+    let frameTime = 0;
+    let throughput = 0;
+    let successHistory = [];
+    let currentBatch = 0;
+    let totalBatches = 1;
     
     // Start and goal regions
     const startCells = [];
     const goalCells = [];
+    
+    // Seeded random number generator (deterministic)
+    function seedRNG(seed) {
+      let state = seed;
+      return function() {
+        state = (state * 1664525 + 1013904223) % 4294967296;
+        return state / 4294967296;
+      };
+    }
+    
+    // Gaussian random (Box-Muller)
+    function gaussianRandom(rng) {
+      const u1 = rng();
+      const u2 = rng();
+      return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+    }
     
     // Initialize canvases
     function initCanvases() {
@@ -396,12 +730,14 @@
         canvas.height = height;
       });
       
-      // Draw background grid once
+      sparklineCanvas.width = 180;
+      sparklineCanvas.height = 40;
+      
+      // Draw background grid
       bgCtx.fillStyle = '#0a0a0a';
       bgCtx.fillRect(0, 0, width, height);
       
-      // Grid lines
-      bgCtx.strokeStyle = 'rgba(255,255,255,0.03)';
+      bgCtx.strokeStyle = 'rgba(255,255,255,0.02)';
       bgCtx.lineWidth = 1;
       for (let i = 0; i <= gridSize; i++) {
         bgCtx.beginPath();
@@ -423,44 +759,53 @@
       startCells.length = 0;
       goalCells.length = 0;
       
+      // Start: left side green band
       for (let y = 10; y < 30; y++) {
         for (let x = 0; x < 3; x++) {
           startCells.push([x, y]);
         }
+      }
+      
+      // Goal: right side blue band
+      for (let y = 10; y < 30; y++) {
         for (let x = gridSize - 3; x < gridSize; x++) {
           goalCells.push([x, y]);
         }
+      }
+      
+      // Add some default obstacles
+      for (let i = 0; i < 100; i++) {
+        const x = 5 + Math.floor(Math.random() * (gridSize - 10));
+        const y = Math.floor(Math.random() * gridSize);
+        grid[x][y] = true;
       }
       
       particles = [];
       winners = [];
       heatmap.fill(0);
       step = 0;
-      
-      drawObstacles();
-      drawStartGoal();
-    }
-    
-    function drawStartGoal() {
-      obsCtx.clearRect(0, 0, obsCanvas.width, obsCanvas.height);
-      
-      // Start region
-      obsCtx.fillStyle = 'rgba(16,185,129,0.2)';
-      startCells.forEach(([x, y]) => {
-        obsCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-      });
-      
-      // Goal region
-      obsCtx.fillStyle = 'rgba(16,185,129,0.2)';
-      goalCells.forEach(([x, y]) => {
-        obsCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-      });
+      successHistory = [];
       
       drawObstacles();
     }
     
     function drawObstacles() {
-      obsCtx.fillStyle = 'rgba(239,68,68,0.7)';
+      obsCtx.clearRect(0, 0, obsCanvas.width, obsCanvas.height);
+      
+      // Start region - green
+      obsCtx.fillStyle = 'rgba(34, 197, 94, 0.2)';
+      startCells.forEach(([x, y]) => {
+        obsCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+      });
+      
+      // Goal region - blue  
+      obsCtx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+      goalCells.forEach(([x, y]) => {
+        obsCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+      });
+      
+      // Obstacles - red (colorblind friendly)
+      obsCtx.fillStyle = 'rgba(220, 38, 38, 0.7)';
       for (let x = 0; x < gridSize; x++) {
         for (let y = 0; y < gridSize; y++) {
           if (grid[x][y]) {
@@ -472,26 +817,61 @@
     
     function initParticles() {
       const numParticles = parseInt(document.getElementById('particles').value);
-      particles = [];
+      const batchSize = parseInt(document.getElementById('batch-size').value);
       
+      particles = [];
+      rng = seedRNG(currentSeed);
+      
+      // Calculate batches for streaming
+      totalBatches = Math.ceil(numParticles / batchSize);
+      currentBatch = 0;
+      
+      // Initialize all particles (but process in batches)
       for (let i = 0; i < numParticles; i++) {
-        const start = startCells[Math.floor(Math.random() * startCells.length)];
+        const start = startCells[Math.floor(rng() * startCells.length)];
         particles.push({
           x: start[0] + 0.5,
           y: start[1] + 0.5,
           path: [[start[0], start[1]]],
           alive: true,
-          cost: 0
+          cost: 0,
+          batch: Math.floor(i / batchSize)
         });
+      }
+      
+      // Show batch progress
+      if (totalBatches > 1) {
+        document.getElementById('batch-progress').classList.add('show');
+        document.getElementById('total-batches').textContent = totalBatches;
       }
     }
     
     function updateParticles() {
-      const sigma = parseFloat(document.getElementById('sigma').value);
-      const maxSteps = 300;
+      frameStart = performance.now();
       
-      particles.forEach(p => {
-        if (!p.alive || p.reached) return;
+      const sigma = parseFloat(document.getElementById('sigma').value);
+      const drift = parseFloat(document.getElementById('drift').value);
+      const antithetic = document.getElementById('antithetic').checked;
+      const windAngle = parseFloat(document.getElementById('wind-angle').value) * Math.PI / 180;
+      const windStrength = parseFloat(document.getElementById('wind-strength').value);
+      const batchSize = parseInt(document.getElementById('batch-size').value);
+      
+      const windX = Math.cos(windAngle) * windStrength;
+      const windY = Math.sin(windAngle) * windStrength;
+      
+      let activeCount = 0;
+      let processedCount = 0;
+      
+      // Process current batch
+      const batchStart = currentBatch * batchSize;
+      const batchEnd = Math.min(batchStart + batchSize, particles.length);
+      
+      for (let idx = batchStart; idx < batchEnd; idx++) {
+        const p = particles[idx];
+        if (!p.alive || p.reached) continue;
+        
+        activeCount++;
+        processedCount++;
         
         // Find nearest goal
         let minDist = Infinity;
@@ -505,18 +885,38 @@
         });
         
         // Brownian bridge dynamics
-        const remaining = Math.max(1, maxSteps - step);
-        const pullX = (nearestGoal[0] + 0.5 - p.x) / remaining;
-        const pullY = (nearestGoal[1] + 0.5 - p.y) / remaining;
+        const remaining = Math.max(1, horizon - step);
+        const dt = 1.0; // Δt = 1 step
         
-        // Add noise
-        const noiseX = (Math.random() - 0.5) * 2 * sigma;
-        const noiseY = (Math.random() - 0.5) * 2 * sigma;
+        // Drift term: μ·(goal-x)/(T-t)·Δt
+        const pullX = drift * (nearestGoal[0] + 0.5 - p.x) / remaining * dt;
+        const pullY = drift * (nearestGoal[1] + 0.5 - p.y) / remaining * dt;
         
+        // Noise term: σ·√Δt·Z (Gaussian)
+        let noiseX, noiseY;
+        if (antithetic && idx % 2 === 1 && idx > 0) {
+          // Use negative of previous particle's noise
+          const prev = particles[idx - 1];
+          if (prev.lastNoise) {
+            noiseX = -prev.lastNoise.x + windX;
+            noiseY = -prev.lastNoise.y + windY;
+          } else {
+            noiseX = gaussianRandom(rng) * sigma * Math.sqrt(dt) + windX;
+            noiseY = gaussianRandom(rng) * sigma * Math.sqrt(dt) + windY;
+          }
+        } else {
+          const zx = gaussianRandom(rng);
+          const zy = gaussianRandom(rng);
+          noiseX = zx * sigma * Math.sqrt(dt) + windX;
+          noiseY = zy * sigma * Math.sqrt(dt) + windY;
+          p.lastNoise = { x: zx * sigma * Math.sqrt(dt), y: zy * sigma * Math.sqrt(dt) };
+        }
+        
+        // Update position
         p.x += pullX + noiseX;
         p.y += pullY + noiseY;
         
-        // Grid bounds
+        // Bounds check
         p.x = Math.max(0, Math.min(gridSize - 1, p.x));
         p.y = Math.max(0, Math.min(gridSize - 1, p.y));
         
@@ -524,23 +924,51 @@
         const gridY = Math.floor(p.y);
         
         // Update heatmap
-        const idx = gridY * gridSize + gridX;
-        heatmap[idx] += 1;
+        heatmap[gridY * gridSize + gridX] += 1;
         
         // Check collision
         if (grid[gridX][gridY]) {
           p.alive = false;
         } else {
           p.path.push([gridX, gridY]);
-          p.cost++;
           
-          // Check if reached goal
+          // Cost with obstacle proximity
+          let proxPenalty = 0;
+          for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+              const nx = gridX + dx;
+              const ny = gridY + dy;
+              if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize && grid[nx][ny]) {
+                proxPenalty += 0.1;
+              }
+            }
+          }
+          p.cost += 1 + proxPenalty;
+          
+          // Check goal
           if (goalCells.some(g => g[0] === gridX && g[1] === gridY)) {
             p.reached = true;
             recordWinner(p);
           }
         }
-      });
+      }
+      
+      // Update batch progress
+      if (currentBatch < totalBatches - 1) {
+        currentBatch++;
+        document.getElementById('current-batch').textContent = currentBatch + 1;
+      }
+      
+      // Calculate throughput
+      const frameEnd = performance.now();
+      frameTime = frameEnd - frameStart;
+      throughput = Math.round(processedCount * (1000 / Math.max(frameTime, 1)));
+      
+      // Update success history
+      const totalActive = particles.filter(p => p.alive || p.reached).length;
+      const successRate = totalActive > 0 ? (winners.length / particles.length * 100) : 0;
+      successHistory.push(successRate);
+      if (successHistory.length > 100) successHistory.shift();
       
       step++;
     }
@@ -551,71 +979,57 @@
         cost: particle.cost
       });
       
-      // Keep top 50 paths
+      // Keep top 50
       winners.sort((a, b) => a.cost - b.cost);
-      if (winners.length > 50) {
-        winners = winners.slice(0, 50);
-      }
+      if (winners.length > 50) winners.length = 50;
     }
     
     function drawSimulation() {
       simCtx.clearRect(0, 0, simCanvas.width, simCanvas.height);
       
       if (mode === 'particles') {
-        drawParticles();
-      } else if (mode === 'heatmap') {
-        drawHeatmap();
-      } else if (mode === 'paths') {
-        drawTopPaths();
-      }
-    }
-    
-    function drawParticles() {
-      simCtx.fillStyle = 'rgba(59,130,246,0.6)';
-      particles.forEach(p => {
-        if (p.alive && !p.reached) {
-          simCtx.fillRect(
-            p.x * cellSize - 1,
-            p.y * cellSize - 1,
-            3,
-            3
-          );
-        }
-      });
-    }
-    
-    function drawHeatmap() {
-      const maxHeat = Math.max(...heatmap);
-      if (maxHeat === 0) return;
-      
-      for (let i = 0; i < heatmap.length; i++) {
-        if (heatmap[i] > 0) {
-          const x = i % gridSize;
-          const y = Math.floor(i / gridSize);
-          const intensity = Math.pow(heatmap[i] / maxHeat, 0.5);
-          simCtx.fillStyle = `rgba(59,130,246,${0.05 + 0.4 * intensity})`;
-          simCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-        }
-      }
-    }
-    
-    function drawTopPaths() {
-      simCtx.lineWidth = 1.5;
-      
-      // Draw all paths with varying colors
-      winners.forEach((w, i) => {
-        if (i === 0) return; // Skip best path (drawn separately)
+        // Fade effect for trails
+        simCtx.fillStyle = 'rgba(0,0,0,0.05)';
+        simCtx.fillRect(0, 0, simCanvas.width, simCanvas.height);
         
-        simCtx.strokeStyle = `hsla(${200 + i * 3}, 70%, 50%, 0.3)`;
-        simCtx.beginPath();
-        w.path.forEach((pos, j) => {
-          const x = pos[0] * cellSize + cellSize / 2;
-          const y = pos[1] * cellSize + cellSize / 2;
-          if (j === 0) simCtx.moveTo(x, y);
-          else simCtx.lineTo(x, y);
+        // Draw all active particles
+        simCtx.fillStyle = 'rgba(59,130,246,0.8)';
+        particles.forEach(p => {
+          if (p.alive && !p.reached) {
+            simCtx.fillRect(p.x * cellSize - 1, p.y * cellSize - 1, 2, 2);
+          }
         });
-        simCtx.stroke();
-      });
+      } else if (mode === 'heatmap') {
+        const maxHeat = Math.max(...heatmap);
+        if (maxHeat > 0) {
+          for (let i = 0; i < heatmap.length; i++) {
+            if (heatmap[i] > 0) {
+              const x = i % gridSize;
+              const y = Math.floor(i / gridSize);
+              const intensity = Math.pow(heatmap[i] / maxHeat, 0.5);
+              simCtx.fillStyle = `rgba(59,130,246,${0.1 + 0.6 * intensity})`;
+              simCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+            }
+          }
+        }
+      } else if (mode === 'paths') {
+        // Draw top N paths
+        simCtx.lineWidth = 1.5;
+        simCtx.lineCap = 'round';
+        
+        winners.slice(1, 30).forEach((w, i) => {
+          const hue = 200 + (i * 5) % 60;
+          simCtx.strokeStyle = `hsla(${hue}, 70%, 50%, 0.3)`;
+          simCtx.beginPath();
+          w.path.forEach((pos, j) => {
+            const x = pos[0] * cellSize + cellSize / 2;
+            const y = pos[1] * cellSize + cellSize / 2;
+            if (j === 0) simCtx.moveTo(x, y);
+            else simCtx.lineTo(x, y);
+          });
+          simCtx.stroke();
+        });
+      }
     }
     
     function drawBestPath() {
@@ -625,9 +1039,9 @@
       
       const best = winners[0].path;
       
-      // Draw path with glow
-      pathCtx.shadowColor = 'rgba(16,185,129,0.5)';
-      pathCtx.shadowBlur = 8;
+      // Draw with glow
+      pathCtx.shadowColor = 'rgba(16,185,129,0.6)';
+      pathCtx.shadowBlur = 12;
       pathCtx.strokeStyle = '#10b981';
       pathCtx.lineWidth = 3;
       pathCtx.lineCap = 'round';
@@ -641,11 +1055,12 @@
         else pathCtx.lineTo(x, y);
       });
       pathCtx.stroke();
-      pathCtx.shadowBlur = 0;
       
-      // Draw arrowheads
+      // Arrowheads
+      pathCtx.shadowBlur = 0;
       pathCtx.fillStyle = '#10b981';
       for (let i = 10; i < best.length; i += 10) {
+        if (i < 1) continue;
         const curr = best[i];
         const prev = best[i - 1];
         const x = curr[0] * cellSize + cellSize / 2;
@@ -668,11 +1083,86 @@
       }
     }
     
+    function drawSparkline() {
+      sparkCtx.clearRect(0, 0, sparklineCanvas.width, sparklineCanvas.height);
+      
+      if (successHistory.length < 2) return;
+      
+      const w = sparklineCanvas.width;
+      const h = sparklineCanvas.height;
+      const max = Math.max(100, Math.max(...successHistory));
+      
+      sparkCtx.strokeStyle = '#10b981';
+      sparkCtx.lineWidth = 2;
+      sparkCtx.beginPath();
+      
+      successHistory.forEach((rate, i) => {
+        const x = (i / (successHistory.length - 1)) * w;
+        const y = h - (rate / max) * h;
+        if (i === 0) sparkCtx.moveTo(x, y);
+        else sparkCtx.lineTo(x, y);
+      });
+      
+      sparkCtx.stroke();
+      
+      // Fill
+      sparkCtx.globalAlpha = 0.2;
+      sparkCtx.fillStyle = '#10b981';
+      sparkCtx.lineTo(w, h);
+      sparkCtx.lineTo(0, h);
+      sparkCtx.closePath();
+      sparkCtx.fill();
+      sparkCtx.globalAlpha = 1;
+    }
+    
     function updateStats() {
       const active = particles.filter(p => p.alive && !p.reached).length;
-      document.getElementById('stat-active').textContent = active;
-      document.getElementById('stat-success').textContent = winners.length;
-      document.getElementById('stat-steps').textContent = step;
+      const total = particles.length;
+      const successRate = total > 0 ? Math.round(winners.length / total * 100) : 0;
+      
+      document.getElementById('seed-value').textContent = currentSeed;
+      document.getElementById('throughput').textContent = throughput.toLocaleString();
+      document.getElementById('frame-time').textContent = Math.round(frameTime);
+      document.getElementById('active-count').textContent = active.toLocaleString();
+      document.getElementById('total-count').textContent = total.toLocaleString();
+      document.getElementById('success-rate').textContent = successRate + '%';
+      document.getElementById('step-counter').textContent = step;
+      document.getElementById('horizon').textContent = horizon;
+    }
+    
+    function animateFinish() {
+      if (winners.length === 0) return;
+      
+      const best = winners[0].path;
+      let glowStep = 0;
+      
+      function glowFrame() {
+        pathCtx.clearRect(0, 0, pathCanvas.width, pathCanvas.height);
+        drawBestPath();
+        
+        // Traveling glow
+        const progress = (glowStep % 40) / 40;
+        const idx = Math.floor(progress * best.length);
+        
+        if (idx < best.length) {
+          const pos = best[idx];
+          const x = pos[0] * cellSize + cellSize / 2;
+          const y = pos[1] * cellSize + cellSize / 2;
+          
+          pathCtx.save();
+          pathCtx.globalCompositeOperation = 'screen';
+          pathCtx.fillStyle = 'rgba(16,185,129,0.8)';
+          pathCtx.beginPath();
+          pathCtx.arc(x, y, 10, 0, Math.PI * 2);
+          pathCtx.fill();
+          pathCtx.restore();
+        }
+        
+        glowStep++;
+        if (glowStep < 80) requestAnimationFrame(glowFrame);
+      }
+      
+      glowFrame();
     }
     
     function animate() {
@@ -681,12 +1171,18 @@
       updateParticles();
       drawSimulation();
       drawBestPath();
+      drawSparkline();
       updateStats();
       
-      if (particles.filter(p => p.alive && !p.reached).length === 0 || step > 300) {
+      // Check finish
+      const active = particles.filter(p => p.alive && !p.reached).length;
+      if (active === 0 || step >= horizon) {
         running = false;
-        document.getElementById('run-btn').textContent = 'Run Simulation';
+        document.getElementById('run-btn').textContent = 'Run BICEP';
         document.getElementById('run-btn').disabled = false;
+        document.getElementById('batch-progress').classList.remove('show');
+        
+        if (winners.length > 0) animateFinish();
       } else {
         requestAnimationFrame(animate);
       }
@@ -696,9 +1192,14 @@
     document.getElementById('run-btn').addEventListener('click', () => {
       if (running) return;
       
+      currentSeed = Math.floor(Math.random() * 1000000);
       winners = [];
       heatmap.fill(0);
       step = 0;
+      successHistory = [];
+      currentBatch = 0;
+      horizon = parseInt(document.getElementById('horizon-slider').value);
+      
       initParticles();
       
       running = true;
@@ -713,10 +1214,12 @@
       initGrid();
       simCtx.clearRect(0, 0, simCanvas.width, simCanvas.height);
       pathCtx.clearRect(0, 0, pathCanvas.width, pathCanvas.height);
+      sparkCtx.clearRect(0, 0, sparklineCanvas.width, sparklineCanvas.height);
+      document.getElementById('batch-progress').classList.remove('show');
       updateStats();
     });
     
-    // Mode toggle
+    // Mode buttons
     document.querySelectorAll('.mode-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -726,14 +1229,33 @@
       });
     });
     
+    // Seed click - copy replay URL
+    document.getElementById('seed-overlay').addEventListener('click', () => {
+      const url = new URL(window.location);
+      url.searchParams.set('seed', currentSeed);
+      url.searchParams.set('K', document.getElementById('particles').value);
+      url.searchParams.set('mu', document.getElementById('drift').value);
+      url.searchParams.set('sigma', document.getElementById('sigma').value);
+      url.searchParams.set('T', document.getElementById('horizon-slider').value);
+      
+      navigator.clipboard.writeText(url.toString()).then(() => {
+        const overlay = document.getElementById('seed-overlay');
+        const original = overlay.innerHTML;
+        overlay.innerHTML = '<strong>Copied!</strong>';
+        setTimeout(() => {
+          overlay.innerHTML = original;
+        }, 1000);
+      });
+    });
+    
     // Canvas drawing
     let isDrawing = false;
-    obsCanvas.addEventListener('mousedown', (e) => {
+    obsCanvas.addEventListener('mousedown', e => {
       isDrawing = true;
       handleDraw(e);
     });
     
-    obsCanvas.addEventListener('mousemove', (e) => {
+    obsCanvas.addEventListener('mousemove', e => {
       if (isDrawing) handleDraw(e);
     });
     
@@ -743,16 +1265,14 @@
     
     function handleDraw(e) {
       const rect = obsCanvas.getBoundingClientRect();
-      const x = Math.floor((e.clientX - rect.left) * gridSize / rect.width);
-      const y = Math.floor((e.clientY - rect.top) * gridSize / rect.height);
+      const x = Math.floor((e.clientX - rect.left) / (rect.width / gridSize));
+      const y = Math.floor((e.clientY - rect.top) / (rect.height / gridSize));
       
       if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
-        const isStart = startCells.some(c => c[0] === x && c[1] === y);
-        const isGoal = goalCells.some(c => c[0] === x && c[1] === y);
-        
-        if (!isStart && !isGoal) {
+        if (!startCells.some(c => c[0] === x && c[1] === y) &&
+            !goalCells.some(c => c[0] === x && c[1] === y)) {
           grid[x][y] = !grid[x][y];
-          drawStartGoal();
+          drawObstacles();
         }
       }
     }
@@ -765,64 +1285,103 @@
         
         switch(preset) {
           case 'corridor':
-            for (let x = 5; x < 35; x++) {
+            // Narrow passage test
+            for (let x = 3; x < 37; x++) {
               for (let y = 0; y < 8; y++) grid[x][y] = true;
               for (let y = 32; y < 40; y++) grid[x][y] = true;
             }
+            for (let y = 16; y < 24; y++) {
+              for (let x = 3; x < 18; x++) grid[x][y] = true;
+              for (let x = 22; x < 37; x++) grid[x][y] = true;
+            }
             break;
+            
           case 'maze':
-            for (let i = 0; i < 15; i++) {
-              const x = 5 + i * 2;
-              for (let y = 5; y < 35; y++) {
+            // Branching paths
+            for (let i = 0; i < 10; i++) {
+              const x = 5 + i * 3;
+              for (let y = 0; y < gridSize; y++) {
                 if (Math.random() > 0.3) grid[x][y] = true;
               }
             }
-            break;
-          case 'sparse':
-            for (let i = 0; i < 50; i++) {
-              const x = Math.floor(Math.random() * gridSize);
-              const y = Math.floor(Math.random() * gridSize);
-              const isStart = startCells.some(c => c[0] === x && c[1] === y);
-              const isGoal = goalCells.some(c => c[0] === x && c[1] === y);
-              if (!isStart && !isGoal) grid[x][y] = true;
+            for (let y = 10; y < 30; y += 5) {
+              for (let x = 5; x < 35; x++) {
+                if (Math.random() > 0.4) grid[x][y] = true;
+              }
             }
             break;
-          case 'dense':
-            for (let i = 0; i < 200; i++) {
-              const x = Math.floor(Math.random() * gridSize);
+            
+          case 'sparse':
+            // High success rate
+            for (let i = 0; i < 50; i++) {
+              const x = 5 + Math.floor(Math.random() * 30);
               const y = Math.floor(Math.random() * gridSize);
-              const isStart = startCells.some(c => c[0] === x && c[1] === y);
-              const isGoal = goalCells.some(c => c[0] === x && c[1] === y);
-              if (!isStart && !isGoal) grid[x][y] = true;
+              grid[x][y] = true;
+            }
+            break;
+            
+          case 'dense':
+            // Stress test
+            for (let i = 0; i < 300; i++) {
+              const x = 3 + Math.floor(Math.random() * 34);
+              const y = Math.floor(Math.random() * gridSize);
+              grid[x][y] = true;
             }
             break;
         }
         
-        drawStartGoal();
+        drawObstacles();
       });
     });
     
-    // Range updates
-    document.getElementById('particles').addEventListener('input', (e) => {
-      document.getElementById('particles-value').textContent = e.target.value;
-    });
-    
-    document.getElementById('sigma').addEventListener('input', (e) => {
-      document.getElementById('sigma-value').textContent = e.target.value;
-    });
-    
-    // Math toggle
-    document.querySelector('.math-header').addEventListener('click', () => {
-      const content = document.querySelector('.math-content');
-      const arrow = document.querySelector('.math-header span:first-child');
+    // Parameter sliders
+    ['particles', 'drift', 'sigma', 'horizon-slider', 'wind-angle', 'wind-strength', 'batch-size'].forEach(id => {
+      const input = document.getElementById(id);
+      const valueId = id.replace('-slider', '') + '-value';
       
-      content.classList.toggle('show');
-      arrow.textContent = content.classList.contains('show') ? '▼' : '▶';
+      input.addEventListener('input', () => {
+        let val = input.value;
+        if (id === 'wind-angle') val += '°';
+        document.getElementById(valueId).textContent = val;
+      });
+    });
+    
+    // Load from URL
+    function loadFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      
+      if (params.has('seed')) currentSeed = parseInt(params.get('seed'));
+      
+      ['K:particles', 'mu:drift', 'sigma:sigma', 'T:horizon-slider'].forEach(pair => {
+        const [param, id] = pair.split(':');
+        if (params.has(param)) {
+          const val = params.get(param);
+          document.getElementById(id).value = val;
+          document.getElementById(id).dispatchEvent(new Event('input'));
+        }
+      });
+    }
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', e => {
+      if (e.key === ' ' && !running) {
+        e.preventDefault();
+        document.getElementById('run-btn').click();
+      } else if (e.key === 'r') {
+        e.preventDefault();
+        document.getElementById('reset-btn').click();
+      } else if (e.key >= '1' && e.key <= '3') {
+        const modes = ['particles', 'heatmap', 'paths'];
+        const btn = document.querySelector(`[data-mode="${modes[parseInt(e.key) - 1]}"]`);
+        if (btn) btn.click();
+      }
     });
     
     // Initialize
     initCanvases();
     initGrid();
+    loadFromURL();
+    updateStats();
   </script>
 </body>
 </html>

@@ -5,102 +5,83 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BICEP · Parallel Path Sampler Demo</title>
   
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   
   <style>
     :root {
       --bg: #0a0a0a;
-      --bg-gradient: radial-gradient(ellipse at top, #0d1117 0%, #0a0a0a 60%);
-      --grid: rgba(255,255,255,0.03);
-      --card-bg: rgba(255,255,255,0.03);
+      --text: #e5e7eb;
+      --text-muted: #6b7280;
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.5);
+      --obstacle: rgba(239, 68, 68, 0.7);
       --border: rgba(255,255,255,0.08);
-      --text: #e8eaed;
-      --text-muted: rgba(232,234,237,0.6);
-      --accent: #00ffcc;
-      --accent-dim: rgba(0,255,204,0.15);
-      --gradient-1: linear-gradient(135deg, #00ffcc 0%, #00d9ff 100%);
-      --obstacle: #ff3366;
-      --start: #00ff88;
-      --goal: #00ccff;
-      --path: rgba(0,255,204,0.3);
-      --best-path: #00ffcc;
     }
     
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: var(--bg-gradient);
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       padding: 2rem;
       line-height: 1.6;
     }
     
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
     h1 {
-      font-family: 'Lexend', sans-serif;
-      font-size: clamp(2rem, 4vw, 3rem);
-      font-weight: 700;
-      background: var(--gradient-1);
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 1rem;
-      text-align: center;
     }
     
     .subtitle {
       color: var(--text-muted);
-      text-align: center;
-      margin-bottom: 3rem;
-      max-width: 800px;
-    }
-    
-    .demo-container {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 2rem;
-      max-width: 1200px;
-      width: 100%;
-      backdrop-filter: blur(10px);
-    }
-    
-    .grid-controls {
-      display: flex;
-      gap: 2rem;
       margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+    
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
       flex-wrap: wrap;
       align-items: center;
-      justify-content: center;
     }
     
     .control-group {
       display: flex;
-      flex-direction: column;
+      align-items: center;
       gap: 0.5rem;
     }
     
     label {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
     }
     
     input[type="range"] {
-      width: 150px;
-      height: 6px;
-      background: var(--border);
+      width: 100px;
+      height: 4px;
+      background: #374151;
       outline: none;
-      border-radius: 3px;
+      border-radius: 2px;
       -webkit-appearance: none;
     }
     
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 16px;
-      height: 16px;
+      width: 12px;
+      height: 12px;
       background: var(--accent);
       cursor: pointer;
       border-radius: 50%;
@@ -108,23 +89,18 @@
     
     button {
       background: var(--accent);
-      color: var(--bg);
+      color: #fff;
       border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: 500;
       cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 1rem;
+      transition: all 0.2s ease;
+      font-size: 0.875rem;
     }
     
     button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px var(--accent-dim);
-    }
-    
-    button:active {
-      transform: translateY(0);
+      background: #059669;
     }
     
     button:disabled {
@@ -132,98 +108,155 @@
       cursor: not-allowed;
     }
     
-    .grid-wrapper {
+    .mode-toggle {
       display: flex;
-      justify-content: center;
-      margin: 2rem 0;
+      gap: 0.25rem;
+      background: #111827;
+      padding: 0.25rem;
+      border-radius: 6px;
     }
     
-    #grid-canvas {
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      cursor: crosshair;
-      image-rendering: pixelated;
-      max-width: 100%;
-      height: auto;
-    }
-    
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-    
-    .stat-card {
-      background: rgba(255,255,255,0.02);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1rem;
-      text-align: center;
-    }
-    
-    .stat-value {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: var(--accent);
-    }
-    
-    .stat-label {
-      font-size: 0.9rem;
+    .mode-btn {
+      background: transparent;
       color: var(--text-muted);
+      padding: 0.375rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.813rem;
     }
     
+    .mode-btn.active {
+      background: #374151;
+      color: var(--text);
+    }
+    
+    /* Canvas container */
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      max-width: 840px;
+      margin: 0 auto;
+      background: #111827;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .canvas-stack {
+      position: relative;
+      width: 100%;
+      height: 520px;
+    }
+    
+    .canvas-stack canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Stats overlay */
+    .stats-overlay {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      max-width: 300px;
+      justify-content: flex-end;
+    }
+    
+    .stat-pill {
+      background: rgba(17, 24, 39, 0.9);
+      backdrop-filter: blur(8px);
+      color: var(--text);
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid var(--border);
+    }
+    
+    .stat-pill strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    
+    /* Legend */
     .legend {
       display: flex;
-      gap: 2rem;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.813rem;
+      color: var(--text-muted);
       justify-content: center;
-      margin: 1rem 0;
-      flex-wrap: wrap;
     }
     
     .legend-item {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.9rem;
+      gap: 0.375rem;
     }
     
     .legend-color {
-      width: 16px;
-      height: 16px;
-      border-radius: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
     }
     
-    .info-panel {
-      background: rgba(255,255,255,0.02);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-top: 2rem;
-    }
-    
-    .info-panel h3 {
-      color: var(--accent);
-      margin-bottom: 1rem;
-    }
-    
-    .info-panel p {
-      color: var(--text-muted);
-      margin-bottom: 0.5rem;
-    }
-    
-    pre {
-      background: rgba(0,0,0,0.3);
-      padding: 1rem;
-      border-radius: 8px;
-      overflow-x: auto;
-      font-size: 0.9rem;
+    /* Presets */
+    .presets {
+      display: flex;
+      gap: 0.5rem;
       margin-top: 1rem;
-      border: 1px solid var(--border);
     }
     
-    code {
+    .preset-btn {
+      background: #1f2937;
+      font-size: 0.75rem;
+      padding: 0.375rem 0.75rem;
+    }
+    
+    .preset-btn:hover {
+      background: #374151;
+    }
+    
+    /* Math toggle */
+    .math-toggle {
+      margin-top: 2rem;
+      border-top: 1px solid var(--border);
+      padding-top: 2rem;
+    }
+    
+    .math-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+    
+    .math-header:hover {
+      color: var(--text);
+    }
+    
+    .math-content {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #111827;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      line-height: 1.8;
+    }
+    
+    .math-content.show {
+      display: block;
+    }
+    
+    .math-content code {
       color: var(--accent);
+      font-family: monospace;
     }
     
     .back-link {
@@ -235,7 +268,8 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      transition: color 0.3s ease;
+      font-size: 0.875rem;
+      transition: color 0.2s ease;
     }
     
     .back-link:hover {
@@ -248,202 +282,191 @@
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M19 12H5M5 12l7 7M5 12l7-7"/>
     </svg>
-    Back to Portfolio
+    Back
   </a>
 
-  <h1>BICEP Path Sampler</h1>
-  <p class="subtitle">
-    Brownian-Inspired CUDA Engine for Parallelisation · Watch thousands of particles explore paths simultaneously
-  </p>
+  <div class="container">
+    <h1>BICEP Path Sampler</h1>
+    <p class="subtitle">Watch thousands of particles explore paths in parallel</p>
 
-  <div class="demo-container">
-    <div class="grid-controls">
-      <div class="control-group">
-        <label>Grid Size: <span id="grid-size-value">30</span></label>
-        <input type="range" id="grid-size" min="20" max="50" value="30" step="5">
+    <div class="controls">
+      <div class="mode-toggle">
+        <button class="mode-btn active" data-mode="particles">Particles</button>
+        <button class="mode-btn" data-mode="heatmap">Heatmap</button>
+        <button class="mode-btn" data-mode="paths">Top Paths</button>
       </div>
+      
       <div class="control-group">
-        <label>Particles: <span id="particles-value">1000</span></label>
-        <input type="range" id="particles" min="100" max="5000" value="1000" step="100">
+        <label>Particles:</label>
+        <input type="range" id="particles" min="100" max="5000" value="2000" step="100">
+        <span id="particles-value">2000</span>
       </div>
+      
       <div class="control-group">
-        <label>Sigma (Noise): <span id="sigma-value">0.6</span></label>
-        <input type="range" id="sigma" min="0.1" max="2.0" value="0.6" step="0.1">
+        <label>Sigma:</label>
+        <input type="range" id="sigma" min="0.1" max="1.5" value="0.6" step="0.1">
+        <span id="sigma-value">0.6</span>
       </div>
-      <div class="control-group">
-        <label>Speed</label>
-        <input type="range" id="speed" min="1" max="50" value="10">
+      
+      <button id="run-btn">Run Simulation</button>
+      <button id="reset-btn">Clear</button>
+    </div>
+
+    <div class="canvas-container">
+      <div class="canvas-stack">
+        <canvas id="bg-canvas"></canvas>
+        <canvas id="obs-canvas"></canvas>
+        <canvas id="sim-canvas"></canvas>
+        <canvas id="path-canvas"></canvas>
       </div>
-      <button id="run-btn">Run BICEP</button>
-      <button id="reset-btn">Reset Grid</button>
+      
+      <div class="stats-overlay">
+        <div class="stat-pill">Active: <strong id="stat-active">0</strong></div>
+        <div class="stat-pill">Success: <strong id="stat-success">0</strong></div>
+        <div class="stat-pill">Step: <strong id="stat-steps">0</strong></div>
+      </div>
     </div>
 
     <div class="legend">
       <div class="legend-item">
-        <div class="legend-color" style="background: var(--start)"></div>
-        <span>Start Block</span>
+        <div class="legend-color" style="background: #10b981"></div>
+        <span>Start → Goal</span>
       </div>
       <div class="legend-item">
-        <div class="legend-color" style="background: var(--goal)"></div>
-        <span>Goal Block</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-color" style="background: var(--obstacle)"></div>
+        <div class="legend-color" style="background: rgba(239,68,68,0.7)"></div>
         <span>Obstacles (click to draw)</span>
       </div>
-      <div class="legend-item">
-        <div class="legend-color" style="background: var(--best-path)"></div>
-        <span>Best Path</span>
-      </div>
     </div>
 
-    <div class="grid-wrapper">
-      <canvas id="grid-canvas"></canvas>
+    <div class="presets">
+      <button class="preset-btn" data-preset="corridor">Narrow Corridor</button>
+      <button class="preset-btn" data-preset="maze">Maze</button>
+      <button class="preset=btn" data-preset="sparse">Sparse</button>
+      <button class="preset-btn" data-preset="dense">Dense</button>
     </div>
 
-    <div class="stats">
-      <div class="stat-card">
-        <div class="stat-value" id="stat-active">0</div>
-        <div class="stat-label">Active Particles</div>
+    <div class="math-toggle">
+      <div class="math-header">
+        <span>▶</span>
+        <span>Show math</span>
       </div>
-      <div class="stat-card">
-        <div class="stat-value" id="stat-success">0</div>
-        <div class="stat-label">Successful Paths</div>
+      <div class="math-content">
+        Each particle follows Brownian bridge dynamics with goal attraction:<br>
+        <code>x_{k+1} = x_k + (goal - x_k)/(N - k) + σ·Z_k</code><br><br>
+        Where σ controls exploration vs exploitation, and Z_k is Gaussian noise.
+        BICEP runs thousands of these trajectories in parallel to find optimal paths.
       </div>
-      <div class="stat-card">
-        <div class="stat-value" id="stat-collisions">0</div>
-        <div class="stat-label">Collisions</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="stat-steps">0</div>
-        <div class="stat-label">Steps</div>
-      </div>
-    </div>
-
-    <div class="info-panel">
-      <h3>How it works</h3>
-      <p>
-        BICEP spawns thousands of particles that explore paths in parallel. Each particle follows a 
-        Brownian bridge dynamics with a gentle pull toward the goal:
-      </p>
-      <pre><code>x_{k+1} = x_k + (goal - x_k)/(N - k) + σ·Z_k</code></pre>
-      <p>
-        • <strong>Parallel exploration:</strong> All particles move simultaneously<br>
-        • <strong>Goal attraction:</strong> Stronger pull as time runs out<br>
-        • <strong>Stochastic noise:</strong> σ controls exploration vs exploitation<br>
-        • <strong>Collision handling:</strong> Particles die on obstacle contact
-      </p>
     </div>
   </div>
 
   <script>
-    const canvas = document.getElementById('grid-canvas');
-    const ctx = canvas.getContext('2d');
+    // Canvas setup
+    const bgCanvas = document.getElementById('bg-canvas');
+    const obsCanvas = document.getElementById('obs-canvas');
+    const simCanvas = document.getElementById('sim-canvas');
+    const pathCanvas = document.getElementById('path-canvas');
     
-    let gridSize = 30;
-    let cellSize = 15;
+    const bgCtx = bgCanvas.getContext('2d');
+    const obsCtx = obsCanvas.getContext('2d');
+    const simCtx = simCanvas.getContext('2d');
+    const pathCtx = pathCanvas.getContext('2d');
+    
+    // Grid settings
+    const gridSize = 40;
+    const cellSize = 13;
     let grid = [];
     let particles = [];
-    let bestPath = null;
+    let winners = [];
+    let heatmap = new Float32Array(gridSize * gridSize);
+    let mode = 'particles';
     let running = false;
     let step = 0;
-    let stats = {
-      active: 0,
-      success: 0,
-      collisions: 0
-    };
     
-    // Start and goal blocks
-    let startBlock = [];
-    let goalBlock = [];
+    // Start and goal regions
+    const startCells = [];
+    const goalCells = [];
+    
+    // Initialize canvases
+    function initCanvases() {
+      const width = gridSize * cellSize;
+      const height = gridSize * cellSize;
+      
+      [bgCanvas, obsCanvas, simCanvas, pathCanvas].forEach(canvas => {
+        canvas.width = width;
+        canvas.height = height;
+      });
+      
+      // Draw background grid once
+      bgCtx.fillStyle = '#0a0a0a';
+      bgCtx.fillRect(0, 0, width, height);
+      
+      // Grid lines
+      bgCtx.strokeStyle = 'rgba(255,255,255,0.03)';
+      bgCtx.lineWidth = 1;
+      for (let i = 0; i <= gridSize; i++) {
+        bgCtx.beginPath();
+        bgCtx.moveTo(i * cellSize, 0);
+        bgCtx.lineTo(i * cellSize, height);
+        bgCtx.stroke();
+        
+        bgCtx.beginPath();
+        bgCtx.moveTo(0, i * cellSize);
+        bgCtx.lineTo(width, i * cellSize);
+        bgCtx.stroke();
+      }
+    }
     
     function initGrid() {
-      gridSize = parseInt(document.getElementById('grid-size').value);
-      canvas.width = gridSize * cellSize;
-      canvas.height = gridSize * cellSize;
-      
       grid = Array(gridSize).fill().map(() => Array(gridSize).fill(false));
       
-      // Define start block (left side)
-      startBlock = [];
-      for (let y = Math.floor(gridSize * 0.3); y < Math.floor(gridSize * 0.7); y++) {
+      // Define start and goal regions
+      startCells.length = 0;
+      goalCells.length = 0;
+      
+      for (let y = 10; y < 30; y++) {
         for (let x = 0; x < 3; x++) {
-          startBlock.push([x, y]);
+          startCells.push([x, y]);
         }
-      }
-      
-      // Define goal block (right side)
-      goalBlock = [];
-      for (let y = Math.floor(gridSize * 0.3); y < Math.floor(gridSize * 0.7); y++) {
         for (let x = gridSize - 3; x < gridSize; x++) {
-          goalBlock.push([x, y]);
-        }
-      }
-      
-      // Add some default obstacles
-      for (let i = 0; i < gridSize * 0.3; i++) {
-        const x = Math.floor(Math.random() * gridSize);
-        const y = Math.floor(Math.random() * gridSize);
-        if (!isInBlock(x, y, startBlock) && !isInBlock(x, y, goalBlock)) {
-          grid[x][y] = true;
+          goalCells.push([x, y]);
         }
       }
       
       particles = [];
-      bestPath = null;
+      winners = [];
+      heatmap.fill(0);
       step = 0;
-      updateStats();
-      draw();
+      
+      drawObstacles();
+      drawStartGoal();
     }
     
-    function isInBlock(x, y, block) {
-      return block.some(([bx, by]) => bx === x && by === y);
-    }
-    
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function drawStartGoal() {
+      obsCtx.clearRect(0, 0, obsCanvas.width, obsCanvas.height);
       
-      // Draw grid
-      for (let x = 0; x < gridSize; x++) {
-        for (let y = 0; y < gridSize; y++) {
-          if (isInBlock(x, y, startBlock)) {
-            ctx.fillStyle = 'rgba(0,255,136,0.3)';
-          } else if (isInBlock(x, y, goalBlock)) {
-            ctx.fillStyle = 'rgba(0,204,255,0.3)';
-          } else if (grid[x][y]) {
-            ctx.fillStyle = 'rgba(255,51,102,0.8)';
-          } else {
-            ctx.fillStyle = 'rgba(255,255,255,0.02)';
-          }
-          ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1);
-        }
-      }
-      
-      // Draw particles
-      particles.forEach(p => {
-        if (p.alive) {
-          ctx.fillStyle = `rgba(0,255,204,${p.alpha || 0.3})`;
-          ctx.fillRect(
-            Math.floor(p.x) * cellSize + cellSize * 0.25,
-            Math.floor(p.y) * cellSize + cellSize * 0.25,
-            cellSize * 0.5,
-            cellSize * 0.5
-          );
-        }
+      // Start region
+      obsCtx.fillStyle = 'rgba(16,185,129,0.2)';
+      startCells.forEach(([x, y]) => {
+        obsCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
       });
       
-      // Draw best path
-      if (bestPath) {
-        ctx.strokeStyle = '#00ffcc';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        bestPath.forEach((pos, i) => {
-          const px = pos[0] * cellSize + cellSize / 2;
-          const py = pos[1] * cellSize + cellSize / 2;
-          if (i === 0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
-        });
-        ctx.stroke();
+      // Goal region
+      obsCtx.fillStyle = 'rgba(16,185,129,0.2)';
+      goalCells.forEach(([x, y]) => {
+        obsCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+      });
+      
+      drawObstacles();
+    }
+    
+    function drawObstacles() {
+      obsCtx.fillStyle = 'rgba(239,68,68,0.7)';
+      for (let x = 0; x < gridSize; x++) {
+        for (let y = 0; y < gridSize; y++) {
+          if (grid[x][y]) {
+            obsCtx.fillRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2);
+          }
+        }
       }
     }
     
@@ -452,30 +475,28 @@
       particles = [];
       
       for (let i = 0; i < numParticles; i++) {
-        const startPos = startBlock[Math.floor(Math.random() * startBlock.length)];
+        const start = startCells[Math.floor(Math.random() * startCells.length)];
         particles.push({
-          x: startPos[0] + Math.random(),
-          y: startPos[1] + Math.random(),
+          x: start[0] + 0.5,
+          y: start[1] + 0.5,
+          path: [[start[0], start[1]]],
           alive: true,
-          path: [[startPos[0], startPos[1]]],
-          alpha: 0.2 + Math.random() * 0.3
+          cost: 0
         });
       }
     }
     
     function updateParticles() {
       const sigma = parseFloat(document.getElementById('sigma').value);
-      const maxSteps = 200;
-      
-      let newSuccesses = 0;
+      const maxSteps = 300;
       
       particles.forEach(p => {
-        if (!p.alive || p.reachedGoal) return;
+        if (!p.alive || p.reached) return;
         
-        // Find nearest goal point
+        // Find nearest goal
         let minDist = Infinity;
-        let nearestGoal = goalBlock[0];
-        goalBlock.forEach(g => {
+        let nearestGoal = goalCells[0];
+        goalCells.forEach(g => {
           const dist = Math.sqrt((g[0] - p.x) ** 2 + (g[1] - p.y) ** 2);
           if (dist < minDist) {
             minDist = dist;
@@ -485,126 +506,303 @@
         
         // Brownian bridge dynamics
         const remaining = Math.max(1, maxSteps - step);
-        const pullX = (nearestGoal[0] - p.x) / remaining;
-        const pullY = (nearestGoal[1] - p.y) / remaining;
+        const pullX = (nearestGoal[0] + 0.5 - p.x) / remaining;
+        const pullY = (nearestGoal[1] + 0.5 - p.y) / remaining;
         
         // Add noise
         const noiseX = (Math.random() - 0.5) * 2 * sigma;
         const noiseY = (Math.random() - 0.5) * 2 * sigma;
         
-        // Update position
         p.x += pullX + noiseX;
         p.y += pullY + noiseY;
         
-        // Snap to grid
-        const gridX = Math.floor(Math.max(0, Math.min(gridSize - 1, p.x)));
-        const gridY = Math.floor(Math.max(0, Math.min(gridSize - 1, p.y)));
+        // Grid bounds
+        p.x = Math.max(0, Math.min(gridSize - 1, p.x));
+        p.y = Math.max(0, Math.min(gridSize - 1, p.y));
+        
+        const gridX = Math.floor(p.x);
+        const gridY = Math.floor(p.y);
+        
+        // Update heatmap
+        const idx = gridY * gridSize + gridX;
+        heatmap[idx] += 1;
         
         // Check collision
         if (grid[gridX][gridY]) {
           p.alive = false;
-          stats.collisions++;
         } else {
           p.path.push([gridX, gridY]);
+          p.cost++;
           
           // Check if reached goal
-          if (isInBlock(gridX, gridY, goalBlock)) {
-            p.reachedGoal = true;
-            newSuccesses++;
-            
-            // Update best path (shortest)
-            if (!bestPath || p.path.length < bestPath.length) {
-              bestPath = [...p.path];
-            }
+          if (goalCells.some(g => g[0] === gridX && g[1] === gridY)) {
+            p.reached = true;
+            recordWinner(p);
           }
         }
       });
       
-      stats.success += newSuccesses;
-      stats.active = particles.filter(p => p.alive && !p.reachedGoal).length;
       step++;
+    }
+    
+    function recordWinner(particle) {
+      winners.push({
+        path: particle.path.slice(),
+        cost: particle.cost
+      });
       
-      updateStats();
+      // Keep top 50 paths
+      winners.sort((a, b) => a.cost - b.cost);
+      if (winners.length > 50) {
+        winners = winners.slice(0, 50);
+      }
+    }
+    
+    function drawSimulation() {
+      simCtx.clearRect(0, 0, simCanvas.width, simCanvas.height);
+      
+      if (mode === 'particles') {
+        drawParticles();
+      } else if (mode === 'heatmap') {
+        drawHeatmap();
+      } else if (mode === 'paths') {
+        drawTopPaths();
+      }
+    }
+    
+    function drawParticles() {
+      simCtx.fillStyle = 'rgba(59,130,246,0.6)';
+      particles.forEach(p => {
+        if (p.alive && !p.reached) {
+          simCtx.fillRect(
+            p.x * cellSize - 1,
+            p.y * cellSize - 1,
+            3,
+            3
+          );
+        }
+      });
+    }
+    
+    function drawHeatmap() {
+      const maxHeat = Math.max(...heatmap);
+      if (maxHeat === 0) return;
+      
+      for (let i = 0; i < heatmap.length; i++) {
+        if (heatmap[i] > 0) {
+          const x = i % gridSize;
+          const y = Math.floor(i / gridSize);
+          const intensity = Math.pow(heatmap[i] / maxHeat, 0.5);
+          simCtx.fillStyle = `rgba(59,130,246,${0.05 + 0.4 * intensity})`;
+          simCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+    
+    function drawTopPaths() {
+      simCtx.lineWidth = 1.5;
+      
+      // Draw all paths with varying colors
+      winners.forEach((w, i) => {
+        if (i === 0) return; // Skip best path (drawn separately)
+        
+        simCtx.strokeStyle = `hsla(${200 + i * 3}, 70%, 50%, 0.3)`;
+        simCtx.beginPath();
+        w.path.forEach((pos, j) => {
+          const x = pos[0] * cellSize + cellSize / 2;
+          const y = pos[1] * cellSize + cellSize / 2;
+          if (j === 0) simCtx.moveTo(x, y);
+          else simCtx.lineTo(x, y);
+        });
+        simCtx.stroke();
+      });
+    }
+    
+    function drawBestPath() {
+      pathCtx.clearRect(0, 0, pathCanvas.width, pathCanvas.height);
+      
+      if (winners.length === 0) return;
+      
+      const best = winners[0].path;
+      
+      // Draw path with glow
+      pathCtx.shadowColor = 'rgba(16,185,129,0.5)';
+      pathCtx.shadowBlur = 8;
+      pathCtx.strokeStyle = '#10b981';
+      pathCtx.lineWidth = 3;
+      pathCtx.lineCap = 'round';
+      pathCtx.lineJoin = 'round';
+      
+      pathCtx.beginPath();
+      best.forEach((pos, i) => {
+        const x = pos[0] * cellSize + cellSize / 2;
+        const y = pos[1] * cellSize + cellSize / 2;
+        if (i === 0) pathCtx.moveTo(x, y);
+        else pathCtx.lineTo(x, y);
+      });
+      pathCtx.stroke();
+      pathCtx.shadowBlur = 0;
+      
+      // Draw arrowheads
+      pathCtx.fillStyle = '#10b981';
+      for (let i = 10; i < best.length; i += 10) {
+        const curr = best[i];
+        const prev = best[i - 1];
+        const x = curr[0] * cellSize + cellSize / 2;
+        const y = curr[1] * cellSize + cellSize / 2;
+        const px = prev[0] * cellSize + cellSize / 2;
+        const py = prev[1] * cellSize + cellSize / 2;
+        
+        const angle = Math.atan2(y - py, x - px);
+        
+        pathCtx.save();
+        pathCtx.translate(x, y);
+        pathCtx.rotate(angle);
+        pathCtx.beginPath();
+        pathCtx.moveTo(0, 0);
+        pathCtx.lineTo(-8, 4);
+        pathCtx.lineTo(-8, -4);
+        pathCtx.closePath();
+        pathCtx.fill();
+        pathCtx.restore();
+      }
     }
     
     function updateStats() {
-      document.getElementById('stat-active').textContent = stats.active;
-      document.getElementById('stat-success').textContent = stats.success;
-      document.getElementById('stat-collisions').textContent = stats.collisions;
+      const active = particles.filter(p => p.alive && !p.reached).length;
+      document.getElementById('stat-active').textContent = active;
+      document.getElementById('stat-success').textContent = winners.length;
       document.getElementById('stat-steps').textContent = step;
     }
     
     function animate() {
       if (!running) return;
       
-      const speed = parseInt(document.getElementById('speed').value);
+      updateParticles();
+      drawSimulation();
+      drawBestPath();
+      updateStats();
       
-      for (let i = 0; i < speed; i++) {
-        updateParticles();
-        if (stats.active === 0 || step > 300) {
-          running = false;
-          document.getElementById('run-btn').textContent = 'Run BICEP';
-          document.getElementById('run-btn').disabled = false;
-          break;
-        }
-      }
-      
-      draw();
-      if (running) {
+      if (particles.filter(p => p.alive && !p.reached).length === 0 || step > 300) {
+        running = false;
+        document.getElementById('run-btn').textContent = 'Run Simulation';
+        document.getElementById('run-btn').disabled = false;
+      } else {
         requestAnimationFrame(animate);
       }
     }
     
-    // Event listeners
+    // Event handlers
     document.getElementById('run-btn').addEventListener('click', () => {
       if (running) return;
       
-      stats = { active: 0, success: 0, collisions: 0 };
+      winners = [];
+      heatmap.fill(0);
       step = 0;
-      bestPath = null;
-      
       initParticles();
+      
       running = true;
       document.getElementById('run-btn').textContent = 'Running...';
       document.getElementById('run-btn').disabled = true;
+      
       animate();
     });
     
-    document.getElementById('reset-btn').addEventListener('click', initGrid);
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      running = false;
+      initGrid();
+      simCtx.clearRect(0, 0, simCanvas.width, simCanvas.height);
+      pathCtx.clearRect(0, 0, pathCanvas.width, pathCanvas.height);
+      updateStats();
+    });
+    
+    // Mode toggle
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        mode = btn.dataset.mode;
+        drawSimulation();
+      });
+    });
     
     // Canvas drawing
     let isDrawing = false;
-    canvas.addEventListener('mousedown', (e) => {
+    obsCanvas.addEventListener('mousedown', (e) => {
       isDrawing = true;
       handleDraw(e);
     });
     
-    canvas.addEventListener('mousemove', (e) => {
+    obsCanvas.addEventListener('mousemove', (e) => {
       if (isDrawing) handleDraw(e);
     });
     
-    canvas.addEventListener('mouseup', () => {
+    obsCanvas.addEventListener('mouseup', () => {
       isDrawing = false;
     });
     
     function handleDraw(e) {
-      const rect = canvas.getBoundingClientRect();
-      const x = Math.floor((e.clientX - rect.left) / cellSize);
-      const y = Math.floor((e.clientY - rect.top) / cellSize);
+      const rect = obsCanvas.getBoundingClientRect();
+      const x = Math.floor((e.clientX - rect.left) * gridSize / rect.width);
+      const y = Math.floor((e.clientY - rect.top) * gridSize / rect.height);
       
       if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
-        if (!isInBlock(x, y, startBlock) && !isInBlock(x, y, goalBlock)) {
+        const isStart = startCells.some(c => c[0] === x && c[1] === y);
+        const isGoal = goalCells.some(c => c[0] === x && c[1] === y);
+        
+        if (!isStart && !isGoal) {
           grid[x][y] = !grid[x][y];
-          draw();
+          drawStartGoal();
         }
       }
     }
     
-    // Update displays
-    document.getElementById('grid-size').addEventListener('input', (e) => {
-      document.getElementById('grid-size-value').textContent = e.target.value;
+    // Presets
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const preset = btn.dataset.preset;
+        grid = Array(gridSize).fill().map(() => Array(gridSize).fill(false));
+        
+        switch(preset) {
+          case 'corridor':
+            for (let x = 5; x < 35; x++) {
+              for (let y = 0; y < 8; y++) grid[x][y] = true;
+              for (let y = 32; y < 40; y++) grid[x][y] = true;
+            }
+            break;
+          case 'maze':
+            for (let i = 0; i < 15; i++) {
+              const x = 5 + i * 2;
+              for (let y = 5; y < 35; y++) {
+                if (Math.random() > 0.3) grid[x][y] = true;
+              }
+            }
+            break;
+          case 'sparse':
+            for (let i = 0; i < 50; i++) {
+              const x = Math.floor(Math.random() * gridSize);
+              const y = Math.floor(Math.random() * gridSize);
+              const isStart = startCells.some(c => c[0] === x && c[1] === y);
+              const isGoal = goalCells.some(c => c[0] === x && c[1] === y);
+              if (!isStart && !isGoal) grid[x][y] = true;
+            }
+            break;
+          case 'dense':
+            for (let i = 0; i < 200; i++) {
+              const x = Math.floor(Math.random() * gridSize);
+              const y = Math.floor(Math.random() * gridSize);
+              const isStart = startCells.some(c => c[0] === x && c[1] === y);
+              const isGoal = goalCells.some(c => c[0] === x && c[1] === y);
+              if (!isStart && !isGoal) grid[x][y] = true;
+            }
+            break;
+        }
+        
+        drawStartGoal();
+      });
     });
     
+    // Range updates
     document.getElementById('particles').addEventListener('input', (e) => {
       document.getElementById('particles-value').textContent = e.target.value;
     });
@@ -613,7 +811,17 @@
       document.getElementById('sigma-value').textContent = e.target.value;
     });
     
+    // Math toggle
+    document.querySelector('.math-header').addEventListener('click', () => {
+      const content = document.querySelector('.math-content');
+      const arrow = document.querySelector('.math-header span:first-child');
+      
+      content.classList.toggle('show');
+      arrow.textContent = content.classList.contains('show') ? '▼' : '▶';
+    });
+    
     // Initialize
+    initCanvases();
     initGrid();
   </script>
 </body>

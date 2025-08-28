@@ -575,7 +575,7 @@
           
           <div class="action-buttons">
             <button id="run-btn">Run BICEP</button>
-            <button id="reset-btn" class="secondary">Reset</button>
+            <button id="reset-btn" class="secondary">Reset</button>\n          </div>\n          \n          <div class="param-group">\n            <div class="param-header">\n              <span class="param-label">Replay Seed</span>\n            </div>\n            <input type="text" id="replay-seed" placeholder="Enter seed" style="width: 100%; padding: 0.5rem; margin: 0.25rem 0; border: 1px solid var(--border); border-radius: 4px; background: #1f2937; color: var(--text); font-size: 0.8rem;">\n            <div class="action-buttons" style="margin-top: 0.5rem;">\n              <button id="replay-btn" class="secondary">Replay</button>\n              <button id="random-seed-btn" class="secondary">New Seed</button>\n            </div>\n            <div class="param-info">Deterministic reproduction</div>
           </div>
         </div>
         
@@ -1467,24 +1467,22 @@
     // CVaR surrogate via clearance-based risk assessment\n    function calculatePathRisk(path) {\n      let totalRisk = 0;\n      let minClearance = Infinity;\n      \n      for (const [x, y] of path) {\n        // Calculate minimum clearance to obstacles\n        let localClearance = Infinity;\n        for (let dx = -3; dx <= 3; dx++) {\n          for (let dy = -3; dy <= 3; dy++) {\n            const nx = x + dx;\n            const ny = y + dy;\n            if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize && grid[nx][ny]) {\n              const clearance = Math.sqrt(dx*dx + dy*dy);\n              localClearance = Math.min(localClearance, clearance);\n            }\n          }\n        }\n        \n        minClearance = Math.min(minClearance, localClearance);\n        \n        // Risk penalty: exponential in low clearance  \n        if (localClearance < 2.5) {\n          totalRisk += Math.exp(2.5 - localClearance) * 0.1;\n        }\n      }\n      \n      return {\n        clearanceRisk: totalRisk,\n        minClearance: minClearance,\n        riskScore: totalRisk + (minClearance < 1.5 ? 2.0 : 0)\n      };\n    }\n    \n    function recordWinner(particle) {
       const useCVar = document.getElementById('cvar-toggle').checked;
       
+      // Calculate path risk using clearance-based surrogate
+      const riskMetrics = calculatePathRisk(particle.path);
+      
       winners.push({
         path: particle.path.slice(),
         cost: particle.cost,
+        risk: riskMetrics.riskScore,
+        clearance: riskMetrics.minClearance,
         id: particle.id
       });
       
-      // Sort by cost (or CVaR if enabled)
-      if (useCVar && winners.length >= 20) {
-        // CVaR@5% ranking: worst 5% of costs
-        winners.sort((a, b) => b.cost - a.cost); // Descending for worst costs
-        const cvarIndex = Math.floor(winners.length * 0.05);
-        const cvarCosts = winners.slice(0, cvarIndex + 1).map(w => w.cost);
-        const cvarThreshold = cvarCosts.reduce((a, b) => a + b, 0) / cvarCosts.length;
-        
-        // Re-sort by proximity to CVaR threshold
-        winners.sort((a, b) => Math.abs(a.cost - cvarThreshold) - Math.abs(b.cost - cvarThreshold));
+      // Sort by cost or risk depending on CVaR toggle
+      if (useCVar) {
+        winners.sort((a, b) => b.risk - a.risk); // Descending by risk
       } else {
-        winners.sort((a, b) => a.cost - b.cost);
+        winners.sort((a, b) => a.cost - b.cost); // Ascending by cost
       }
       
       // Keep top 50

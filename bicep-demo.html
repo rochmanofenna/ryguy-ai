@@ -505,6 +505,10 @@
             <span><strong id="collision-count">0</strong></span>
           </div>
           <div class="perf-row">
+            <span>Stalled:</span>
+            <span><strong id="stalled-count">0</strong></span>
+          </div>
+          <div class="perf-row">
             <span>t/T:</span>
             <span><strong id="step-counter">0</strong>/<strong id="horizon">300</strong></span>
           </div>
@@ -542,7 +546,7 @@
           <div class="sparkline-title">Cost Distribution (Top-K)</div>
           <canvas class="sparkline-canvas" id="cost-histogram" style="height: 60px;"></canvas>
           <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 0.25rem;">
-            <label><input type="checkbox" id="cvar-toggle" style="margin-right: 4px;">CVaR@5% ranking</label>
+            <label title="Risk-aware ranking using obstacle clearance analysis (surrogate for CVaR tail risk)"><input type="checkbox" id="cvar-toggle" style="margin-right: 4px;">CVaR@5% ranking</label>
           </div>
         </div>
         
@@ -626,11 +630,11 @@
             
             <div class="param-group" style="margin-top: 1rem;">
               <div class="param-header">
-                <span class="param-label">Correlation ρ</span>
+                <span class="param-label" title="Correlation between X and Y noise components: ρ=0 (independent), ρ>0 (positive correlation)">Correlation ρ</span>
                 <span class="param-value" id="correlation-value">0.0</span>
               </div>
               <input type="range" class="param-slider" id="correlation" min="-0.9" max="0.9" value="0" step="0.1">
-              <div class="param-info">Noise correlation (Zx, Zy)</div>
+              <div class="param-info">Noise correlation: Y = ρX + √(1-ρ²)Z</div>
             </div>
             
             <div class="param-group">
@@ -688,7 +692,7 @@
           <div class="section-title">RL Training</div>
           <div class="param-group">
             <div class="param-header">
-              <span class="param-label">Demo ratio β</span>
+              <span class="param-label" title="Mixture ratio: β=1 (pure BICEP demos), β=0 (pure RL policy). Anneals during training.">Demo ratio β</span>
               <span class="param-value" id="beta-value">0.5</span>
             </div>
             <input type="range" class="param-slider" id="beta" min="0" max="1" value="0.5" step="0.1">
@@ -706,7 +710,7 @@
           
           <div class="checkbox-group" style="margin-bottom: 0.75rem;">
             <input type="checkbox" id="buffer-training">
-            <label for="buffer-training">Buffer-based training</label>
+            <label for="buffer-training" title="Use experience replay buffer instead of pure on-policy learning">Buffer-based training</label>
           </div>
           
           <div class="action-buttons">
@@ -727,14 +731,15 @@
         <div class="info-title">What BICEP Does</div>
         <div class="info-item">• Spawns <strong>K trajectories</strong> in parallel (not sequential)</div>
         <div class="info-item">• Each follows <strong>Brownian bridge</strong> dynamics:</div>
-        <div class="formula">x_{t+Δt} = x_t + μ·(goal-x_t)/(T-t)·Δt + σ·√Δt·Z_t</div>
+        <div class="formula">x_{t+Δt} = x_t + μ·(goal-x_t)/(1-t)·Δt + σ·√Δt·Z_t</div>
         <div class="info-item">• <strong>Deterministic</strong>: same seed → identical replay</div>
         <div class="info-item">• <strong>Streaming</strong>: processes in batches to scale</div>
+        <div class="info-item">Legend: <span style="color: #22c55e;">█</span> start, <span style="color: #3b82f6;">█</span> goal, <span style="color: #dc2626;">█</span> obstacles</div>
       </div>
       
       <div class="info-panel">
         <div class="info-title">Success Criteria & Cost</div>
-        <div class="info-item"><strong>Success:</strong> Reach any goal cell within T steps</div>
+        <div class="info-item"><strong>Success:</strong> Reach any <span style="color: #3b82f6;">█</span> goal cell within T steps</div>
         <div class="info-item"><strong>Cost:</strong> Path length + 0.1×obstacle proximity</div>
         <div class="info-item"><strong>Ranking:</strong> Lower cost = better path</div>
         <div class="info-item"><strong>Note:</strong> This is a sampler, not A* (shortest path)</div>
@@ -759,6 +764,39 @@
   </div>
 
   <script>
+    // Deterministic RNG - single source for all randomness (MUST BE FIRST)
+    class DeterministicRNG {
+      constructor(seed) {
+        this.state = seed;
+        this.originalSeed = seed;
+      }
+      
+      next() {
+        this.state = (this.state * 1664525 + 1013904223) % 4294967296;
+        return this.state / 4294967296;
+      }
+      
+      // Gaussian random (Box-Muller)
+      gaussian() {
+        const u1 = this.next();
+        const u2 = this.next();
+        return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+      }
+      
+      // Integer in range [min, max)
+      int(min, max) {
+        return Math.floor(this.next() * (max - min)) + min;
+      }
+      
+      // Reset to original seed
+      reset() {
+        this.state = this.originalSeed;
+      }
+    }
+    
+    // Global RNG instance
+    let globalRNG = new DeterministicRNG(Math.floor(Math.random() * 1000000));
+    
     // Canvas setup
     const bgCanvas = document.getElementById('bg-canvas');
     const obsCanvas = document.getElementById('obs-canvas');
@@ -799,6 +837,7 @@
     let totalBatches = 1;
     let reachedParticleIds = new Set();
     let collisionCount = 0;
+    let stalledCount = 0;
     
     // Start and goal regions
     const startCells = [];
@@ -821,38 +860,7 @@
       recentRewards: []
     };
     
-    // Deterministic RNG - single source for all randomness
-    class DeterministicRNG {
-      constructor(seed) {
-        this.state = seed;
-        this.originalSeed = seed;
-      }
-      
-      next() {
-        this.state = (this.state * 1664525 + 1013904223) % 4294967296;
-        return this.state / 4294967296;
-      }
-      
-      // Gaussian random (Box-Muller)
-      gaussian() {
-        const u1 = this.next();
-        const u2 = this.next();
-        return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-      }
-      
-      // Integer in range [min, max)
-      int(min, max) {
-        return Math.floor(this.next() * (max - min)) + min;
-      }
-      
-      // Reset to original seed
-      reset() {
-        this.state = this.originalSeed;
-      }
-    }
-    
-    // Global RNG instance
-    let globalRNG = new DeterministicRNG(Math.floor(Math.random() * 1000000));
+    // RNG class moved to top of script
     
     // Legacy function - now uses global RNG
     function gaussianRandom() {
@@ -1238,10 +1246,10 @@
         }
       }
       
-      // Add some default obstacles
+      // Add deterministic default obstacles using globalRNG
       for (let i = 0; i < 100; i++) {
-        const x = 5 + Math.floor(Math.random() * (gridSize - 10));
-        const y = Math.floor(Math.random() * gridSize);
+        const x = 5 + globalRNG.int(0, gridSize - 10);
+        const y = globalRNG.int(0, gridSize);
         grid[x][y] = true;
       }
       
@@ -1304,7 +1312,7 @@
           path: [[start[0], start[1]]],
           alive: true,
           cost: 0,
-          time: 0,  // per-particle time tracking
+          time: 0.0,  // Start at t=0 in [0,1] normalized time
           batch: Math.floor(i / batchSize),
           reached: false
         });
@@ -1350,8 +1358,9 @@
           activeCount++;
           processedCount++;
           
-          // Per-particle time tracking
-          const remaining = Math.max(dt, horizon - p.time);
+          // Per-particle time tracking in [0,1] normalized domain
+          const normalizedTime = p.time; // Already in [0,1] since we accumulate dt=1/T
+          const remaining = Math.max(dt, 1.0 - normalizedTime);
           
           // Find nearest goal
           let minDist = Infinity;
@@ -1364,8 +1373,8 @@
             }
           });
           
-          // Brownian bridge dynamics with correct Δt
-          // Drift term: μ·(goal-x)/(T-t)·Δt  
+          // Brownian bridge dynamics: CONSISTENT [0,1] time domain
+          // Drift term: μ·(goal-x)/(1-t)·Δt where both t,Δt ∈ [0,1]
           const pullX = drift * (nearestGoal[0] + 0.5 - p.x) / remaining * dt;
           const pullY = drift * (nearestGoal[1] + 0.5 - p.y) / remaining * dt;
           
@@ -1394,10 +1403,10 @@
             p.lastNoise = { x: z1 * sigma * sqrtDt, y: (correlation * z1 + Math.sqrt(1 - correlation * correlation) * z2) * sigma * sqrtDt };
           }
           
-          // Update position
+          // Update position and time
           p.x += pullX + noiseX;
           p.y += pullY + noiseY;
-          p.time += dt;
+          p.time += dt; // Increment in [0,1] domain
           
           // Bounds check
           p.x = Math.max(0, Math.min(gridSize - 1, p.x));
@@ -1427,7 +1436,7 @@
                 }
               }
             }
-            p.cost += dt + proxPenalty; // Cost proportional to Δt
+            p.cost += 1.0 + proxPenalty; // Cost in interpretable step units
             
             // Check goal
             if (goalCells.some(g => g[0] === gridX && g[1] === gridY)) {
@@ -1455,7 +1464,7 @@
       step++;
     }
     
-    function recordWinner(particle) {
+    // CVaR surrogate via clearance-based risk assessment\n    function calculatePathRisk(path) {\n      let totalRisk = 0;\n      let minClearance = Infinity;\n      \n      for (const [x, y] of path) {\n        // Calculate minimum clearance to obstacles\n        let localClearance = Infinity;\n        for (let dx = -3; dx <= 3; dx++) {\n          for (let dy = -3; dy <= 3; dy++) {\n            const nx = x + dx;\n            const ny = y + dy;\n            if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize && grid[nx][ny]) {\n              const clearance = Math.sqrt(dx*dx + dy*dy);\n              localClearance = Math.min(localClearance, clearance);\n            }\n          }\n        }\n        \n        minClearance = Math.min(minClearance, localClearance);\n        \n        // Risk penalty: exponential in low clearance  \n        if (localClearance < 2.5) {\n          totalRisk += Math.exp(2.5 - localClearance) * 0.1;\n        }\n      }\n      \n      return {\n        clearanceRisk: totalRisk,\n        minClearance: minClearance,\n        riskScore: totalRisk + (minClearance < 1.5 ? 2.0 : 0)\n      };\n    }\n    \n    function recordWinner(particle) {
       const useCVar = document.getElementById('cvar-toggle').checked;
       
       winners.push({
@@ -1668,6 +1677,7 @@
       document.getElementById('total-count').textContent = total.toLocaleString();
       document.getElementById('success-rate').textContent = successRate + '%';
       document.getElementById('collision-count').textContent = collisionCount;
+      document.getElementById('stalled-count').textContent = stalledCount;
       document.getElementById('step-counter').textContent = step;
       document.getElementById('horizon').textContent = horizon;
     }
@@ -1717,9 +1727,13 @@
       drawCostHistogram();
       updateStats();
       
-      // Check finish
+      // Check finish - count stalled particles  
       const active = particles.filter(p => p.alive && !p.reached).length;
-      if (active === 0 || step >= horizon) {
+      stalledCount = particles.filter(p => p.alive && !p.reached && p.time >= 0.95).length;
+      
+      // Stop when particles reach end of time domain [0,1]
+      const maxTime = particles.length > 0 ? Math.max(...particles.map(p => p.time)) : 0;
+      if (active === 0 || maxTime >= 1.0) {
         running = false;
         document.getElementById('run-btn').textContent = 'Run BICEP';
         document.getElementById('run-btn').disabled = false;
@@ -1924,6 +1938,11 @@
       if (params.has('mapSeed')) {
         grid = generateMap(currentMapFamily, mapParams, currentMapSeed);
         drawObstacles();
+      } else if (params.has('seed')) {
+        // If only main seed provided, generate deterministic map
+        currentMapSeed = currentSeed + 1000; // Offset for map generation
+        grid = generateMap(currentMapFamily, mapParams, currentMapSeed);
+        drawObstacles();
       }
     }
     
@@ -2031,7 +2050,21 @@
         const stateKey = rlAgent.stateKey(state.x, state.y);
         const nextStateKey = rlAgent.stateKey(result.state.x, result.state.y);
         
-        // Q-learning update
+        // Q-learning update with optional buffer training
+        const useBuffer = document.getElementById('buffer-training').checked;
+        if (useBuffer && rlBuffer.length > 10) {
+          // Sample mini-batch from replay buffer
+          for (let i = 0; i < 4; i++) {
+            const sample = rlBuffer[Math.floor(globalRNG.next() * rlBuffer.length)];
+            if (sample.finalState) {
+              const sampleStateKey = rlAgent.stateKey(sample.finalState.x, sample.finalState.y);
+              const sampleReward = sample.success ? 1.0 : -0.1;
+              rlAgent.update(sampleStateKey, 0, sampleReward, sampleStateKey);
+            }
+          }
+        }
+        
+        // Always do on-policy update
         rlAgent.update(stateKey, action, result.reward, nextStateKey);
         
         totalReward += result.reward;
@@ -2253,14 +2286,31 @@
         return;
       }
       
-      const csvLines = ['Path_ID,Cost,Length,Waypoints'];
+      // CSV header with metadata
+      const metadata = [
+        `# BICEP Demo Export - ${new Date().toISOString()}`,
+        `# Seed: ${currentSeed}`,
+        `# Map Seed: ${currentMapSeed}`,
+        `# Family: ${currentMapFamily}`,
+        `# K: ${document.getElementById('particles').value}`,
+        `# μ: ${document.getElementById('drift').value}`,
+        `# σ: ${document.getElementById('sigma').value}`,
+        `# ρ: ${document.getElementById('correlation').value}`,
+        `# T: ${document.getElementById('horizon-slider').value}`,
+        `# CVaR: ${document.getElementById('cvar-toggle').checked}`,
+        ''  // empty line
+      ];
+      
+      const csvLines = ['Path_ID,Cost,Risk_Score,Min_Clearance,Length,Waypoints'];
       
       winners.forEach((winner, i) => {
         const waypoints = winner.path.map(p => `(${p[0]},${p[1]})`).join(';');
-        csvLines.push(`${i},${winner.cost.toFixed(3)},${winner.path.length},"${waypoints}"`);
+        const riskScore = winner.riskScore || 0;
+        const minClearance = winner.minClearance || 'N/A';
+        csvLines.push(`${i},${winner.cost.toFixed(3)},${riskScore.toFixed(3)},${minClearance},${winner.path.length},"${waypoints}"`);
       });
       
-      const csvContent = csvLines.join('\n');
+      const csvContent = metadata.join('\n') + csvLines.join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv' });
       const link = document.createElement('a');
       link.download = `bicep-paths-${currentSeed}-${Date.now()}.csv`;

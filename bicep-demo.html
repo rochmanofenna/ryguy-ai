@@ -466,9 +466,9 @@
   </a>
 
   <div class="container">
-    <h1>BICEP Path Sampler</h1>
-    <p class="subtitle">High-throughput, deterministic stochastic path sampler</p>
-    <p class="tagline">Same seed → same paths • Spawn thousands of Brownian-bridge trajectories in parallel</p>
+    <h1>BICEP RL Curriculum</h1>
+    <p class="subtitle">High-throughput, deterministic path sampler + RL training system</p>
+    <p class="tagline">Same seed → same paths • Train navigation agents on families of worlds</p>
 
     <div class="main-grid">
       <div class="canvas-container">
@@ -480,10 +480,10 @@
         </div>
         
         <div class="seed-overlay" id="seed-overlay" title="Click to copy replay link">
-          Seed <strong id="seed-value">--</strong>
+          Seed <strong id="seed-value">--</strong> | Map <strong id="map-seed-value">--</strong>
         </div>
         
-        <div class="perf-overlay">
+        <div class="perf-overlay" id="bicep-metrics">
           <div class="perf-row">
             <span>Throughput:</span>
             <span><strong id="throughput">0</strong> p×step/s</span>
@@ -501,14 +501,49 @@
             <span><strong id="success-rate">0%</strong></span>
           </div>
           <div class="perf-row">
+            <span>Collisions:</span>
+            <span><strong id="collision-count">0</strong></span>
+          </div>
+          <div class="perf-row">
             <span>t/T:</span>
             <span><strong id="step-counter">0</strong>/<strong id="horizon">300</strong></span>
+          </div>
+        </div>
+        
+        <div class="perf-overlay" id="rl-metrics" style="display:none; right: 220px;">
+          <div class="perf-row">
+            <span>Episode:</span>
+            <span><strong id="rl-episode">0</strong>/<strong id="rl-total-episodes">100</strong></span>
+          </div>
+          <div class="perf-row">
+            <span>Reward:</span>
+            <span><strong id="rl-reward">0.00</strong></span>
+          </div>
+          <div class="perf-row">
+            <span>Success %:</span>
+            <span><strong id="rl-success-rate">0%</strong></span>
+          </div>
+          <div class="perf-row">
+            <span>Demo ratio β:</span>
+            <span><strong id="current-beta">0.5</strong></span>
+          </div>
+          <div class="perf-row">
+            <span>Avg steps:</span>
+            <span><strong id="rl-avg-steps">0</strong></span>
           </div>
         </div>
         
         <div class="sparkline-overlay">
           <div class="sparkline-title">Success Rate vs Time</div>
           <canvas class="sparkline-canvas" id="sparkline-canvas"></canvas>
+        </div>
+        
+        <div class="sparkline-overlay" style="bottom: 80px; width: 250px;">
+          <div class="sparkline-title">Cost Distribution (Top-K)</div>
+          <canvas class="sparkline-canvas" id="cost-histogram" style="height: 60px;"></canvas>
+          <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 0.25rem;">
+            <label><input type="checkbox" id="cvar-toggle" style="margin-right: 4px;">CVaR@5% ranking</label>
+          </div>
         </div>
         
         <div class="batch-progress" id="batch-progress">
@@ -591,6 +626,15 @@
             
             <div class="param-group" style="margin-top: 1rem;">
               <div class="param-header">
+                <span class="param-label">Correlation ρ</span>
+                <span class="param-value" id="correlation-value">0.0</span>
+              </div>
+              <input type="range" class="param-slider" id="correlation" min="-0.9" max="0.9" value="0" step="0.1">
+              <div class="param-info">Noise correlation (Zx, Zy)</div>
+            </div>
+            
+            <div class="param-group">
+              <div class="param-header">
                 <span class="param-label">Wind θ</span>
                 <span class="param-value" id="wind-value">0°</span>
               </div>
@@ -617,20 +661,62 @@
         </div>
         
         <div class="control-section">
-          <div class="section-title">Experiment Presets</div>
+          <div class="section-title">Map Families</div>
           <div class="preset-grid">
-            <button class="preset-btn" data-preset="corridor">
-              Narrow Corridor
+            <button class="preset-btn" data-preset="corridors" data-width="4">
+              Corridors (W=4)
             </button>
-            <button class="preset-btn" data-preset="maze">
-              Branching Maze
+            <button class="preset-btn" data-preset="corridors" data-width="2">
+              Corridors (W=2)
             </button>
-            <button class="preset-btn" data-preset="sparse">
-              Sparse (high rate)
+            <button class="preset-btn" data-preset="rooms_doors">
+              Rooms & Doors
             </button>
-            <button class="preset-btn" data-preset="dense">
-              Dense (stress test)
+            <button class="preset-btn" data-preset="mazes">
+              Mazes + Dead-ends
             </button>
+            <button class="preset-btn" data-preset="random_obstacles" data-density="0.2">
+              Random (20%)
+            </button>
+            <button class="preset-btn" data-preset="random_obstacles" data-density="0.4">
+              Random (40%)
+            </button>
+          </div>
+        </div>
+        
+        <div class="control-section">
+          <div class="section-title">RL Training</div>
+          <div class="param-group">
+            <div class="param-header">
+              <span class="param-label">Demo ratio β</span>
+              <span class="param-value" id="beta-value">0.5</span>
+            </div>
+            <input type="range" class="param-slider" id="beta" min="0" max="1" value="0.5" step="0.1">
+            <div class="param-info">Mix: (1-β)·π_RL + β·π_BICEP</div>
+          </div>
+          
+          <div class="param-group">
+            <div class="param-header">
+              <span class="param-label">Episodes</span>
+              <span class="param-value" id="episodes-value">100</span>
+            </div>
+            <input type="range" class="param-slider" id="episodes" min="50" max="500" value="100" step="25">
+            <div class="param-info">Training episodes per phase</div>
+          </div>
+          
+          <div class="checkbox-group" style="margin-bottom: 0.75rem;">
+            <input type="checkbox" id="buffer-training">
+            <label for="buffer-training">Buffer-based training</label>
+          </div>
+          
+          <div class="action-buttons">
+            <button id="train-btn">Train Agent</button>
+            <button id="eval-btn" class="secondary">Evaluate</button>
+          </div>
+          
+          <div class="action-buttons" style="margin-top: 0.5rem;">
+            <button id="export-png" class="secondary">Export PNG</button>
+            <button id="export-csv" class="secondary">Export CSV</button>
           </div>
         </div>
       </div>
@@ -655,6 +741,14 @@
       </div>
       
       <div class="info-panel">
+        <div class="info-title">RL Training Status</div>
+        <div class="info-item" id="training-status">• <strong>Demo Buffer:</strong> <span id="demo-count">0</span> trajectories</div>
+        <div class="info-item" id="rl-buffer-status">• <strong>RL Buffer:</strong> <span id="rl-buffer-count">0</span> episodes</div>
+        <div class="info-item" id="mixture-status">• <strong>Current β:</strong> <span id="beta-display">0.5</span> (demo ratio)</div>
+        <div class="info-item" id="phase-status">• <strong>Phase:</strong> <span id="current-phase">Initialization</span></div>
+      </div>
+      
+      <div class="info-panel">
         <div class="info-title">Why BICEP vs A*</div>
         <div class="info-item">• Handles <strong>uncertainty</strong> & stochastic environments</div>
         <div class="info-item">• Finds <strong>distribution</strong> of paths, not just one</div>
@@ -671,12 +765,14 @@
     const simCanvas = document.getElementById('sim-canvas');
     const pathCanvas = document.getElementById('path-canvas');
     const sparklineCanvas = document.getElementById('sparkline-canvas');
+    const costHistogram = document.getElementById('cost-histogram');
     
     const bgCtx = bgCanvas.getContext('2d');
     const obsCtx = obsCanvas.getContext('2d');
     const simCtx = simCanvas.getContext('2d');
     const pathCtx = pathCanvas.getContext('2d');
     const sparkCtx = sparklineCanvas.getContext('2d');
+    const histCtx = costHistogram.getContext('2d');
     
     // Grid settings
     const gridSize = 40;
@@ -689,35 +785,401 @@
     let running = false;
     let step = 0;
     let horizon = 300;
-    let currentSeed = Math.floor(Math.random() * 1000000);
-    let rng;
+    let currentSeed = globalRNG.originalSeed;
+    let currentMapSeed = globalRNG.int(0, 1000000);
+    let rng = globalRNG;
     
     // Performance tracking
     let frameStart = 0;
     let frameTime = 0;
     let throughput = 0;
+    let throughputHistory = [];
     let successHistory = [];
     let currentBatch = 0;
     let totalBatches = 1;
+    let reachedParticleIds = new Set();
+    let collisionCount = 0;
     
     // Start and goal regions
     const startCells = [];
     const goalCells = [];
     
-    // Seeded random number generator (deterministic)
-    function seedRNG(seed) {
-      let state = seed;
-      return function() {
-        state = (state * 1664525 + 1013904223) % 4294967296;
-        return state / 4294967296;
-      };
+    // Map factory & RL state
+    let currentMapFamily = 'corridors';
+    let mapParams = { width: 4, density: 0.2 };
+    let rlAgent = null;
+    let trainingRunning = false;
+    let demoBuffer = [];
+    let rlBuffer = [];
+    let currentPhase = 0;
+    let rlStats = {
+      episode: 0,
+      totalEpisodes: 100,
+      reward: 0,
+      successRate: 0,
+      avgSteps: 0,
+      recentRewards: []
+    };
+    
+    // Deterministic RNG - single source for all randomness
+    class DeterministicRNG {
+      constructor(seed) {
+        this.state = seed;
+        this.originalSeed = seed;
+      }
+      
+      next() {
+        this.state = (this.state * 1664525 + 1013904223) % 4294967296;
+        return this.state / 4294967296;
+      }
+      
+      // Gaussian random (Box-Muller)
+      gaussian() {
+        const u1 = this.next();
+        const u2 = this.next();
+        return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+      }
+      
+      // Integer in range [min, max)
+      int(min, max) {
+        return Math.floor(this.next() * (max - min)) + min;
+      }
+      
+      // Reset to original seed
+      reset() {
+        this.state = this.originalSeed;
+      }
     }
     
-    // Gaussian random (Box-Muller)
-    function gaussianRandom(rng) {
-      const u1 = rng();
-      const u2 = rng();
-      return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+    // Global RNG instance
+    let globalRNG = new DeterministicRNG(Math.floor(Math.random() * 1000000));
+    
+    // Legacy function - now uses global RNG
+    function gaussianRandom() {
+      return globalRNG.gaussian();
+    }
+    
+    // Map Factory - Generate different environment types
+    function generateMap(family, params, mapSeed) {
+      const mapRng = new DeterministicRNG(mapSeed);
+      let newGrid = Array(gridSize).fill().map(() => Array(gridSize).fill(false));
+      
+      switch(family) {
+        case 'corridors':
+          return generateCorridor(newGrid, params.width || 4, mapRng);
+        case 'rooms_doors':
+          return generateRoomsDoors(newGrid, mapRng);
+        case 'mazes':
+          return generateMaze(newGrid, mapRng);
+        case 'random_obstacles':
+          return generateRandomObstacles(newGrid, params.density || 0.2, mapRng);
+        default:
+          return generateCorridor(newGrid, 4, mapRng);
+      }
+    }
+    
+    function generateCorridor(newGrid, width, rng) {
+      // Create corridor with specified width
+      const corridorY = Math.floor(gridSize / 2);
+      const halfWidth = Math.floor(width / 2);
+      
+      // Block top and bottom
+      for (let x = 3; x < gridSize - 3; x++) {
+        for (let y = 0; y < corridorY - halfWidth; y++) {
+          newGrid[x][y] = true;
+        }
+        for (let y = corridorY + halfWidth + 1; y < gridSize; y++) {
+          newGrid[x][y] = true;
+        }
+      }
+      
+      // Add some random obstacles in corridor
+      const numObs = rng.int(0, width);
+      for (let i = 0; i < numObs; i++) {
+        const x = 5 + rng.int(0, gridSize - 10);
+        const y = corridorY - halfWidth + rng.int(0, width);
+        if (y >= 0 && y < gridSize) newGrid[x][y] = true;
+      }
+      
+      return newGrid;
+    }
+    
+    function generateRoomsDoors(newGrid, rng) {
+      // Create 3 connected rooms with some randomness
+      const baseRooms = [
+        {x: 5, y: 5, w: 8, h: 8},
+        {x: 20, y: 8, w: 10, h: 6},
+        {x: 15, y: 25, w: 12, h: 8}
+      ];
+      
+      // Add slight random variation to room positions
+      const rooms = baseRooms.map(room => ({
+        x: room.x + rng.int(-2, 3),
+        y: room.y + rng.int(-2, 3),
+        w: room.w + rng.int(-1, 2),
+        h: room.h + rng.int(-1, 2)
+      }));
+      
+      // Fill everything first
+      for (let x = 0; x < gridSize; x++) {
+        for (let y = 0; y < gridSize; y++) {
+          newGrid[x][y] = true;
+        }
+      }
+      
+      // Clear rooms
+      rooms.forEach(room => {
+        for (let x = room.x; x < room.x + room.w; x++) {
+          for (let y = room.y; y < room.y + room.h; y++) {
+            if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
+              newGrid[x][y] = false;
+            }
+          }
+        }
+      });
+      
+      // Add doors between rooms with some variation
+      for (let x = 13; x < 20; x++) {
+        if (rng.next() > 0.2) {
+          newGrid[x][10] = false;
+          newGrid[x][11] = false;
+        }
+      }
+      
+      for (let y = 14; y < 25; y++) {
+        if (rng.next() > 0.2) {
+          newGrid[22][y] = false;
+          newGrid[23][y] = false;
+        }
+      }
+      
+      return newGrid;
+    }
+    
+    function generateMaze(newGrid, rng) {
+      // Simple maze generation with dead ends
+      for (let i = 0; i < 12; i++) {
+        const x = 5 + i * 3;
+        for (let y = 0; y < gridSize; y++) {
+          if (rng.next() > 0.3) newGrid[x][y] = true;
+        }
+      }
+      
+      // Add horizontal barriers to create dead ends
+      for (let y = 8; y < gridSize - 8; y += 6) {
+        for (let x = 6; x < gridSize - 6; x++) {
+          if (rng.next() > 0.4) newGrid[x][y] = true;
+        }
+      }
+      
+      return newGrid;
+    }
+    
+    function generateRandomObstacles(newGrid, density, rng) {
+      const numObstacles = Math.floor(gridSize * gridSize * density);
+      for (let i = 0; i < numObstacles; i++) {
+        const x = 3 + rng.int(0, gridSize - 6);
+        const y = rng.int(0, gridSize);
+        newGrid[x][y] = true;
+      }
+      
+      return newGrid;
+    }
+    
+    // Simple RL Agent (Q-learning)
+    class QLearningAgent {
+      constructor(gridSize, learningRate = 0.1, epsilon = 0.1, discount = 0.95) {
+        this.gridSize = gridSize;
+        this.learningRate = learningRate;
+        this.epsilon = epsilon;
+        this.discount = discount;
+        this.qTable = new Map();
+        this.actions = [[0, 1], [1, 0], [0, -1], [-1, 0]]; // right, down, left, up
+      }
+      
+      stateKey(x, y) {
+        return `${Math.floor(x)},${Math.floor(y)}`;
+      }
+      
+      getQValue(state, action) {
+        const key = `${state}_${action}`;
+        return this.qTable.get(key) || 0;
+      }
+      
+      setQValue(state, action, value) {
+        const key = `${state}_${action}`;
+        this.qTable.set(key, value);
+      }
+      
+      selectAction(x, y, epsilon = null) {
+        const state = this.stateKey(x, y);
+        const eps = epsilon !== null ? epsilon : this.epsilon;
+        
+        if (Math.random() < eps) {
+          return Math.floor(Math.random() * this.actions.length);
+        }
+        
+        let bestAction = 0;
+        let bestValue = this.getQValue(state, 0);
+        
+        for (let a = 1; a < this.actions.length; a++) {
+          const value = this.getQValue(state, a);
+          if (value > bestValue) {
+            bestValue = value;
+            bestAction = a;
+          }
+        }
+        
+        return bestAction;
+      }
+      
+      update(state, action, reward, nextState) {
+        const currentQ = this.getQValue(state, action);
+        
+        let maxNextQ = 0;
+        for (let a = 0; a < this.actions.length; a++) {
+          maxNextQ = Math.max(maxNextQ, this.getQValue(nextState, a));
+        }
+        
+        const newQ = currentQ + this.learningRate * (reward + this.discount * maxNextQ - currentQ);
+        this.setQValue(state, action, newQ);
+      }
+      
+      // Warm start with BICEP demos
+      initFromDemos(demos) {
+        demos.forEach(demo => {
+          const path = demo.path;
+          for (let i = 0; i < path.length - 1; i++) {
+            const curr = path[i];
+            const next = path[i + 1];
+            const state = this.stateKey(curr[0], curr[1]);
+            
+            // Find action that moves from curr to next
+            for (let a = 0; a < this.actions.length; a++) {
+              const [dx, dy] = this.actions[a];
+              if (curr[0] + dx === next[0] && curr[1] + dy === next[1]) {
+                // Initialize with small positive value
+                const currentQ = this.getQValue(state, a);
+                this.setQValue(state, a, Math.max(currentQ, 0.1));
+                break;
+              }
+            }
+          }
+        });
+      }
+    }
+    
+    // RL Environment
+    class GridEnvironment {
+      constructor(grid, startCells, goalCells) {
+        this.grid = grid;
+        this.startCells = startCells;
+        this.goalCells = goalCells;
+        this.reset();
+      }
+      
+      reset() {
+        const start = this.startCells[Math.floor(Math.random() * this.startCells.length)];
+        this.agentX = start[0] + 0.5;
+        this.agentY = start[1] + 0.5;
+        this.steps = 0;
+        this.done = false;
+        return { x: this.agentX, y: this.agentY };
+      }
+      
+      step(action) {
+        if (this.done) return { state: {x: this.agentX, y: this.agentY}, reward: 0, done: true };
+        
+        const [dx, dy] = [[0, 1], [1, 0], [0, -1], [-1, 0]][action];
+        const newX = Math.max(0, Math.min(gridSize - 1, this.agentX + dx));
+        const newY = Math.max(0, Math.min(gridSize - 1, this.agentY + dy));
+        
+        let reward = -0.01; // Step penalty
+        
+        // Check collision
+        if (this.grid[Math.floor(newX)][Math.floor(newY)]) {
+          reward = -0.1; // Collision penalty
+        } else {
+          this.agentX = newX;
+          this.agentY = newY;
+        }
+        
+        // Check goal
+        const gridX = Math.floor(this.agentX);
+        const gridY = Math.floor(this.agentY);
+        if (this.goalCells.some(g => g[0] === gridX && g[1] === gridY)) {
+          reward = 1.0; // Goal reward
+          this.done = true;
+        }
+        
+        this.steps++;
+        if (this.steps >= horizon) {
+          this.done = true;
+        }
+        
+        return {
+          state: { x: this.agentX, y: this.agentY },
+          reward: reward,
+          done: this.done
+        };
+      }
+    }
+    
+    // Demo service API
+    function generateDemos(envKey, want, K, horizonSteps, sigma, drift, seed) {
+      // Use current BICEP implementation
+      currentSeed = seed;
+      winners = [];
+      heatmap.fill(0);
+      step = 0;
+      successHistory = [];
+      currentBatch = 0;
+      horizon = horizonSteps;
+      
+      // Set parameters
+      document.getElementById('particles').value = K;
+      document.getElementById('sigma').value = sigma;
+      document.getElementById('drift').value = drift;
+      document.getElementById('horizon-slider').value = horizonSteps;
+      
+      // Update displays
+      document.getElementById('particles-value').textContent = K;
+      document.getElementById('sigma-value').textContent = sigma;
+      document.getElementById('drift-value').textContent = drift;
+      document.getElementById('horizon-value').textContent = horizonSteps;
+      
+      return new Promise((resolve) => {
+        // Run BICEP sampling
+        initParticles();
+        
+        function runToCompletion() {
+          updateParticles();
+          drawSimulation();
+          drawBestPath();
+          drawSparkline();
+          updateStats();
+          
+          const active = particles.filter(p => p.alive && !p.reached).length;
+          if (active === 0 || step >= horizon) {
+            const demos = winners.slice(0, want).map(w => ({
+              path: w.path,
+              cost: w.cost
+            }));
+            
+            const stats = {
+              successRate: particles.length > 0 ? winners.length / particles.length : 0,
+              avgCost: winners.length > 0 ? winners.reduce((s, w) => s + w.cost, 0) / winners.length : 0,
+              throughput: throughput
+            };
+            
+            resolve({ demos, stats });
+          } else {
+            requestAnimationFrame(runToCompletion);
+          }
+        }
+        
+        runToCompletion();
+      });
     }
     
     // Initialize canvases
@@ -732,6 +1194,9 @@
       
       sparklineCanvas.width = 180;
       sparklineCanvas.height = 40;
+      
+      costHistogram.width = 230;
+      costHistogram.height = 60;
       
       // Draw background grid
       bgCtx.fillStyle = '#0a0a0a';
@@ -820,22 +1285,28 @@
       const batchSize = parseInt(document.getElementById('batch-size').value);
       
       particles = [];
-      rng = seedRNG(currentSeed);
+      winners = [];
+      reachedParticleIds.clear();
+      collisionCount = 0;
+      rng = new DeterministicRNG(currentSeed);
       
       // Calculate batches for streaming
       totalBatches = Math.ceil(numParticles / batchSize);
       currentBatch = 0;
       
-      // Initialize all particles (but process in batches)
+      // Initialize all particles with per-particle time tracking
       for (let i = 0; i < numParticles; i++) {
-        const start = startCells[Math.floor(rng() * startCells.length)];
+        const start = startCells[rng.int(0, startCells.length)];
         particles.push({
+          id: i,
           x: start[0] + 0.5,
           y: start[1] + 0.5,
           path: [[start[0], start[1]]],
           alive: true,
           cost: 0,
-          batch: Math.floor(i / batchSize)
+          time: 0,  // per-particle time tracking
+          batch: Math.floor(i / batchSize),
+          reached: false
         });
       }
       
@@ -851,6 +1322,7 @@
       
       const sigma = parseFloat(document.getElementById('sigma').value);
       const drift = parseFloat(document.getElementById('drift').value);
+      const correlation = parseFloat(document.getElementById('correlation').value);
       const antithetic = document.getElementById('antithetic').checked;
       const windAngle = parseFloat(document.getElementById('wind-angle').value) * Math.PI / 180;
       const windStrength = parseFloat(document.getElementById('wind-strength').value);
@@ -859,128 +1331,154 @@
       const windX = Math.cos(windAngle) * windStrength;
       const windY = Math.sin(windAngle) * windStrength;
       
+      // Correct Δt semantics: Δt = 1/T
+      const dt = 1.0 / horizon;
+      const sqrtDt = Math.sqrt(dt);
+      
       let activeCount = 0;
       let processedCount = 0;
       
-      // Process current batch
-      const batchStart = currentBatch * batchSize;
-      const batchEnd = Math.min(batchStart + batchSize, particles.length);
-      
-      for (let idx = batchStart; idx < batchEnd; idx++) {
-        const p = particles[idx];
-        if (!p.alive || p.reached) continue;
+      // Proper streaming: advance all particles by one step, batch by batch
+      for (let batch = 0; batch < totalBatches; batch++) {
+        const batchStart = batch * batchSize;
+        const batchEnd = Math.min(batchStart + batchSize, particles.length);
         
-        activeCount++;
-        processedCount++;
-        
-        // Find nearest goal
-        let minDist = Infinity;
-        let nearestGoal = goalCells[0];
-        goalCells.forEach(g => {
-          const dist = Math.sqrt((g[0] - p.x) ** 2 + (g[1] - p.y) ** 2);
-          if (dist < minDist) {
-            minDist = dist;
-            nearestGoal = g;
-          }
-        });
-        
-        // Brownian bridge dynamics
-        const remaining = Math.max(1, horizon - step);
-        const dt = 1.0; // Δt = 1 step
-        
-        // Drift term: μ·(goal-x)/(T-t)·Δt
-        const pullX = drift * (nearestGoal[0] + 0.5 - p.x) / remaining * dt;
-        const pullY = drift * (nearestGoal[1] + 0.5 - p.y) / remaining * dt;
-        
-        // Noise term: σ·√Δt·Z (Gaussian)
-        let noiseX, noiseY;
-        if (antithetic && idx % 2 === 1 && idx > 0) {
-          // Use negative of previous particle's noise
-          const prev = particles[idx - 1];
-          if (prev.lastNoise) {
-            noiseX = -prev.lastNoise.x + windX;
-            noiseY = -prev.lastNoise.y + windY;
-          } else {
-            noiseX = gaussianRandom(rng) * sigma * Math.sqrt(dt) + windX;
-            noiseY = gaussianRandom(rng) * sigma * Math.sqrt(dt) + windY;
-          }
-        } else {
-          const zx = gaussianRandom(rng);
-          const zy = gaussianRandom(rng);
-          noiseX = zx * sigma * Math.sqrt(dt) + windX;
-          noiseY = zy * sigma * Math.sqrt(dt) + windY;
-          p.lastNoise = { x: zx * sigma * Math.sqrt(dt), y: zy * sigma * Math.sqrt(dt) };
-        }
-        
-        // Update position
-        p.x += pullX + noiseX;
-        p.y += pullY + noiseY;
-        
-        // Bounds check
-        p.x = Math.max(0, Math.min(gridSize - 1, p.x));
-        p.y = Math.max(0, Math.min(gridSize - 1, p.y));
-        
-        const gridX = Math.floor(p.x);
-        const gridY = Math.floor(p.y);
-        
-        // Update heatmap
-        heatmap[gridY * gridSize + gridX] += 1;
-        
-        // Check collision
-        if (grid[gridX][gridY]) {
-          p.alive = false;
-        } else {
-          p.path.push([gridX, gridY]);
+        for (let idx = batchStart; idx < batchEnd; idx++) {
+          const p = particles[idx];
+          if (!p.alive || p.reached) continue;
           
-          // Cost with obstacle proximity
-          let proxPenalty = 0;
-          for (let dx = -1; dx <= 1; dx++) {
-            for (let dy = -1; dy <= 1; dy++) {
-              const nx = gridX + dx;
-              const ny = gridY + dy;
-              if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize && grid[nx][ny]) {
-                proxPenalty += 0.1;
+          activeCount++;
+          processedCount++;
+          
+          // Per-particle time tracking
+          const remaining = Math.max(dt, horizon - p.time);
+          
+          // Find nearest goal
+          let minDist = Infinity;
+          let nearestGoal = goalCells[0];
+          goalCells.forEach(g => {
+            const dist = Math.sqrt((g[0] - p.x) ** 2 + (g[1] - p.y) ** 2);
+            if (dist < minDist) {
+              minDist = dist;
+              nearestGoal = g;
+            }
+          });
+          
+          // Brownian bridge dynamics with correct Δt
+          // Drift term: μ·(goal-x)/(T-t)·Δt  
+          const pullX = drift * (nearestGoal[0] + 0.5 - p.x) / remaining * dt;
+          const pullY = drift * (nearestGoal[1] + 0.5 - p.y) / remaining * dt;
+          
+          // Correlated noise: σ·√Δt·Z with correlation ρ
+          let noiseX, noiseY;
+          if (antithetic && (p.id % 2) === 1) {
+            // Find antithetic twin by XOR with 1
+            const twinId = p.id ^ 1;
+            const twin = particles[twinId];
+            if (twin && twin.lastNoise) {
+              noiseX = -twin.lastNoise.x + windX;
+              noiseY = -twin.lastNoise.y + windY;
+            } else {
+              const z1 = globalRNG.gaussian();
+              const z2 = globalRNG.gaussian();
+              noiseX = z1 * sigma * sqrtDt + windX;
+              noiseY = (correlation * z1 + Math.sqrt(1 - correlation * correlation) * z2) * sigma * sqrtDt + windY;
+              p.lastNoise = { x: z1 * sigma * sqrtDt, y: (correlation * z1 + Math.sqrt(1 - correlation * correlation) * z2) * sigma * sqrtDt };
+            }
+          } else {
+            const z1 = globalRNG.gaussian();
+            const z2 = globalRNG.gaussian();
+            // Apply correlation: Y = ρX + √(1-ρ²)Z
+            noiseX = z1 * sigma * sqrtDt + windX;
+            noiseY = (correlation * z1 + Math.sqrt(1 - correlation * correlation) * z2) * sigma * sqrtDt + windY;
+            p.lastNoise = { x: z1 * sigma * sqrtDt, y: (correlation * z1 + Math.sqrt(1 - correlation * correlation) * z2) * sigma * sqrtDt };
+          }
+          
+          // Update position
+          p.x += pullX + noiseX;
+          p.y += pullY + noiseY;
+          p.time += dt;
+          
+          // Bounds check
+          p.x = Math.max(0, Math.min(gridSize - 1, p.x));
+          p.y = Math.max(0, Math.min(gridSize - 1, p.y));
+          
+          const gridX = Math.floor(p.x);
+          const gridY = Math.floor(p.y);
+          
+          // Update heatmap
+          heatmap[gridY * gridSize + gridX] += 1;
+          
+          // Check collision
+          if (grid[gridX][gridY]) {
+            p.alive = false;
+            collisionCount++;
+          } else {
+            p.path.push([gridX, gridY]);
+            
+            // Cost with obstacle proximity
+            let proxPenalty = 0;
+            for (let dx = -1; dx <= 1; dx++) {
+              for (let dy = -1; dy <= 1; dy++) {
+                const nx = gridX + dx;
+                const ny = gridY + dy;
+                if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize && grid[nx][ny]) {
+                  proxPenalty += 0.1;
+                }
               }
             }
-          }
-          p.cost += 1 + proxPenalty;
-          
-          // Check goal
-          if (goalCells.some(g => g[0] === gridX && g[1] === gridY)) {
-            p.reached = true;
-            recordWinner(p);
+            p.cost += dt + proxPenalty; // Cost proportional to Δt
+            
+            // Check goal
+            if (goalCells.some(g => g[0] === gridX && g[1] === gridY)) {
+              p.reached = true;
+              reachedParticleIds.add(p.id);
+              recordWinner(p);
+            }
           }
         }
       }
       
-      // Update batch progress
-      if (currentBatch < totalBatches - 1) {
-        currentBatch++;
-        document.getElementById('current-batch').textContent = currentBatch + 1;
-      }
-      
-      // Calculate throughput
+      // Calculate stable throughput with rolling average
       const frameEnd = performance.now();
       frameTime = frameEnd - frameStart;
-      throughput = Math.round(processedCount * (1000 / Math.max(frameTime, 1)));
+      const instantThroughput = Math.round(processedCount * (1000 / Math.max(frameTime, 1)));
+      throughputHistory.push(instantThroughput);
+      if (throughputHistory.length > 10) throughputHistory.shift();
+      throughput = Math.round(throughputHistory.reduce((a, b) => a + b, 0) / throughputHistory.length);
       
-      // Update success history
-      const totalActive = particles.filter(p => p.alive || p.reached).length;
-      const successRate = totalActive > 0 ? (winners.length / particles.length * 100) : 0;
-      successHistory.push(successRate);
+      // Update success history with accurate count
+      const accurateSuccessRate = particles.length > 0 ? (reachedParticleIds.size / particles.length * 100) : 0;
+      successHistory.push(accurateSuccessRate);
       if (successHistory.length > 100) successHistory.shift();
       
       step++;
     }
     
     function recordWinner(particle) {
+      const useCVar = document.getElementById('cvar-toggle').checked;
+      
       winners.push({
         path: particle.path.slice(),
-        cost: particle.cost
+        cost: particle.cost,
+        id: particle.id
       });
       
+      // Sort by cost (or CVaR if enabled)
+      if (useCVar && winners.length >= 20) {
+        // CVaR@5% ranking: worst 5% of costs
+        winners.sort((a, b) => b.cost - a.cost); // Descending for worst costs
+        const cvarIndex = Math.floor(winners.length * 0.05);
+        const cvarCosts = winners.slice(0, cvarIndex + 1).map(w => w.cost);
+        const cvarThreshold = cvarCosts.reduce((a, b) => a + b, 0) / cvarCosts.length;
+        
+        // Re-sort by proximity to CVaR threshold
+        winners.sort((a, b) => Math.abs(a.cost - cvarThreshold) - Math.abs(b.cost - cvarThreshold));
+      } else {
+        winners.sort((a, b) => a.cost - b.cost);
+      }
+      
       // Keep top 50
-      winners.sort((a, b) => a.cost - b.cost);
       if (winners.length > 50) winners.length = 50;
     }
     
@@ -1115,17 +1613,61 @@
       sparkCtx.globalAlpha = 1;
     }
     
+    function drawCostHistogram() {
+      histCtx.clearRect(0, 0, costHistogram.width, costHistogram.height);
+      
+      if (winners.length < 3) return;
+      
+      const costs = winners.slice(0, 20).map(w => w.cost);
+      const minCost = Math.min(...costs);
+      const maxCost = Math.max(...costs);
+      const range = maxCost - minCost;
+      
+      if (range === 0) return;
+      
+      const bins = 12;
+      const binSize = range / bins;
+      const histogram = new Array(bins).fill(0);
+      
+      costs.forEach(cost => {
+        const binIndex = Math.min(bins - 1, Math.floor((cost - minCost) / binSize));
+        histogram[binIndex]++;
+      });
+      
+      const w = costHistogram.width;
+      const h = costHistogram.height;
+      const barWidth = w / bins;
+      const maxCount = Math.max(...histogram);
+      
+      histogram.forEach((count, i) => {
+        const barHeight = (count / maxCount) * h * 0.8;
+        const x = i * barWidth;
+        const y = h - barHeight;
+        
+        histCtx.fillStyle = '#3b82f6';
+        histCtx.fillRect(x + 1, y, barWidth - 2, barHeight);
+      });
+      
+      // Labels
+      histCtx.fillStyle = '#6b7280';
+      histCtx.font = '8px Inter';
+      histCtx.fillText(minCost.toFixed(1), 2, h - 2);
+      histCtx.fillText(maxCost.toFixed(1), w - 20, h - 2);
+    }
+    
     function updateStats() {
       const active = particles.filter(p => p.alive && !p.reached).length;
       const total = particles.length;
-      const successRate = total > 0 ? Math.round(winners.length / total * 100) : 0;
+      const successRate = total > 0 ? Math.round(reachedParticleIds.size / total * 100) : 0;
       
       document.getElementById('seed-value').textContent = currentSeed;
+      document.getElementById('map-seed-value').textContent = currentMapSeed;
       document.getElementById('throughput').textContent = throughput.toLocaleString();
       document.getElementById('frame-time').textContent = Math.round(frameTime);
       document.getElementById('active-count').textContent = active.toLocaleString();
       document.getElementById('total-count').textContent = total.toLocaleString();
       document.getElementById('success-rate').textContent = successRate + '%';
+      document.getElementById('collision-count').textContent = collisionCount;
       document.getElementById('step-counter').textContent = step;
       document.getElementById('horizon').textContent = horizon;
     }
@@ -1172,6 +1714,7 @@
       drawSimulation();
       drawBestPath();
       drawSparkline();
+      drawCostHistogram();
       updateStats();
       
       // Check finish
@@ -1182,22 +1725,40 @@
         document.getElementById('run-btn').disabled = false;
         document.getElementById('batch-progress').classList.remove('show');
         
-        if (winners.length > 0) animateFinish();
+        // Show completion state
+        if (winners.length > 0) {
+          animateFinish();
+          // Show export options after completion
+          setTimeout(() => {
+            document.getElementById('export-png').style.opacity = '1';
+            document.getElementById('export-csv').style.opacity = '1';
+          }, 1000);
+        }
       } else {
         requestAnimationFrame(animate);
       }
     }
     
-    // Event handlers
-    document.getElementById('run-btn').addEventListener('click', () => {
+    // Replay functionality
+    function replayFromSeed(seed, mapSeed = null) {
       if (running) return;
       
-      currentSeed = Math.floor(Math.random() * 1000000);
+      currentSeed = seed;
+      currentMapSeed = mapSeed || globalRNG.int(0, 1000000);
+      globalRNG = new DeterministicRNG(currentSeed);
+      
+      // Regenerate map with deterministic seed
+      grid = generateMap(currentMapFamily, mapParams, currentMapSeed);
+      drawObstacles();
+      
       winners = [];
       heatmap.fill(0);
       step = 0;
       successHistory = [];
+      throughputHistory = [];
       currentBatch = 0;
+      reachedParticleIds.clear();
+      collisionCount = 0;
       horizon = parseInt(document.getElementById('horizon-slider').value);
       
       initParticles();
@@ -1207,6 +1768,28 @@
       document.getElementById('run-btn').disabled = true;
       
       animate();
+    }
+    
+    // Event handlers
+    document.getElementById('run-btn').addEventListener('click', () => {
+      const newSeed = globalRNG.int(0, 1000000);
+      const newMapSeed = globalRNG.int(0, 1000000);
+      replayFromSeed(newSeed, newMapSeed);
+    });
+    
+    document.getElementById('replay-btn').addEventListener('click', () => {
+      const seedInput = document.getElementById('replay-seed').value;
+      if (seedInput.trim()) {
+        const seed = parseInt(seedInput.trim());
+        if (!isNaN(seed)) {
+          replayFromSeed(seed);
+        }
+      }
+    });
+    
+    document.getElementById('random-seed-btn').addEventListener('click', () => {
+      const newSeed = globalRNG.int(0, 1000000);
+      document.getElementById('replay-seed').value = newSeed;
     });
     
     document.getElementById('reset-btn').addEventListener('click', () => {
@@ -1229,14 +1812,17 @@
       });
     });
     
-    // Seed click - copy replay URL
+    // Seed click - copy replay URL with map seed
     document.getElementById('seed-overlay').addEventListener('click', () => {
       const url = new URL(window.location);
       url.searchParams.set('seed', currentSeed);
+      url.searchParams.set('mapSeed', currentMapSeed);
+      url.searchParams.set('family', currentMapFamily);
       url.searchParams.set('K', document.getElementById('particles').value);
       url.searchParams.set('mu', document.getElementById('drift').value);
       url.searchParams.set('sigma', document.getElementById('sigma').value);
       url.searchParams.set('T', document.getElementById('horizon-slider').value);
+      url.searchParams.set('rho', document.getElementById('correlation').value);
       
       navigator.clipboard.writeText(url.toString()).then(() => {
         const overlay = document.getElementById('seed-overlay');
@@ -1277,65 +1863,27 @@
       }
     }
     
-    // Presets
+    // Presets - Now using map factory
     document.querySelectorAll('.preset-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const preset = btn.dataset.preset;
-        grid = Array(gridSize).fill().map(() => Array(gridSize).fill(false));
+        const density = parseFloat(btn.dataset.density) || 0.2;
+        const width = parseInt(btn.dataset.width) || 4;
         
-        switch(preset) {
-          case 'corridor':
-            // Narrow passage test
-            for (let x = 3; x < 37; x++) {
-              for (let y = 0; y < 8; y++) grid[x][y] = true;
-              for (let y = 32; y < 40; y++) grid[x][y] = true;
-            }
-            for (let y = 16; y < 24; y++) {
-              for (let x = 3; x < 18; x++) grid[x][y] = true;
-              for (let x = 22; x < 37; x++) grid[x][y] = true;
-            }
-            break;
-            
-          case 'maze':
-            // Branching paths
-            for (let i = 0; i < 10; i++) {
-              const x = 5 + i * 3;
-              for (let y = 0; y < gridSize; y++) {
-                if (Math.random() > 0.3) grid[x][y] = true;
-              }
-            }
-            for (let y = 10; y < 30; y += 5) {
-              for (let x = 5; x < 35; x++) {
-                if (Math.random() > 0.4) grid[x][y] = true;
-              }
-            }
-            break;
-            
-          case 'sparse':
-            // High success rate
-            for (let i = 0; i < 50; i++) {
-              const x = 5 + Math.floor(Math.random() * 30);
-              const y = Math.floor(Math.random() * gridSize);
-              grid[x][y] = true;
-            }
-            break;
-            
-          case 'dense':
-            // Stress test
-            for (let i = 0; i < 300; i++) {
-              const x = 3 + Math.floor(Math.random() * 34);
-              const y = Math.floor(Math.random() * gridSize);
-              grid[x][y] = true;
-            }
-            break;
-        }
+        // Update current map settings
+        currentMapFamily = preset;
+        mapParams = { density, width };
+        
+        // Generate new map with random seed
+        currentMapSeed = globalRNG.int(0, 1000000);
+        grid = generateMap(currentMapFamily, mapParams, currentMapSeed);
         
         drawObstacles();
       });
     });
     
     // Parameter sliders
-    ['particles', 'drift', 'sigma', 'horizon-slider', 'wind-angle', 'wind-strength', 'batch-size'].forEach(id => {
+    ['particles', 'drift', 'sigma', 'horizon-slider', 'correlation', 'wind-angle', 'wind-strength', 'batch-size'].forEach(id => {
       const input = document.getElementById(id);
       const valueId = id.replace('-slider', '') + '-value';
       
@@ -1346,13 +1894,24 @@
       });
     });
     
-    // Load from URL
+    // Load from URL with full replay support
     function loadFromURL() {
       const params = new URLSearchParams(window.location.search);
       
-      if (params.has('seed')) currentSeed = parseInt(params.get('seed'));
+      if (params.has('seed')) {
+        currentSeed = parseInt(params.get('seed'));
+        globalRNG = new DeterministicRNG(currentSeed);
+      }
       
-      ['K:particles', 'mu:drift', 'sigma:sigma', 'T:horizon-slider'].forEach(pair => {
+      if (params.has('mapSeed')) {
+        currentMapSeed = parseInt(params.get('mapSeed'));
+      }
+      
+      if (params.has('family')) {
+        currentMapFamily = params.get('family');
+      }
+      
+      ['K:particles', 'mu:drift', 'sigma:sigma', 'T:horizon-slider', 'rho:correlation'].forEach(pair => {
         const [param, id] = pair.split(':');
         if (params.has(param)) {
           const val = params.get(param);
@@ -1360,6 +1919,12 @@
           document.getElementById(id).dispatchEvent(new Event('input'));
         }
       });
+      
+      // Regenerate map with loaded parameters if we have mapSeed
+      if (params.has('mapSeed')) {
+        grid = generateMap(currentMapFamily, mapParams, currentMapSeed);
+        drawObstacles();
+      }
     }
     
     // Keyboard shortcuts
@@ -1375,6 +1940,362 @@
         const btn = document.querySelector(`[data-mode="${modes[parseInt(e.key) - 1]}"]`);
         if (btn) btn.click();
       }
+    });
+    
+    // RL Training
+    let rlEnvironment;
+    
+    async function startTraining() {
+      if (trainingRunning) return;
+      
+      trainingRunning = true;
+      document.getElementById('train-btn').textContent = 'Training...';
+      document.getElementById('train-btn').disabled = true;
+      document.getElementById('rl-metrics').style.display = 'block';
+      
+      // Initialize RL agent
+      rlAgent = new QLearningAgent(gridSize);
+      rlEnvironment = new GridEnvironment(grid, startCells, goalCells);
+      
+      // Reset stats
+      rlStats.episode = 0;
+      rlStats.totalEpisodes = parseInt(document.getElementById('episodes').value);
+      rlStats.recentRewards = [];
+      
+      // Generate initial demos with BICEP
+      const demos = await generateDemos('current', 20, 2000, 200, 0.6, 1.2, globalRNG.int(0, 1000000));
+      rlAgent.initFromDemos(demos.demos);
+      
+      // Update buffer displays and track training environments
+      demoBuffer = demos.demos;
+      const envKey = `${currentMapFamily}_${currentMapSeed}`;
+      trainedEnvKeys.add(envKey);
+      document.getElementById('demo-count').textContent = demoBuffer.length;
+      document.getElementById('current-phase').textContent = 'Warm-start';
+      
+      // Start training loop
+      trainingLoop();
+    }
+    
+    function trainingLoop() {
+      if (rlStats.episode >= rlStats.totalEpisodes || !trainingRunning) {
+        finishTraining();
+        return;
+      }
+      
+      // Curriculum annealing: β starts at 0.5, goes to 0
+      const progress = rlStats.episode / rlStats.totalEpisodes;
+      const currentBeta = Math.max(0, 0.5 * (1 - progress));
+      document.getElementById('current-beta').textContent = currentBeta.toFixed(2);
+      document.getElementById('beta-display').textContent = currentBeta.toFixed(2);
+      
+      // Update phase
+      if (progress < 0.2) {
+        document.getElementById('current-phase').textContent = 'Exploration (high β)';
+      } else if (progress < 0.6) {
+        document.getElementById('current-phase').textContent = 'Transition (mid β)';
+      } else {
+        document.getElementById('current-phase').textContent = 'Exploitation (low β)';
+      }
+      
+      // Run episode
+      runEpisode(currentBeta).then(() => {
+        rlStats.episode++;
+        
+        // Update metrics
+        updateRLMetrics();
+        
+        // Continue training
+        setTimeout(trainingLoop, 50); // Small delay for UI updates
+      });
+    }
+    
+    async function runEpisode(beta) {
+      const state = rlEnvironment.reset();
+      let totalReward = 0;
+      let steps = 0;
+      
+      while (!rlEnvironment.done && steps < horizon) {
+        let action;
+        
+        // Mixture policy: (1-β)·π_RL + β·π_BICEP
+        if (globalRNG.next() < beta) {
+          // Use learned demo policy from BICEP trajectories
+          action = getDemoPolicyAction(state.x, state.y, demoBuffer);
+        } else {
+          // Use RL policy
+          action = rlAgent.selectAction(state.x, state.y);
+        }
+        
+        const result = rlEnvironment.step(action);
+        const stateKey = rlAgent.stateKey(state.x, state.y);
+        const nextStateKey = rlAgent.stateKey(result.state.x, result.state.y);
+        
+        // Q-learning update
+        rlAgent.update(stateKey, action, result.reward, nextStateKey);
+        
+        totalReward += result.reward;
+        steps++;
+        
+        state.x = result.state.x;
+        state.y = result.state.y;
+      }
+      
+      rlStats.reward = totalReward;
+      rlStats.recentRewards.push(totalReward);
+      if (rlStats.recentRewards.length > 100) rlStats.recentRewards.shift();
+      
+      // Add to RL buffer with HER potential
+      rlBuffer.push({
+        episode: rlStats.episode,
+        reward: totalReward,
+        steps: steps,
+        success: totalReward > 0.5,
+        envKey: `${currentMapFamily}_${currentMapSeed}`,
+        finalState: { x: state.x, y: state.y },
+        // HER: treat final position as achieved goal for hindsight experience
+        hindsightGoal: [Math.floor(state.x), Math.floor(state.y)]
+      });
+      
+      // Calculate success rate from recent episodes
+      const recentSuccesses = rlStats.recentRewards.filter(r => r > 0.5).length;
+      rlStats.successRate = Math.round((recentSuccesses / Math.min(rlStats.recentRewards.length, 100)) * 100);
+      rlStats.avgSteps = steps;
+    }
+    
+    function updateRLMetrics() {
+      document.getElementById('rl-episode').textContent = rlStats.episode;
+      document.getElementById('rl-total-episodes').textContent = rlStats.totalEpisodes;
+      document.getElementById('rl-reward').textContent = rlStats.reward.toFixed(2);
+      document.getElementById('rl-success-rate').textContent = rlStats.successRate + '%';
+      document.getElementById('rl-avg-steps').textContent = rlStats.avgSteps;
+      
+      // Update buffer count
+      document.getElementById('rl-buffer-count').textContent = rlBuffer.length;
+    }
+    
+    function finishTraining() {
+      trainingRunning = false;
+      document.getElementById('train-btn').textContent = 'Train Agent';
+      document.getElementById('train-btn').disabled = false;
+      document.getElementById('current-phase').textContent = 'Training Complete';
+      
+      // Final summary
+      const finalSuccess = rlStats.successRate;
+      const totalEpisodes = rlBuffer.length;
+      console.log(`Training complete: ${finalSuccess}% success over ${totalEpisodes} episodes`);
+    }
+    
+    // Fixed evaluation test suite for reproducible benchmarks
+    const EVAL_SUITE = [
+      {family: 'corridors', mapSeed: 12345, params: {width: 4}},
+      {family: 'corridors', mapSeed: 67890, params: {width: 2}},
+      {family: 'rooms_doors', mapSeed: 11111, params: {}},
+      {family: 'rooms_doors', mapSeed: 22222, params: {}},
+      {family: 'mazes', mapSeed: 33333, params: {}},
+      {family: 'mazes', mapSeed: 44444, params: {}},
+      {family: 'random_obstacles', mapSeed: 55555, params: {density: 0.2}},
+      {family: 'random_obstacles', mapSeed: 66666, params: {density: 0.4}}
+    ];
+    
+    let trainedEnvKeys = new Set(); // Track training environments for leakage detection
+    
+    // Demo policy: learn from BICEP demonstration waypoints
+    function getDemoPolicyAction(x, y, demos) {
+      if (!demos || demos.length === 0) {
+        // Fallback to greedy heuristic
+        const nearestGoal = goalCells.reduce((closest, g) => {
+          const dist = Math.sqrt((g[0] - x) ** 2 + (g[1] - y) ** 2);
+          return dist < closest.dist ? {goal: g, dist} : closest;
+        }, {goal: goalCells[0], dist: Infinity});
+        
+        const dx = nearestGoal.goal[0] - x;
+        const dy = nearestGoal.goal[1] - y;
+        
+        if (Math.abs(dx) > Math.abs(dy)) {
+          return dx > 0 ? 0 : 2; // right or left
+        } else {
+          return dy > 0 ? 1 : 3; // down or up
+        }
+      }
+      
+      // Find closest waypoint in demonstrations
+      let bestAction = 0;
+      let minDist = Infinity;
+      
+      demos.forEach(demo => {
+        demo.path.forEach((waypoint, i) => {
+          if (i < demo.path.length - 1) {
+            const dist = Math.sqrt((waypoint[0] - x) ** 2 + (waypoint[1] - y) ** 2);
+            if (dist < minDist) {
+              minDist = dist;
+              const next = demo.path[i + 1];
+              const dx = next[0] - waypoint[0];
+              const dy = next[1] - waypoint[1];
+              
+              // Convert to action
+              if (dx > 0) bestAction = 0; // right
+              else if (dx < 0) bestAction = 2; // left
+              else if (dy > 0) bestAction = 1; // down
+              else if (dy < 0) bestAction = 3; // up
+            }
+          }
+        });
+      });
+      
+      return bestAction;
+    }
+    
+    async function runEvaluation() {
+      if (!rlAgent) {
+        alert('Please train an agent first!');
+        return;
+      }
+      
+      document.getElementById('eval-btn').textContent = 'Evaluating...';
+      document.getElementById('eval-btn').disabled = true;
+      
+      // Check for leakage
+      const leakageCount = EVAL_SUITE.filter(test => {
+        const envKey = `${test.family}_${test.mapSeed}`;
+        return trainedEnvKeys.has(envKey);
+      }).length;
+      
+      if (leakageCount > 0) {
+        alert(`WARNING: ${leakageCount} eval environments were used in training (data leakage detected!)`);
+      }
+      
+      // Run evaluation on fixed test suite
+      const evalResults = [];
+      const numTrials = 3; // Multiple trials per environment
+      
+      for (const test of EVAL_SUITE) {
+        const testGrid = generateMap(test.family, test.params, test.mapSeed);
+        const testEnv = new GridEnvironment(testGrid, startCells, goalCells);
+        
+        const trialResults = [];
+        
+        for (let trial = 0; trial < numTrials; trial++) {
+          let successes = 0;
+          const numEpisodes = 10;
+          
+          for (let i = 0; i < numEpisodes; i++) {
+            const state = testEnv.reset();
+            let steps = 0;
+            
+            while (!testEnv.done && steps < horizon) {
+              const action = rlAgent.selectAction(state.x, state.y, 0.05); // Very low epsilon for evaluation
+              const result = testEnv.step(action);
+              
+              if (result.reward > 0.5) { // Success
+                successes++;
+                break;
+              }
+              
+              state.x = result.state.x;
+              state.y = result.state.y;
+              steps++;
+            }
+          }
+          
+          trialResults.push((successes / numEpisodes) * 100);
+        }
+        
+        const mean = trialResults.reduce((a, b) => a + b, 0) / trialResults.length;
+        const variance = trialResults.reduce((a, b) => a + (b - mean) ** 2, 0) / trialResults.length;
+        const std = Math.sqrt(variance);
+        
+        evalResults.push({
+          family: test.family,
+          mapSeed: test.mapSeed,
+          mean: mean,
+          std: std
+        });
+      }
+      
+      // Display results with statistics
+      const overallMean = evalResults.reduce((s, r) => s + r.mean, 0) / evalResults.length;
+      const resultText = evalResults.map(r => `${r.family}:${r.mapSeed} ${r.mean.toFixed(1)}±${r.std.toFixed(1)}%`).join('\n');
+      alert(`Evaluation Results (mean±std):\n${resultText}\nOverall: ${overallMean.toFixed(1)}%`);
+      
+      document.getElementById('eval-btn').textContent = 'Evaluate';
+      document.getElementById('eval-btn').disabled = false;
+    }
+    
+    // Export functionality
+    function exportToPNG() {
+      const canvas = document.createElement('canvas');
+      canvas.width = bgCanvas.width;
+      canvas.height = bgCanvas.height;
+      const ctx = canvas.getContext('2d');
+      
+      // Composite all layers
+      ctx.drawImage(bgCanvas, 0, 0);
+      ctx.drawImage(obsCanvas, 0, 0);
+      ctx.drawImage(simCanvas, 0, 0);
+      ctx.drawImage(pathCanvas, 0, 0);
+      
+      // Add timestamp
+      ctx.fillStyle = '#e5e7eb';
+      ctx.font = '12px Inter';
+      ctx.fillText(`BICEP Demo - ${new Date().toISOString()} - Seed ${currentSeed}`, 10, canvas.height - 10);
+      
+      // Download
+      const link = document.createElement('a');
+      link.download = `bicep-demo-${currentSeed}-${Date.now()}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+    
+    function exportToCSV() {
+      if (winners.length === 0) {
+        alert('No paths to export! Run BICEP first.');
+        return;
+      }
+      
+      const csvLines = ['Path_ID,Cost,Length,Waypoints'];
+      
+      winners.forEach((winner, i) => {
+        const waypoints = winner.path.map(p => `(${p[0]},${p[1]})`).join(';');
+        csvLines.push(`${i},${winner.cost.toFixed(3)},${winner.path.length},"${waypoints}"`);
+      });
+      
+      const csvContent = csvLines.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const link = document.createElement('a');
+      link.download = `bicep-paths-${currentSeed}-${Date.now()}.csv`;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+    }
+    
+    // Add tooltips to mode buttons
+    const modeTooltips = {
+      'particles': 'Live particle swarm showing active trajectories',
+      'heatmap': 'Visit density heatmap of explored regions',
+      'paths': 'Top-K survivor paths ranked by cost'
+    };
+    
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      const mode = btn.dataset.mode;
+      if (modeTooltips[mode]) {
+        btn.title = modeTooltips[mode];
+      }
+    });
+    
+    // RL Event handlers
+    document.getElementById('train-btn').addEventListener('click', startTraining);
+    document.getElementById('eval-btn').addEventListener('click', runEvaluation);
+    document.getElementById('export-png').addEventListener('click', exportToPNG);
+    document.getElementById('export-csv').addEventListener('click', exportToCSV);
+    
+    // Parameter sliders for RL
+    ['beta', 'episodes'].forEach(id => {
+      const input = document.getElementById(id);
+      const valueId = id + '-value';
+      
+      input.addEventListener('input', () => {
+        document.getElementById(valueId).textContent = input.value;
+      });
     });
     
     // Initialize

@@ -575,7 +575,19 @@
           
           <div class="action-buttons">
             <button id="run-btn">Run BICEP</button>
-            <button id="reset-btn" class="secondary">Reset</button>\n          </div>\n          \n          <div class="param-group">\n            <div class="param-header">\n              <span class="param-label">Replay Seed</span>\n            </div>\n            <input type="text" id="replay-seed" placeholder="Enter seed" style="width: 100%; padding: 0.5rem; margin: 0.25rem 0; border: 1px solid var(--border); border-radius: 4px; background: #1f2937; color: var(--text); font-size: 0.8rem;">\n            <div class="action-buttons" style="margin-top: 0.5rem;">\n              <button id="replay-btn" class="secondary">Replay</button>\n              <button id="random-seed-btn" class="secondary">New Seed</button>\n            </div>\n            <div class="param-info">Deterministic reproduction</div>
+            <button id="reset-btn" class="secondary">Reset</button>
+          </div>
+          
+          <div class="param-group">
+            <div class="param-header">
+              <span class="param-label">Replay Seed</span>
+            </div>
+            <input type="text" id="replay-seed" placeholder="Enter seed" style="width: 100%; padding: 0.5rem; margin: 0.25rem 0; border: 1px solid var(--border); border-radius: 4px; background: #1f2937; color: var(--text); font-size: 0.8rem;">
+            <div class="action-buttons" style="margin-top: 0.5rem;">
+              <button id="replay-btn" class="secondary">Replay</button>
+              <button id="random-seed-btn" class="secondary">New Seed</button>
+            </div>
+            <div class="param-info">Deterministic reproduction</div>
           </div>
         </div>
         
@@ -778,7 +790,7 @@
       
       // Gaussian random (Box-Muller)
       gaussian() {
-        const u1 = this.next();
+        const u1 = Math.max(this.next(), 1e-12);
         const u2 = this.next();
         return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
       }
@@ -1023,8 +1035,8 @@
         const state = this.stateKey(x, y);
         const eps = epsilon !== null ? epsilon : this.epsilon;
         
-        if (Math.random() < eps) {
-          return Math.floor(Math.random() * this.actions.length);
+        if (globalRNG.next() < eps) {
+          return Math.floor(globalRNG.next() * this.actions.length);
         }
         
         let bestAction = 0;
@@ -1087,7 +1099,7 @@
       }
       
       reset() {
-        const start = this.startCells[Math.floor(Math.random() * this.startCells.length)];
+        const start = this.startCells[globalRNG.int(0, this.startCells.length)];
         this.agentX = start[0] + 0.5;
         this.agentY = start[1] + 0.5;
         this.steps = 0;
@@ -1137,6 +1149,7 @@
     function generateDemos(envKey, want, K, horizonSteps, sigma, drift, seed) {
       // Use current BICEP implementation
       currentSeed = seed;
+      globalRNG = new DeterministicRNG(seed);  // Reseed globalRNG for reproducibility
       winners = [];
       heatmap.fill(0);
       step = 0;
@@ -1348,6 +1361,7 @@
       
       // Proper streaming: advance all particles by one step, batch by batch
       for (let batch = 0; batch < totalBatches; batch++) {
+        document.getElementById('current-batch').textContent = batch + 1;
         const batchStart = batch * batchSize;
         const batchEnd = Math.min(batchStart + batchSize, particles.length);
         
@@ -1464,7 +1478,41 @@
       step++;
     }
     
-    // CVaR surrogate via clearance-based risk assessment\n    function calculatePathRisk(path) {\n      let totalRisk = 0;\n      let minClearance = Infinity;\n      \n      for (const [x, y] of path) {\n        // Calculate minimum clearance to obstacles\n        let localClearance = Infinity;\n        for (let dx = -3; dx <= 3; dx++) {\n          for (let dy = -3; dy <= 3; dy++) {\n            const nx = x + dx;\n            const ny = y + dy;\n            if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize && grid[nx][ny]) {\n              const clearance = Math.sqrt(dx*dx + dy*dy);\n              localClearance = Math.min(localClearance, clearance);\n            }\n          }\n        }\n        \n        minClearance = Math.min(minClearance, localClearance);\n        \n        // Risk penalty: exponential in low clearance  \n        if (localClearance < 2.5) {\n          totalRisk += Math.exp(2.5 - localClearance) * 0.1;\n        }\n      }\n      \n      return {\n        clearanceRisk: totalRisk,\n        minClearance: minClearance,\n        riskScore: totalRisk + (minClearance < 1.5 ? 2.0 : 0)\n      };\n    }\n    \n    function recordWinner(particle) {
+    // CVaR surrogate via clearance-based risk assessment
+    function calculatePathRisk(path) {
+      let totalRisk = 0;
+      let minClearance = Infinity;
+      
+      for (const [x, y] of path) {
+        // Calculate minimum clearance to obstacles
+        let localClearance = Infinity;
+        for (let dx = -3; dx <= 3; dx++) {
+          for (let dy = -3; dy <= 3; dy++) {
+            const nx = x + dx;
+            const ny = y + dy;
+            if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize && grid[nx][ny]) {
+              const clearance = Math.sqrt(dx*dx + dy*dy);
+              localClearance = Math.min(localClearance, clearance);
+            }
+          }
+        }
+        
+        minClearance = Math.min(minClearance, localClearance);
+        
+        // Risk penalty: exponential in low clearance  
+        if (localClearance < 2.5) {
+          totalRisk += Math.exp(2.5 - localClearance) * 0.1;
+        }
+      }
+      
+      return {
+        clearanceRisk: totalRisk,
+        minClearance: minClearance,
+        riskScore: totalRisk + (minClearance < 1.5 ? 2.0 : 0)
+      };
+    }
+    
+    function recordWinner(particle) {
       const useCVar = document.getElementById('cvar-toggle').checked;
       
       // Calculate path risk using clearance-based surrogate
@@ -1480,7 +1528,7 @@
       
       // Sort by cost or risk depending on CVaR toggle
       if (useCVar) {
-        winners.sort((a, b) => b.risk - a.risk); // Descending by risk
+        winners.sort((a, b) => a.risk - b.risk); // Ascending by risk (safer is better)
       } else {
         winners.sort((a, b) => a.cost - b.cost); // Ascending by cost
       }
@@ -1894,15 +1942,24 @@
       });
     });
     
-    // Parameter sliders
-    ['particles', 'drift', 'sigma', 'horizon-slider', 'correlation', 'wind-angle', 'wind-strength', 'batch-size'].forEach(id => {
-      const input = document.getElementById(id);
-      const valueId = id.replace('-slider', '') + '-value';
-      
-      input.addEventListener('input', () => {
-        let val = input.value;
-        if (id === 'wind-angle') val += '°';
-        document.getElementById(valueId).textContent = val;
+    // Parameter sliders with explicit mapping
+    const valueLabel = {
+      particles: 'particles-value',
+      drift: 'drift-value',
+      sigma: 'sigma-value',
+      'horizon-slider': 'horizon-value',
+      correlation: 'correlation-value',
+      'wind-angle': 'wind-value',
+      'wind-strength': 'wind-str-value',
+      'batch-size': 'batch-value',
+    };
+
+    Object.keys(valueLabel).forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', () => {
+        const v = id === 'wind-angle' ? el.value + '°' : el.value;
+        document.getElementById(valueLabel[id]).textContent = v;
       });
     });
     
@@ -2303,8 +2360,8 @@
       
       winners.forEach((winner, i) => {
         const waypoints = winner.path.map(p => `(${p[0]},${p[1]})`).join(';');
-        const riskScore = winner.riskScore || 0;
-        const minClearance = winner.minClearance || 'N/A';
+        const riskScore = typeof winner.risk === 'number' ? winner.risk : 0;
+        const minClearance = typeof winner.clearance === 'number' ? winner.clearance.toFixed(2) : '';
         csvLines.push(`${i},${winner.cost.toFixed(3)},${riskScore.toFixed(3)},${minClearance},${winner.path.length},"${waypoints}"`);
       });
       

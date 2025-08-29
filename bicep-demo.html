@@ -820,6 +820,10 @@
     // Global RNG instance
     let globalRNG = new DeterministicRNG(Math.floor(Math.random() * 1000000));
     
+    // Grid settings (must come first)
+    const gridSize = 40;
+    const cellSize = 13;
+    
     // Canvas setup with Hi-DPI support
     const bgCanvas = document.getElementById('bg-canvas');
     const obsCanvas = document.getElementById('obs-canvas');
@@ -866,10 +870,6 @@
       const ctx = canvas.getContext('2d');
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     });
-    
-    // Grid settings
-    const gridSize = 40;
-    const cellSize = 13;
     let grid = [];
     let particles = [];
     let winners = [];

@@ -76,6 +76,47 @@ class SimpleEnsembleNet(nn.Module):
         outputs = torch.stack([head(x) for head in self.heads])  # [num_heads, batch, 4]
         return outputs.mean(dim=0)  # Average ensemble prediction
 
+class SingleNet(nn.Module):
+    def __init__(self, input_dim=27, hidden_dim=128, output_dim=4):
+        super().__init__()
+        self.network = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, output_dim)
+        )
+    
+    def forward(self, x):
+        return self.network(x)
+
+class RandomPolicy(nn.Module):
+    def __init__(self, output_dim=4):
+        super().__init__()
+        self.output_dim = output_dim
+    
+    def forward(self, x):
+        batch_size = x.shape[0]
+        return torch.randn(batch_size, self.output_dim)
+
+class GreedyPolicy(nn.Module):
+    def __init__(self):
+        super().__init__()
+    
+    def forward(self, x):
+        # Extract goal direction from features (positions 3-4 are goal distances)
+        batch_size = x.shape[0]
+        actions = torch.zeros(batch_size, 4)
+        
+        for i in range(batch_size):
+            dx, dy = x[i, 3], x[i, 4]  # Goal direction features
+            if abs(dx) > abs(dy):
+                actions[i, 0 if dx > 0 else 2] = 1.0  # right or left
+            else:
+                actions[i, 1 if dy > 0 else 3] = 1.0  # down or up
+        
+        return actions
+
 # Pydantic models
 class DemoRequest(BaseModel):
     grid: List[List[bool]]
@@ -111,6 +152,18 @@ class TrainRequest(BaseModel):
     enn_config: Dict[str, Any] = {
         "num_neurons": 10, "num_states": 5, "hidden_dim": 128
     }
+    model_type: str = "ensemble"  # "ensemble", "single", "random", "greedy"
+
+class BenchmarkRequest(BaseModel):
+    family: str = "corridors"
+    map_seed: int = 12345
+    bicep_params: Dict[str, Any] = {
+        "K": 5000, "T": 300, "mu": 1.2, "sigma": 0.7, "rho": 0.0
+    }
+    num_demos: int = 100
+    bc_epochs: int = 50
+    test_seeds: List[int] = [111, 222, 333, 444, 555]
+    episodes_per_seed: int = 10
 
 class EvalRequest(BaseModel):
     policy_id: str
@@ -234,7 +287,15 @@ def grid_to_tensor(grid, start, goal, state):
 def extract_features(x, y, grid, start_positions, goal_positions, window_size=3):
     """Extract rich features for the neural network (27 dimensions)"""
     features = []
-    H, W = len(grid), len(grid[0]) if grid else 40
+    H, W = 40, 40  # Fixed grid size
+    if grid and len(grid) > 0 and len(grid[0]) > 0:
+        H, W = len(grid), len(grid[0])
+    
+    # Ensure we have valid positions
+    if not goal_positions:
+        goal_positions = [[W-2, H//2]]
+    if not start_positions:
+        start_positions = [[1, H//2]]
     
     # 1-2: Normalized position (2 features)
     features.extend([x / W, y / H])
@@ -256,7 +317,10 @@ def extract_features(x, y, grid, start_positions, goal_positions, window_size=3)
                 continue  # Skip center
             nx, ny = x + dx, y + dy
             if 0 <= nx < W and 0 <= ny < H:
-                features.append(1.0 if grid[nx][ny] else 0.0)
+                is_obstacle = False
+                if grid and nx < len(grid) and ny < len(grid[nx]):
+                    is_obstacle = grid[nx][ny]
+                features.append(1.0 if is_obstacle else 0.0)
             else:
                 features.append(1.0)  # Treat out-of-bounds as obstacle
     
@@ -265,7 +329,12 @@ def extract_features(x, y, grid, start_positions, goal_positions, window_size=3)
     for dx, dy in directions:
         dist = 0
         nx, ny = x + dx, y + dy
-        while 0 <= nx < W and 0 <= ny < H and not grid[nx][ny]:
+        while 0 <= nx < W and 0 <= ny < H:
+            is_obstacle = False
+            if grid and nx < len(grid) and ny < len(grid[nx]):
+                is_obstacle = grid[nx][ny]
+            if is_obstacle:
+                break
             dist += 1
             nx += dx
             ny += dy
@@ -411,18 +480,25 @@ async def train_policy(req: TrainRequest):
         
         demos = generate_fake_demos(grid, start_positions, goal_positions, req.num_demos)
         
-        # Create model
-        if ENN_AVAILABLE:
+        # Create model based on type
+        if ENN_AVAILABLE and req.model_type == "ensemble":
             # Use real ENN if available
             config = Config()
             for k, v in req.enn_config.items():
                 setattr(config, k, v)
             model = create_attention_enn(config, input_size=(4, 40, 40), num_actions=4)
         else:
-            # Use fallback
-            model = SimpleEnsembleNet(
-                hidden_dim=req.enn_config.get('hidden_dim', 128)
-            )
+            # Use fallback models
+            if req.model_type == "single":
+                model = SingleNet(hidden_dim=req.enn_config.get('hidden_dim', 128))
+            elif req.model_type == "random":
+                model = RandomPolicy()
+            elif req.model_type == "greedy":
+                model = GreedyPolicy()
+            else:  # default to ensemble
+                model = SimpleEnsembleNet(
+                    hidden_dim=req.enn_config.get('hidden_dim', 128)
+                )
         
         # Train via behavior cloning
         trained_model = train_policy_on_demos(model, demos, grid, start_positions, goal_positions, req.bc_epochs)
@@ -596,6 +672,71 @@ async def delete_policy(policy_id: str):
     
     del policy_registry[policy_id]
     return {'message': f'Policy {policy_id} deleted'}
+
+@app.post("/benchmark", response_model=Dict[str, Any])
+async def run_benchmark(req: BenchmarkRequest):
+    """Run comparative benchmark across different model types"""
+    try:
+        model_types = ["ensemble", "single", "random", "greedy"]
+        results = {}
+        
+        for model_type in model_types:
+            print(f"Benchmarking {model_type} model...")
+            
+            # Train model
+            train_req = TrainRequest(
+                family=req.family,
+                map_seed=req.map_seed,
+                bicep_params=req.bicep_params,
+                num_demos=req.num_demos,
+                bc_epochs=req.bc_epochs,
+                model_type=model_type
+            )
+            
+            # Skip training for random/greedy
+            if model_type in ["random", "greedy"]:
+                train_result = {"policy_id": f"{model_type}_baseline"}
+                
+                # Create and store the baseline model
+                if model_type == "random":
+                    model = RandomPolicy()
+                else:
+                    model = GreedyPolicy()
+                    
+                policy_registry[train_result["policy_id"]] = {
+                    'model': model,
+                    'metadata': {'model_type': model_type}
+                }
+            else:
+                train_result = await train_policy(train_req)
+            
+            # Evaluate model
+            eval_req = EvalRequest(
+                policy_id=train_result["policy_id"],
+                test_seeds=req.test_seeds,
+                episodes_per_seed=req.episodes_per_seed
+            )
+            eval_result = await evaluate_policy(eval_req)
+            
+            results[model_type] = {
+                'success_rate': eval_result['overall_success_rate'],
+                'mean_steps': eval_result['mean_steps'],
+                'policy_id': train_result["policy_id"]
+            }
+            
+        return {
+            'benchmark_results': results,
+            'test_config': {
+                'family': req.family,
+                'map_seed': req.map_seed,
+                'num_demos': req.num_demos,
+                'bc_epochs': req.bc_epochs,
+                'test_seeds': req.test_seeds
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Benchmark failed: {str(e)}")
 
 @app.get("/health")
 async def health_check():

@@ -820,7 +820,7 @@
     // Global RNG instance
     let globalRNG = new DeterministicRNG(Math.floor(Math.random() * 1000000));
     
-    // Canvas setup
+    // Canvas setup with Hi-DPI support
     const bgCanvas = document.getElementById('bg-canvas');
     const obsCanvas = document.getElementById('obs-canvas');
     const simCanvas = document.getElementById('sim-canvas');
@@ -828,12 +828,44 @@
     const sparklineCanvas = document.getElementById('sparkline-canvas');
     const costHistogram = document.getElementById('cost-histogram');
     
-    const bgCtx = bgCanvas.getContext('2d');
-    const obsCtx = obsCanvas.getContext('2d');
-    const simCtx = simCanvas.getContext('2d');
-    const pathCtx = pathCanvas.getContext('2d');
+    // Hi-DPI scaling function
+    function setupCanvas(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const w = gridSize * cellSize;
+      const h = gridSize * cellSize;
+      
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return ctx;
+    }
+    
+    // Setup main canvases with Hi-DPI
+    const bgCtx = setupCanvas(bgCanvas);
+    const obsCtx = setupCanvas(obsCanvas);
+    const simCtx = setupCanvas(simCanvas);
+    const pathCtx = setupCanvas(pathCanvas);
+    
+    // Setup smaller canvases
     const sparkCtx = sparklineCanvas.getContext('2d');
     const histCtx = costHistogram.getContext('2d');
+    
+    // Apply Hi-DPI to sparkline and histogram too
+    [sparklineCanvas, costHistogram].forEach(canvas => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = rect.height + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    });
     
     // Grid settings
     const gridSize = 40;
@@ -2181,9 +2213,10 @@
         return;
       }
       
-      // Curriculum annealing: β starts at 0.5, goes to 0
+      // Use β slider as starting value and anneal to 0
       const progress = rlStats.episode / rlStats.totalEpisodes;
-      const currentBeta = Math.max(0, 0.5 * (1 - progress));
+      const beta0 = parseFloat(document.getElementById('beta').value);
+      const currentBeta = Math.max(0, beta0 * (1 - progress));
       document.getElementById('current-beta').textContent = currentBeta.toFixed(2);
       document.getElementById('beta-display').textContent = currentBeta.toFixed(2);
       
@@ -2224,7 +2257,7 @@
         const useRemoteENN = document.getElementById('use-remote-enn').checked;
         
         // Mixture policy: (1-β)·π_RL + β·π_demo/ENN
-        if (globalRNG.next() < beta) {
+        if (rng.next() < beta) {
           // Use demo policy or remote ENN
           if (useRemoteENN) {
             action = await getRemoteENNAction(state);
@@ -2245,7 +2278,7 @@
         if (useBuffer && rlBuffer.length > 10) {
           // Sample mini-batch from replay buffer with proper transitions
           for (let i = 0; i < 16; i++) {
-            const t = rlBuffer[Math.floor(globalRNG.next() * rlBuffer.length)];
+            const t = rlBuffer[Math.floor(rng.next() * rlBuffer.length)];
             const s = rlAgent.stateKey(t.sx, t.sy);
             const ns = rlAgent.stateKey(t.nx, t.ny);
             rlAgent.update(s, t.action, t.reward, ns);
@@ -2566,6 +2599,173 @@
       link.click();
     }
     
+    // URL sharing functionality
+    function generateShareURL() {
+      const url = new URL(window.location.href.split('?')[0]);
+      url.searchParams.set('seed', currentSeed);
+      url.searchParams.set('mapSeed', currentMapSeed);
+      url.searchParams.set('family', currentMapFamily);
+      url.searchParams.set('K', document.getElementById('particles').value);
+      url.searchParams.set('mu', document.getElementById('drift').value);
+      url.searchParams.set('sigma', document.getElementById('sigma').value);
+      url.searchParams.set('rho', document.getElementById('correlation').value);
+      url.searchParams.set('T', document.getElementById('horizon-slider').value);
+      
+      // Add map-specific parameters
+      if (mapParams.width) url.searchParams.set('width', mapParams.width);
+      if (mapParams.density) url.searchParams.set('density', mapParams.density);
+      
+      return url.toString();
+    }
+    
+    function loadFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      
+      if (params.has('seed')) {
+        currentSeed = parseInt(params.get('seed'));
+        document.getElementById('replay-seed').value = currentSeed;
+      }
+      
+      if (params.has('mapSeed')) {
+        currentMapSeed = parseInt(params.get('mapSeed'));
+      }
+      
+      if (params.has('family')) {
+        currentMapFamily = params.get('family');
+        // Update family selector if it exists
+      }
+      
+      // Load BICEP parameters
+      if (params.has('K')) document.getElementById('particles').value = params.get('K');
+      if (params.has('mu')) document.getElementById('drift').value = params.get('mu');
+      if (params.has('sigma')) document.getElementById('sigma').value = params.get('sigma');
+      if (params.has('rho')) document.getElementById('correlation').value = params.get('rho');
+      if (params.has('T')) document.getElementById('horizon-slider').value = params.get('T');
+      
+      // Load map parameters
+      if (params.has('width')) mapParams.width = parseInt(params.get('width'));
+      if (params.has('density')) mapParams.density = parseFloat(params.get('density'));
+      
+      // Update the display
+      updateSliderDisplays();
+      
+      // Regenerate grid with loaded parameters
+      if (params.size > 0) {
+        grid = generateMap(currentMapFamily, mapParams, currentMapSeed);
+        drawObstacles();
+      }
+    }
+    
+    function copyShareURL() {
+      const url = generateShareURL();
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Share URL copied to clipboard!');
+      }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('Share URL copied to clipboard!');
+      });
+    }
+    
+    function updateSliderDisplays() {
+      // Update slider display values
+      document.getElementById('particles-value').textContent = document.getElementById('particles').value;
+      document.getElementById('drift-value').textContent = document.getElementById('drift').value;
+      document.getElementById('sigma-value').textContent = document.getElementById('sigma').value;
+      document.getElementById('correlation-value').textContent = document.getElementById('correlation').value;
+      document.getElementById('horizon-value').textContent = document.getElementById('horizon-slider').value;
+    }
+    
+    // ENN Training Integration
+    let currentPolicyId = null;
+    
+    async function trainENN() {
+      const payload = {
+        family: currentMapFamily,
+        map_seed: currentMapSeed,
+        bicep_params: {
+          K: parseInt(document.getElementById('particles').value),
+          T: parseInt(document.getElementById('horizon-slider').value),
+          mu: parseFloat(document.getElementById('drift').value),
+          sigma: parseFloat(document.getElementById('sigma').value),
+          rho: parseFloat(document.getElementById('correlation').value)
+        },
+        num_demos: 64,
+        bc_epochs: parseInt(document.getElementById('episodes').value) // reusing the slider
+      };
+
+      try {
+        const res = await fetch('http://localhost:8000/enn/train', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const out = await res.json();
+        currentPolicyId = out.policy_id;
+        
+        // Update UI to show training succeeded
+        document.getElementById('rl-episode').textContent = out.bc_epochs || '—';
+        document.getElementById('rl-reward').textContent = (out.training_loss || 0).toFixed(3);
+        
+        // Enable remote ENN checkbox
+        document.getElementById('use-remote-enn').checked = true;
+        
+        console.log('ENN Training complete:', out);
+        alert(`ENN training complete! Policy ID: ${currentPolicyId.substring(0,8)}`);
+        
+      } catch (error) {
+        console.error('ENN training failed:', error);
+        alert('ENN training failed - check server connection');
+      }
+    }
+    
+    // Existing RL training (kept for backward compatibility)
+    function startTraining() {
+      if (trainingRunning) {
+        // Stop training
+        trainingRunning = false;
+        document.getElementById('train-btn').textContent = 'Train Agent';
+        return;
+      }
+      
+      // Ask user which training method to use
+      const choice = confirm('Use ENN training (OK) or legacy RL training (Cancel)?');
+      
+      if (choice) {
+        // ENN training
+        trainENN();
+      } else {
+        // Legacy RL training
+        startRLTraining();
+      }
+    }
+    
+    function startRLTraining() {
+      // Reset RL stats
+      rlStats = {
+        episode: 0,
+        totalEpisodes: parseInt(document.getElementById('episodes').value),
+        successCount: 0,
+        totalSteps: 0,
+        totalReward: 0,
+        successRate: 0,
+        avgSteps: 0,
+        avgReward: 0
+      };
+      
+      trainingRunning = true;
+      document.getElementById('train-btn').textContent = 'Stop Training';
+      document.getElementById('current-phase').textContent = 'Starting...';
+      
+      // Start training loop
+      trainingLoop();
+    }
+
     // Add tooltips to mode buttons
     const modeTooltips = {
       'particles': 'Live particle swarm showing active trajectories',

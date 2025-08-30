@@ -1,0 +1,34 @@
+FusionAlpha Evaluation Report
+==================================================
+
+Configuration:
+  Gate Type: rule
+  Dataset: synthetic
+  Metrics: auroc, accuracy
+  Timestamp: 2025-08-18T22:29:28.129777
+
+Overall Metrics:
+  auroc: 0.9832
+  accuracy: 0.9267
+  abstain_rate: 0.0600
+  avg_confidence: 0.3023
+  prediction_variance: 0.0873
+
+Calibration Metrics:
+  brier_score: 0.0658
+
+Expert Usage:
+  AlignedExpert: 84.0%
+  AntiBExpert: 11.3%
+  AntiAExpert: 4.7%
+
+Per-Regime Performance:
+  aligned:
+    auroc: 0.5000
+    accuracy: 0.9541
+    abstain_rate: 0.0000
+  contradictory:
+    auroc: 0.5000
+    accuracy: 0.8537
+    abstain_rate: 0.2195
+

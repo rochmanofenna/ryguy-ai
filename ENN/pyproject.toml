@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "enn"
+version = "0.0.1"
+description = "Entangled Neural Networks with Adaptive Sparsity Control"
+requires-python = ">=3.8"
+dependencies = [
+    "torch>=2.0",
+    "numpy>=1.20.0",
+    "matplotlib>=3.5.0"
+]
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+include = ["enn*"]
+exclude = ["tests*", "tb_logs*"]
+
+[tool.setuptools.package-data]
+enn = ["*.py"]
+
+
+

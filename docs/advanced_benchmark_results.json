@@ -1,0 +1,145 @@
+{
+  "sequence_learning": {
+    "transformer": {
+      "test_loss": 0.045190487056970596,
+      "train_time": 88.8902428150177,
+      "params": 3420426
+    },
+    "liquid_nn": {
+      "test_loss": 0.018160628154873848,
+      "train_time": 0.7929155826568604,
+      "params": 19466
+    },
+    "neural_ode": {
+      "test_loss": 0.01664634980261326,
+      "train_time": 0.08011794090270996,
+      "params": 19210
+    },
+    "spiking_nn": {
+      "test_loss": 0.018376167863607407,
+      "train_time": 0.4745805263519287,
+      "params": 19210
+    },
+    "graph_nn": {
+      "test_loss": 0.016188785433769226,
+      "train_time": 0.07170319557189941,
+      "params": 68618
+    }
+  },
+  "continual_learning": {
+    "transformer": {
+      "final_avg_accuracy": 0.9759999990463257,
+      "forgetting": -0.045999991893768355,
+      "accuracy_progression": [
+        0.9300000071525574,
+        0.9199999868869781,
+        0.950000007947286,
+        0.9650000035762787,
+        0.9759999990463257
+      ]
+    },
+    "liquid_nn": {
+      "final_avg_accuracy": 0.9179999947547912,
+      "forgetting": -0.02800000905990596,
+      "accuracy_progression": [
+        0.8899999856948853,
+        0.7649999856948853,
+        0.8566666642824808,
+        0.8549999967217445,
+        0.9179999947547912
+      ]
+    },
+    "neural_ode": {
+      "final_avg_accuracy": 0.9740000009536743,
+      "forgetting": -0.003999972343444846,
+      "accuracy_progression": [
+        0.9700000286102295,
+        0.9699999988079071,
+        0.9666666587193807,
+        0.9874999970197678,
+        0.9740000009536743
+      ]
+    },
+    "spiking_nn": {
+      "final_avg_accuracy": 0.9059999942779541,
+      "forgetting": -0.08600000143051145,
+      "accuracy_progression": [
+        0.8199999928474426,
+        0.8549999892711639,
+        0.8366666634877523,
+        0.8824999928474426,
+        0.9059999942779541
+      ]
+    },
+    "graph_nn": {
+      "final_avg_accuracy": 0.9879999995231629,
+      "forgetting": 0.0020000100135803,
+      "accuracy_progression": [
+        0.9900000095367432,
+        0.9950000047683716,
+        0.9866666793823242,
+        0.9975000023841858,
+        0.9879999995231629
+      ]
+    }
+  },
+  "few_shot_learning": {
+    "transformer": {
+      "mean_accuracy": 0.10200000032782555,
+      "std_accuracy": 0.028565713936392307,
+      "n_shots": 5
+    },
+    "liquid_nn": {
+      "mean_accuracy": 0.10999999940395355,
+      "std_accuracy": 0.04494440868946955,
+      "n_shots": 5
+    },
+    "neural_ode": {
+      "mean_accuracy": 0.09900000020861625,
+      "std_accuracy": 0.03753665041522623,
+      "n_shots": 5
+    },
+    "spiking_nn": {
+      "mean_accuracy": 0.10300000011920929,
+      "std_accuracy": 0.03522783002436349,
+      "n_shots": 5
+    },
+    "graph_nn": {
+      "mean_accuracy": 0.09799999855458737,
+      "std_accuracy": 0.022715632613072353,
+      "n_shots": 5
+    }
+  },
+  "adversarial_robustness": {
+    "transformer": {
+      "clean_accuracy": 0.9850000143051147,
+      "adversarial_accuracy": 0.7649999856948853,
+      "robustness_gap": 0.2200000286102295,
+      "epsilon": 0.1
+    },
+    "liquid_nn": {
+      "clean_accuracy": 0.9700000286102295,
+      "adversarial_accuracy": 0.7599999904632568,
+      "robustness_gap": 0.21000003814697266,
+      "epsilon": 0.1
+    },
+    "neural_ode": {
+      "clean_accuracy": 0.9900000095367432,
+      "adversarial_accuracy": 0.7699999809265137,
+      "robustness_gap": 0.2200000286102295,
+      "epsilon": 0.1
+    },
+    "spiking_nn": {
+      "clean_accuracy": 0.9350000023841858,
+      "adversarial_accuracy": 0.9399999976158142,
+      "robustness_gap": -0.004999995231628418,
+      "epsilon": 0.1
+    },
+    "graph_nn": {
+      "clean_accuracy": 0.9950000047683716,
+      "adversarial_accuracy": 0.7799999713897705,
+      "robustness_gap": 0.21500003337860107,
+      "epsilon": 0.1
+    }
+  }
+}

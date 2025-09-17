@@ -1,0 +1,1090 @@
+{
+  "time_series": {
+    "transformer": {
+      "mse": 0.01045275293290615,
+      "mae": 0.08165561407804489,
+      "r2_score": 0.9280128628015518,
+      "train_time": 53.682324171066284,
+      "best_train_loss": 0.007780915126204491
+    },
+    "liquid_nn": {
+      "mse": 0.0101691372692585,
+      "mae": 0.0805526152253151,
+      "r2_score": 0.9299660995602608,
+      "train_time": 3.9408342838287354,
+      "best_train_loss": 0.007194627542048693
+    },
+    "neural_ode": {
+      "mse": 0.010397677309811115,
+      "mae": 0.08142277598381042,
+      "r2_score": 0.9283921644091606,
+      "train_time": 1.0162711143493652,
+      "best_train_loss": 0.007381279021501541
+    },
+    "spiking_nn": {
+      "mse": 0.010203149169683456,
+      "mae": 0.08088076859712601,
+      "r2_score": 0.9297318682074547,
+      "train_time": 2.370854139328003,
+      "best_train_loss": 0.007218468934297562
+    },
+    "graph_nn": {
+      "mse": 0.010220733471214771,
+      "mae": 0.08061520755290985,
+      "r2_score": 0.9296107590198517,
+      "train_time": 0.994002103805542,
+      "best_train_loss": 0.007131690625101328
+    },
+    "enn": {
+      "mse": 0.010183269158005714,
+      "mae": 0.08052799850702286,
+      "r2_score": 0.9298687800765038,
+      "train_time": 3.8002703189849854,
+      "best_train_loss": 0.007164743263274431
+    },
+    "bicep_enn": {
+      "mse": 0.010164724662899971,
+      "mae": 0.08052046597003937,
+      "r2_score": 0.9299964904785156,
+      "train_time": 4.091905117034912,
+      "best_train_loss": 0.007192552089691162
+    }
+  },
+  "anomaly_detection": {
+    "transformer": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "auc": 1.0,
+      "train_time": 17.314348936080933
+    },
+    "liquid_nn": {
+      "accuracy": 0.9075000286102295,
+      "precision": 1.0,
+      "recall": 0.6407766990291263,
+      "f1_score": 0.7810650887573964,
+      "auc": 0.6458435487561701,
+      "train_time": 1.3628098964691162
+    },
+    "neural_ode": {
+      "accuracy": 0.9975000023841858,
+      "precision": 1.0,
+      "recall": 0.9902912621359223,
+      "f1_score": 0.9951219512195122,
+      "auc": 1.0,
+      "train_time": 0.3367588520050049
+    },
+    "spiking_nn": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "auc": 1.0,
+      "train_time": 0.8527984619140625
+    },
+    "graph_nn": {
+      "accuracy": 0.9975000023841858,
+      "precision": 1.0,
+      "recall": 0.9902912621359223,
+      "f1_score": 0.9951219512195122,
+      "auc": 1.0,
+      "train_time": 0.32613277435302734
+    },
+    "enn": {
+      "accuracy": 0.9975000023841858,
+      "precision": 1.0,
+      "recall": 0.9902912621359223,
+      "f1_score": 0.9951219512195122,
+      "auc": 1.0,
+      "train_time": 3.2687361240386963
+    },
+    "bicep_enn": {
+      "accuracy": 0.9975000023841858,
+      "precision": 1.0,
+      "recall": 0.9902912621359223,
+      "f1_score": 0.9951219512195122,
+      "auc": 1.0,
+      "train_time": 1.2352678775787354
+    }
+  },
+  "sequence_classification": {
+    "transformer": {
+      "accuracy": 1.0,
+      "per_class_accuracy": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "train_time": 82.75277304649353
+    },
+    "liquid_nn": {
+      "accuracy": 0.20800000429153442,
+      "per_class_accuracy": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "train_time": 6.7487030029296875
+    },
+    "neural_ode": {
+      "accuracy": 0.5540000200271606,
+      "per_class_accuracy": [
+        0.0,
+        1.0,
+        0.28703704476356506,
+        0.9509803652763367,
+        0.593406617641449
+      ],
+      "train_time": 1.1389505863189697
+    },
+    "spiking_nn": {
+      "accuracy": 0.492000013589859,
+      "per_class_accuracy": [
+        0.6057692170143127,
+        0.46315789222717285,
+        0.009259259328246117,
+        0.4901960790157318,
+        0.9670329689979553
+      ],
+      "train_time": 2.7903892993927
+    },
+    "graph_nn": {
+      "accuracy": 0.5440000295639038,
+      "per_class_accuracy": [
+        0.0,
+        1.0,
+        0.0,
+        0.9607843160629272,
+        0.8681318759918213
+      ],
+      "train_time": 3.24752140045166
+    },
+    "enn": {
+      "accuracy": 0.5440000295639038,
+      "per_class_accuracy": [
+        0.0,
+        1.0,
+        0.0,
+        0.9509803652763367,
+        0.8791208863258362
+      ],
+      "train_time": 4.614422798156738
+    },
+    "bicep_enn": {
+      "accuracy": 0.5440000295639038,
+      "per_class_accuracy": [
+        0.0,
+        1.0,
+        0.0,
+        0.9509803652763367,
+        0.8791208863258362
+      ],
+      "train_time": 4.751641750335693
+    }
+  },
+  "multimodal": {
+    "transformer": {
+      "full_accuracy": 0.6150000095367432,
+      "image_only_accuracy": 0.5249999761581421,
+      "text_only_accuracy": 0.4699999988079071,
+      "train_time": 7.5680601596832275
+    },
+    "liquid_nn": {
+      "full_accuracy": 0.46000000834465027,
+      "image_only_accuracy": 0.46000000834465027,
+      "text_only_accuracy": 0.46000000834465027,
+      "train_time": 1.9962172508239746
+    },
+    "neural_ode": {
+      "full_accuracy": 0.550000011920929,
+      "image_only_accuracy": 0.5400000214576721,
+      "text_only_accuracy": 0.5299999713897705,
+      "train_time": 0.4678821563720703
+    },
+    "spiking_nn": {
+      "full_accuracy": 0.5199999809265137,
+      "image_only_accuracy": 0.5149999856948853,
+      "text_only_accuracy": 0.5600000023841858,
+      "train_time": 1.216588020324707
+    },
+    "graph_nn": {
+      "full_accuracy": 0.6399999856948853,
+      "image_only_accuracy": 0.5600000023841858,
+      "text_only_accuracy": 0.49000000953674316,
+      "train_time": 0.45519447326660156
+    },
+    "enn": {
+      "full_accuracy": 0.5450000166893005,
+      "image_only_accuracy": 0.5199999809265137,
+      "text_only_accuracy": 0.4650000035762787,
+      "train_time": 3.8439369201660156
+    },
+    "bicep_enn": {
+      "full_accuracy": 0.5149999856948853,
+      "image_only_accuracy": 0.4950000047683716,
+      "text_only_accuracy": 0.4650000035762787,
+      "train_time": 1.8209972381591797
+    }
+  },
+  "scalability": {
+    "transformer": [
+      {
+        "input_size": 10,
+        "batch_size": 1,
+        "forward_time_ms": 2.2411584854125977,
+        "memory_mb": 0.005168914794921875
+      },
+      {
+        "input_size": 10,
+        "batch_size": 32,
+        "forward_time_ms": 2.913358211517334,
+        "memory_mb": 0.005046844482421875
+      },
+      {
+        "input_size": 10,
+        "batch_size": 128,
+        "forward_time_ms": 4.1826605796813965,
+        "memory_mb": 0.005046844482421875
+      },
+      {
+        "input_size": 10,
+        "batch_size": 512,
+        "forward_time_ms": 8.048567771911621,
+        "memory_mb": 0.005077362060546875
+      },
+      {
+        "input_size": 50,
+        "batch_size": 1,
+        "forward_time_ms": 2.2754406929016113,
+        "memory_mb": 0.004711151123046875
+      },
+      {
+        "input_size": 50,
+        "batch_size": 32,
+        "forward_time_ms": 2.9415440559387207,
+        "memory_mb": 0.005046844482421875
+      },
+      {
+        "input_size": 50,
+        "batch_size": 128,
+        "forward_time_ms": 4.188826084136963,
+        "memory_mb": 0.005046844482421875
+      },
+      {
+        "input_size": 50,
+        "batch_size": 512,
+        "forward_time_ms": 8.08203935623169,
+        "memory_mb": 0.005077362060546875
+      },
+      {
+        "input_size": 100,
+        "batch_size": 1,
+        "forward_time_ms": 2.286710739135742,
+        "memory_mb": 0.004711151123046875
+      },
+      {
+        "input_size": 100,
+        "batch_size": 32,
+        "forward_time_ms": 2.9821300506591797,
+        "memory_mb": 0.005046844482421875
+      },
+      {
+        "input_size": 100,
+        "batch_size": 128,
+        "forward_time_ms": 4.204056262969971,
+        "memory_mb": 0.005046844482421875
+      },
+      {
+        "input_size": 100,
+        "batch_size": 512,
+        "forward_time_ms": 27.037923336029053,
+        "memory_mb": 0.005077362060546875
+      },
+      {
+        "input_size": 500,
+        "batch_size": 1,
+        "forward_time_ms": 2.2374796867370605,
+        "memory_mb": 0.004711151123046875
+      },
+      {
+        "input_size": 500,
+        "batch_size": 32,
+        "forward_time_ms": 2.875392436981201,
+        "memory_mb": 0.005046844482421875
+      },
+      {
+        "input_size": 500,
+        "batch_size": 128,
+        "forward_time_ms": 4.142587184906006,
+        "memory_mb": 0.005046844482421875
+      },
+      {
+        "input_size": 500,
+        "batch_size": 512,
+        "forward_time_ms": 8.608846664428711,
+        "memory_mb": 0.005077362060546875
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 1,
+        "forward_time_ms": 2.4141550064086914,
+        "memory_mb": 0.004711151123046875
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 32,
+        "forward_time_ms": 2.9045939445495605,
+        "memory_mb": 0.005046844482421875
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 128,
+        "forward_time_ms": 4.2404985427856445,
+        "memory_mb": 0.005046844482421875
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 512,
+        "forward_time_ms": 26.243040561676025,
+        "memory_mb": 0.005077362060546875
+      }
+    ],
+    "liquid_nn": [
+      {
+        "input_size": 10,
+        "batch_size": 1,
+        "forward_time_ms": 1.1148357391357422,
+        "memory_mb": 0.0023345947265625
+      },
+      {
+        "input_size": 10,
+        "batch_size": 32,
+        "forward_time_ms": 1.401991844177246,
+        "memory_mb": 0.0023345947265625
+      },
+      {
+        "input_size": 10,
+        "batch_size": 128,
+        "forward_time_ms": 1.9398236274719238,
+        "memory_mb": 0.0023345947265625
+      },
+      {
+        "input_size": 10,
+        "batch_size": 512,
+        "forward_time_ms": 3.15335750579834,
+        "memory_mb": 0.0023651123046875
+      },
+      {
+        "input_size": 50,
+        "batch_size": 1,
+        "forward_time_ms": 1.112372875213623,
+        "memory_mb": 0.0023345947265625
+      },
+      {
+        "input_size": 50,
+        "batch_size": 32,
+        "forward_time_ms": 1.4425349235534668,
+        "memory_mb": 0.0023345947265625
+      },
+      {
+        "input_size": 50,
+        "batch_size": 128,
+        "forward_time_ms": 1.9420576095581055,
+        "memory_mb": 0.0023345947265625
+      },
+      {
+        "input_size": 50,
+        "batch_size": 512,
+        "forward_time_ms": 3.2410740852355957,
+        "memory_mb": 0.0023651123046875
+      },
+      {
+        "input_size": 100,
+        "batch_size": 1,
+        "forward_time_ms": 1.115565299987793,
+        "memory_mb": 0.0023345947265625
+      },
+      {
+        "input_size": 100,
+        "batch_size": 32,
+        "forward_time_ms": 1.4397335052490234,
+        "memory_mb": 0.0023345947265625
+      },
+      {
+        "input_size": 100,
+        "batch_size": 128,
+        "forward_time_ms": 1.9152164459228516,
+        "memory_mb": 0.0023345947265625
+      },
+      {
+        "input_size": 100,
+        "batch_size": 512,
+        "forward_time_ms": 3.392331600189209,
+        "memory_mb": 0.0023651123046875
+      },
+      {
+        "input_size": 500,
+        "batch_size": 1,
+        "forward_time_ms": 1.1617064476013184,
+        "memory_mb": 0.0023345947265625
+      },
+      {
+        "input_size": 500,
+        "batch_size": 32,
+        "forward_time_ms": 1.5593934059143066,
+        "memory_mb": 0.0023345947265625
+      },
+      {
+        "input_size": 500,
+        "batch_size": 128,
+        "forward_time_ms": 2.281804084777832,
+        "memory_mb": 0.0023345947265625
+      },
+      {
+        "input_size": 500,
+        "batch_size": 512,
+        "forward_time_ms": 4.845180511474609,
+        "memory_mb": 0.0023651123046875
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 1,
+        "forward_time_ms": 1.1458635330200195,
+        "memory_mb": 0.0023345947265625
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 32,
+        "forward_time_ms": 1.7251014709472656,
+        "memory_mb": 0.0023345947265625
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 128,
+        "forward_time_ms": 2.732980251312256,
+        "memory_mb": 0.0023345947265625
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 512,
+        "forward_time_ms": 6.773159503936768,
+        "memory_mb": 0.0023651123046875
+      }
+    ],
+    "neural_ode": [
+      {
+        "input_size": 10,
+        "batch_size": 1,
+        "forward_time_ms": 0.09929656982421875,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 10,
+        "batch_size": 32,
+        "forward_time_ms": 0.12712955474853516,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 10,
+        "batch_size": 128,
+        "forward_time_ms": 0.15159368515014648,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 10,
+        "batch_size": 512,
+        "forward_time_ms": 0.23895740509033203,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 50,
+        "batch_size": 1,
+        "forward_time_ms": 0.0955820083618164,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 50,
+        "batch_size": 32,
+        "forward_time_ms": 0.12820005416870117,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 50,
+        "batch_size": 128,
+        "forward_time_ms": 2.5991249084472656,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 50,
+        "batch_size": 512,
+        "forward_time_ms": 7.04012393951416,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 100,
+        "batch_size": 1,
+        "forward_time_ms": 2.4915647506713867,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 100,
+        "batch_size": 32,
+        "forward_time_ms": 3.4716272354125977,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 100,
+        "batch_size": 128,
+        "forward_time_ms": 2.812068462371826,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 100,
+        "batch_size": 512,
+        "forward_time_ms": 0.3416895866394043,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 500,
+        "batch_size": 1,
+        "forward_time_ms": 0.09553194046020508,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 500,
+        "batch_size": 32,
+        "forward_time_ms": 0.14173269271850586,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 500,
+        "batch_size": 128,
+        "forward_time_ms": 0.22330284118652344,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 500,
+        "batch_size": 512,
+        "forward_time_ms": 0.33211708068847656,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 1,
+        "forward_time_ms": 0.08397102355957031,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 32,
+        "forward_time_ms": 0.12808561325073242,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 128,
+        "forward_time_ms": 0.21515130996704102,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 512,
+        "forward_time_ms": 0.5124187469482422,
+        "memory_mb": 0.0008392333984375
+      }
+    ],
+    "spiking_nn": [
+      {
+        "input_size": 10,
+        "batch_size": 1,
+        "forward_time_ms": 1.2894654273986816,
+        "memory_mb": 0.004237174987792969
+      },
+      {
+        "input_size": 10,
+        "batch_size": 32,
+        "forward_time_ms": 1.7030739784240723,
+        "memory_mb": 0.004237174987792969
+      },
+      {
+        "input_size": 10,
+        "batch_size": 128,
+        "forward_time_ms": 2.6731443405151367,
+        "memory_mb": 0.004237174987792969
+      },
+      {
+        "input_size": 10,
+        "batch_size": 512,
+        "forward_time_ms": 4.851810932159424,
+        "memory_mb": 0.004267692565917969
+      },
+      {
+        "input_size": 50,
+        "batch_size": 1,
+        "forward_time_ms": 1.4043545722961426,
+        "memory_mb": 0.004237174987792969
+      },
+      {
+        "input_size": 50,
+        "batch_size": 32,
+        "forward_time_ms": 1.8902397155761719,
+        "memory_mb": 0.004237174987792969
+      },
+      {
+        "input_size": 50,
+        "batch_size": 128,
+        "forward_time_ms": 2.857942581176758,
+        "memory_mb": 0.004237174987792969
+      },
+      {
+        "input_size": 50,
+        "batch_size": 512,
+        "forward_time_ms": 5.056743621826172,
+        "memory_mb": 0.004267692565917969
+      },
+      {
+        "input_size": 100,
+        "batch_size": 1,
+        "forward_time_ms": 1.4122319221496582,
+        "memory_mb": 0.004237174987792969
+      },
+      {
+        "input_size": 100,
+        "batch_size": 32,
+        "forward_time_ms": 1.886427402496338,
+        "memory_mb": 0.004237174987792969
+      },
+      {
+        "input_size": 100,
+        "batch_size": 128,
+        "forward_time_ms": 2.790811061859131,
+        "memory_mb": 0.004237174987792969
+      },
+      {
+        "input_size": 100,
+        "batch_size": 512,
+        "forward_time_ms": 5.45360803604126,
+        "memory_mb": 0.004267692565917969
+      },
+      {
+        "input_size": 500,
+        "batch_size": 1,
+        "forward_time_ms": 1.4304852485656738,
+        "memory_mb": 0.004237174987792969
+      },
+      {
+        "input_size": 500,
+        "batch_size": 32,
+        "forward_time_ms": 2.1419739723205566,
+        "memory_mb": 0.004237174987792969
+      },
+      {
+        "input_size": 500,
+        "batch_size": 128,
+        "forward_time_ms": 3.445405960083008,
+        "memory_mb": 0.004237174987792969
+      },
+      {
+        "input_size": 500,
+        "batch_size": 512,
+        "forward_time_ms": 8.114190101623535,
+        "memory_mb": 0.004267692565917969
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 1,
+        "forward_time_ms": 1.4561843872070312,
+        "memory_mb": 0.004237174987792969
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 32,
+        "forward_time_ms": 22.89252519607544,
+        "memory_mb": 0.004237174987792969
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 128,
+        "forward_time_ms": 4.087858200073242,
+        "memory_mb": 0.004237174987792969
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 512,
+        "forward_time_ms": 11.744439601898193,
+        "memory_mb": 0.004267692565917969
+      }
+    ],
+    "graph_nn": [
+      {
+        "input_size": 10,
+        "batch_size": 1,
+        "forward_time_ms": 0.0787663459777832,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 10,
+        "batch_size": 32,
+        "forward_time_ms": 0.09971141815185547,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 10,
+        "batch_size": 128,
+        "forward_time_ms": 0.118408203125,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 10,
+        "batch_size": 512,
+        "forward_time_ms": 0.17346620559692383,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 50,
+        "batch_size": 1,
+        "forward_time_ms": 0.0817728042602539,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 50,
+        "batch_size": 32,
+        "forward_time_ms": 0.15733003616333008,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 50,
+        "batch_size": 128,
+        "forward_time_ms": 0.14817476272583008,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 50,
+        "batch_size": 512,
+        "forward_time_ms": 0.17837285995483398,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 100,
+        "batch_size": 1,
+        "forward_time_ms": 0.08003950119018555,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 100,
+        "batch_size": 32,
+        "forward_time_ms": 0.10721683502197266,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 100,
+        "batch_size": 128,
+        "forward_time_ms": 0.1260519027709961,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 100,
+        "batch_size": 512,
+        "forward_time_ms": 0.19448518753051758,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 500,
+        "batch_size": 1,
+        "forward_time_ms": 0.08344411849975586,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 500,
+        "batch_size": 32,
+        "forward_time_ms": 0.11694192886352539,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 500,
+        "batch_size": 128,
+        "forward_time_ms": 0.15128135681152344,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 500,
+        "batch_size": 512,
+        "forward_time_ms": 0.3269672393798828,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 1,
+        "forward_time_ms": 0.08744239807128906,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 32,
+        "forward_time_ms": 0.12749910354614258,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 128,
+        "forward_time_ms": 0.19281625747680664,
+        "memory_mb": 0.0008392333984375
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 512,
+        "forward_time_ms": 0.49830675125122076,
+        "memory_mb": 0.0008392333984375
+      }
+    ],
+    "enn": [
+      {
+        "input_size": 10,
+        "batch_size": 1,
+        "forward_time_ms": 0.6107616424560547,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 10,
+        "batch_size": 32,
+        "forward_time_ms": 0.7507514953613281,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 10,
+        "batch_size": 128,
+        "forward_time_ms": 0.9397482872009277,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 10,
+        "batch_size": 512,
+        "forward_time_ms": 1.404416561126709,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 50,
+        "batch_size": 1,
+        "forward_time_ms": 0.6251239776611328,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 50,
+        "batch_size": 32,
+        "forward_time_ms": 0.7740449905395508,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 50,
+        "batch_size": 128,
+        "forward_time_ms": 0.9723138809204102,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 50,
+        "batch_size": 512,
+        "forward_time_ms": 1.626429557800293,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 100,
+        "batch_size": 1,
+        "forward_time_ms": 0.6215214729309082,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 100,
+        "batch_size": 32,
+        "forward_time_ms": 0.7783651351928711,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 100,
+        "batch_size": 128,
+        "forward_time_ms": 0.9699487686157227,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 100,
+        "batch_size": 512,
+        "forward_time_ms": 1.5366554260253906,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 500,
+        "batch_size": 1,
+        "forward_time_ms": 0.6401562690734863,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 500,
+        "batch_size": 32,
+        "forward_time_ms": 0.8535504341125488,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 500,
+        "batch_size": 128,
+        "forward_time_ms": 1.2160420417785645,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 500,
+        "batch_size": 512,
+        "forward_time_ms": 22.974820137023926,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 1,
+        "forward_time_ms": 0.607764720916748,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 32,
+        "forward_time_ms": 0.8712005615234375,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 128,
+        "forward_time_ms": 1.3137102127075195,
+        "memory_mb": 0.00213623046875
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 512,
+        "forward_time_ms": 3.1143641471862793,
+        "memory_mb": 0.00213623046875
+      }
+    ],
+    "bicep_enn": [
+      {
+        "input_size": 10,
+        "batch_size": 1,
+        "forward_time_ms": 0.6490707397460938,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 10,
+        "batch_size": 32,
+        "forward_time_ms": 0.8360505104064941,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 10,
+        "batch_size": 128,
+        "forward_time_ms": 1.2066173553466797,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 10,
+        "batch_size": 512,
+        "forward_time_ms": 2.374393939971924,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 50,
+        "batch_size": 1,
+        "forward_time_ms": 0.6227231025695801,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 50,
+        "batch_size": 32,
+        "forward_time_ms": 0.8698439598083496,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 50,
+        "batch_size": 128,
+        "forward_time_ms": 1.213223934173584,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 50,
+        "batch_size": 512,
+        "forward_time_ms": 2.6335906982421875,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 100,
+        "batch_size": 1,
+        "forward_time_ms": 0.6546258926391602,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 100,
+        "batch_size": 32,
+        "forward_time_ms": 0.8580446243286133,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 100,
+        "batch_size": 128,
+        "forward_time_ms": 1.2351655960083008,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 100,
+        "batch_size": 512,
+        "forward_time_ms": 2.530372142791748,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 500,
+        "batch_size": 1,
+        "forward_time_ms": 0.6607818603515625,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 500,
+        "batch_size": 32,
+        "forward_time_ms": 0.9280943870544434,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 500,
+        "batch_size": 128,
+        "forward_time_ms": 1.3919782638549805,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 500,
+        "batch_size": 512,
+        "forward_time_ms": 3.1832313537597656,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 1,
+        "forward_time_ms": 0.6814289093017578,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 32,
+        "forward_time_ms": 0.9815669059753418,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 128,
+        "forward_time_ms": 1.6477465629577637,
+        "memory_mb": 0.0025634765625
+      },
+      {
+        "input_size": 1000,
+        "batch_size": 512,
+        "forward_time_ms": 24.514317512512207,
+        "memory_mb": 0.0025634765625
+      }
+    ]
+  }
+}

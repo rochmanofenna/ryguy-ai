@@ -1,0 +1,42 @@
+Warning: gymnasium/stable-baselines3 not installed. RL benchmarks will be skipped.
+🚀 Starting Advanced Benchmark Suite
+============================================================
+
+=== Sequence Learning Benchmark ===
+
+Testing transformer...
+  Test Loss: 0.0857
+  Train Time: 148.27s
+  Parameters: 3,420,426
+
+Testing liquid_nn...
+  Test Loss: 0.0182
+  Train Time: 8.29s
+  Parameters: 19,466
+
+Testing neural_ode...
+  Test Loss: 0.0162
+  Train Time: 2.50s
+  Parameters: 19,210
+
+Testing spiking_nn...
+  Test Loss: 0.0208
+  Train Time: 3.97s
+  Parameters: 19,210
+
+Testing graph_nn...
+Traceback (most recent call last):
+  File "/home/ryan/CAREER/ryguy-ai/docs/advanced_benchmark.py", line 595, in <module>
+    main()
+  File "/home/ryan/CAREER/ryguy-ai/docs/advanced_benchmark.py", line 581, in main
+    suite.benchmark_sequence_learning()
+  File "/home/ryan/CAREER/ryguy-ai/docs/advanced_benchmark.py", line 220, in benchmark_sequence_learning
+    loss = F.mse_loss(pred, y_train)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ryan/.direnv/python-3.11/lib/python3.11/site-packages/torch/nn/functional.py", line 3365, in mse_loss
+    expanded_input, expanded_target = torch.broadcast_tensors(input, target)
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ryan/.direnv/python-3.11/lib/python3.11/site-packages/torch/functional.py", line 76, in broadcast_tensors
+    return _VF.broadcast_tensors(tensors)  # type: ignore[attr-defined]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: The size of tensor a (25) must match the size of tensor b (800) at non-singleton dimension 0

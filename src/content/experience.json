@@ -1,0 +1,95 @@
+{
+  "stealth": {
+    "id": "stealth",
+    "title": "Systems Engineer",
+    "company": "Stealth Buy-Side Research",
+    "duration": "Jun 2024 - Present",
+    "location": "New York, NY",
+    "funding": "$45K Non-Dilutive Funding",
+    "metrics": {
+      "throughput": "1B ticks/day",
+      "latency": "p99 <20ms",
+      "performance": "10× speedup via CUDA kernels",
+      "funding": "$45,000 non-dilutive"
+    },
+    "bullets": [
+      {
+        "summary": "Built cointegration strategies with Markowitz optimization",
+        "technical": "Implemented using CUDA kernels for parallel stochastic integration, achieving 10× speedup over CPU implementations",
+        "code_sample": "github.com/rochmanofenna/cointegration-cuda"
+      },
+      {
+        "summary": "Developed Monte Carlo engine for derivatives pricing",
+        "technical": "Custom CUDA kernels processing 1B market ticks daily with variance reduction via Sobol sequences",
+        "code_sample": "github.com/rochmanofenna/monte-carlo-engine"
+      },
+      {
+        "summary": "Order book reconstruction with microstructure features",
+        "technical": "C++ ring buffers with lock-free SPSC queues, achieving 10M messages/sec throughput",
+        "code_sample": "github.com/rochmanofenna/orderbook-reconstruction"
+      }
+    ],
+    "demo_available": true,
+    "charts": ["pnl", "latency", "throughput", "sharpe"]
+  },
+  "sending": {
+    "id": "sending",
+    "title": "Software Engineer",
+    "company": "Sending Labs",
+    "duration": "Aug 2025 - Nov 2025",
+    "location": "New York, NY",
+    "metrics": {
+      "performance": "5× throughput improvement",
+      "optimization": "ManimGL rendering pipeline"
+    },
+    "bullets": [
+      {
+        "summary": "Optimized ManimGL rendering for educational content at scale",
+        "technical": "Rebuilt animation pipeline with GPU acceleration, reducing render times from 45s to 9s per video",
+        "code_sample": "github.com/rochmanofenna/manimgl-optimization"
+      }
+    ],
+    "demo_available": false,
+    "charts": ["performance"]
+  },
+  "videotutor": {
+    "id": "videotutor",
+    "title": "ML Engineer",
+    "company": "Video Tutor AI",
+    "duration": "Jun 2025 - Sep 2025",
+    "location": "New York, NY",
+    "metrics": {
+      "scale": "500+ automated video jobs",
+      "pipeline": "End-to-end generation system"
+    },
+    "bullets": [
+      {
+        "summary": "Built scalable video generation pipeline for educational content",
+        "technical": "Kafka-based job queue processing 500+ video generation requests with 99.2% success rate",
+        "code_sample": "github.com/rochmanofenna/video-generation-pipeline"
+      }
+    ],
+    "demo_available": false,
+    "charts": ["throughput"]
+  },
+  "olo": {
+    "id": "olo",
+    "title": "Software Engineering Intern",
+    "company": "Olo",
+    "duration": "Jun 2023 - Oct 2023",
+    "location": "New York, NY",
+    "metrics": {
+      "improvement": "28% RMSE reduction",
+      "forecasting": "ARIMA time series models"
+    },
+    "bullets": [
+      {
+        "summary": "Implemented ARIMA forecasting for restaurant demand prediction",
+        "technical": "Deployed time series models reducing forecast RMSE by 28% across 50+ restaurant chains",
+        "code_sample": "github.com/rochmanofenna/restaurant-forecasting"
+      }
+    ],
+    "demo_available": false,
+    "charts": ["accuracy"]
+  }
+}

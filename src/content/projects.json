@@ -1,0 +1,72 @@
+{
+  "live_systems": [
+    {
+      "id": "trading-stack",
+      "name": "Buy-Side Trading Stack",
+      "status": "RUNNING",
+      "badge": "$45K Funded",
+      "description": "Real-time algorithmic trading system processing 1B ticks/day with sub-20ms latency",
+      "metrics": ["1B ticks/day @ p99 <20ms", "Sharpe: 1.8", "Max Drawdown: 12%"],
+      "tech_stack": ["CUDA", "Kafka", "React", "C++"],
+      "demo_url": "/demo/trading",
+      "code_url": "https://github.com/rochmanofenna/trading-stack"
+    },
+    {
+      "id": "eeg-pipeline",
+      "name": "EEG Neural Pipeline",
+      "status": "PUBLISHED",
+      "badge": "NYU Greene",
+      "description": "Multi-channel EEG processing pipeline achieving 98% accuracy on motor imagery classification",
+      "metrics": ["129 channels", "98% accuracy", "Real-time processing"],
+      "tech_stack": ["PyTorch", "CUDA", "Signal Processing"],
+      "demo_url": "/demo/eeg",
+      "code_url": "https://github.com/rochmanofenna/eeg-pipeline"
+    },
+    {
+      "id": "monte-carlo",
+      "name": "GPU Monte Carlo Engine",
+      "status": "DEMO READY",
+      "badge": "View Code",
+      "description": "CUDA-accelerated Monte Carlo engine for options pricing and risk management",
+      "metrics": ["1M paths in 0.003s", "10,000× GPU speedup", "WebGL visualization"],
+      "tech_stack": ["CUDA", "WebGL", "Three.js"],
+      "demo_url": "/demo/monte-carlo",
+      "code_url": "https://github.com/rochmanofenna/monte-carlo-gpu"
+    }
+  ],
+  "archived_work": [
+    {
+      "id": "manimgl",
+      "name": "ManimGL at Sending Labs",
+      "status": "COMPLETE",
+      "badge": "5× faster",
+      "description": "Optimized animation rendering pipeline for educational content generation",
+      "metrics": ["5× throughput improvement", "45s → 9s render time"],
+      "tech_stack": ["Python", "OpenGL", "GPU Optimization"],
+      "demo_url": null,
+      "code_url": "https://github.com/rochmanofenna/manimgl-optimization"
+    },
+    {
+      "id": "video-generation",
+      "name": "Video Generation Pipeline",
+      "status": "SCALED",
+      "badge": "500+ jobs",
+      "description": "Kafka-based distributed system for automated video content generation",
+      "metrics": ["500+ concurrent jobs", "99.2% success rate"],
+      "tech_stack": ["Kafka", "Docker", "Python"],
+      "demo_url": null,
+      "code_url": "https://github.com/rochmanofenna/video-pipeline"
+    },
+    {
+      "id": "arima-forecasting",
+      "name": "ARIMA Forecasting at Olo",
+      "status": "DEPLOYED",
+      "badge": "28% RMSE↓",
+      "description": "Time series forecasting system for restaurant demand prediction",
+      "metrics": ["28% RMSE reduction", "50+ restaurant chains"],
+      "tech_stack": ["Python", "ARIMA", "Time Series"],
+      "demo_url": null,
+      "code_url": "https://github.com/rochmanofenna/restaurant-forecasting"
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-terminal-bg text-terminal-text font-mono;
+    font-family: 'JetBrains Mono', monospace;
+    /* Improve mobile experience */
+    -webkit-tap-highlight-color: rgba(0, 255, 136, 0.1);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow text selection for terminal content */
+  .terminal-text {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+
+  /* Allow input selection */
+  input {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+
+  html, body {
+    height: 100%;
+    overflow-x: hidden;
+    /* Prevent zoom on mobile inputs */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Improve mobile input experience */
+  @media (max-width: 768px) {
+    input[type="text"] {
+      font-size: 16px; /* Prevent zoom on iOS */
+    }
+  }
+}
+
+@layer components {
+  .terminal-cursor::after {
+    content: '█';
+    @apply text-terminal-accent animate-cursor-blink;
+  }
+
+  .terminal-prompt {
+    @apply text-terminal-accent;
+  }
+
+  .terminal-input {
+    @apply bg-transparent border-none outline-none text-terminal-text font-mono;
+    caret-color: transparent;
+  }
+
+  .code-block {
+    @apply bg-gray-900 border border-gray-700 rounded p-4 text-sm overflow-x-auto;
+  }
+
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(10, 14, 27, 0.5);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 136, 0.3);
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 255, 136, 0.5);
+  }
+}

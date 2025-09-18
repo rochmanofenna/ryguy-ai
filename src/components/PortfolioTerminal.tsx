@@ -21,6 +21,8 @@ export default function PortfolioTerminal() {
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [showHint, setShowHint] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [interactiveMode, setInteractiveMode] = useState<string | null>(null);
+  const [awaitingInput, setAwaitingInput] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
@@ -94,6 +96,12 @@ export default function PortfolioTerminal() {
   const executeCommand = useCallback((command: string) => {
     const cmd = command.trim().toLowerCase();
     const timestamp = new Date();
+
+    // Handle interactive input modes
+    if (awaitingInput) {
+      handleInteractiveInput(command);
+      return;
+    }
 
     // Add input line
     setLines(prev => [...prev, {
@@ -186,7 +194,7 @@ cross-validation; integrated Markowitz-style portfolio optimization.
       case 'portfolio':
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
-          content: <TradingDashboard />,
+          content: <TradingDashboard onInteraction={setInteractiveMode} />,
           type: 'output',
           timestamp
         }]);
@@ -213,7 +221,7 @@ cross-validation; integrated Markowitz-style portfolio optimization.
       case 'gpu':
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
-          content: <MonteCarloDemo />,
+          content: <MonteCarloDemo onInteraction={setInteractiveMode} />,
           type: 'output',
           timestamp
         }]);
@@ -222,7 +230,7 @@ cross-validation; integrated Markowitz-style portfolio optimization.
       case 'skills':
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
-          content: <SkillsProof />,
+          content: <SkillsProof onInteraction={setAwaitingInput} />,
           type: 'output',
           timestamp
         }]);
@@ -231,7 +239,7 @@ cross-validation; integrated Markowitz-style portfolio optimization.
       case 'projects':
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
-          content: <ProjectsList />,
+          content: <ProjectsList onInteraction={setAwaitingInput} />,
           type: 'output',
           timestamp
         }]);
@@ -241,23 +249,7 @@ cross-validation; integrated Markowitz-style portfolio optimization.
       case 'resume':
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
-          content: (
-            <div className="space-y-2">
-              <div className="text-terminal-accent">Choose your format:</div>
-              <div>[1] Quick scan (30 seconds) - For recruiters</div>
-              <div>[2] Technical deep-dive - For engineers</div>
-              <div>[3] Download PDF - Traditional format</div>
-              <div className="mt-3">
-                <a
-                  href={`${process.env.NODE_ENV === 'production' ? '/ryguy-ai' : ''}/Ryan_Rochmanofenna_Resume.pdf`}
-                  download
-                  className="text-terminal-success hover:underline"
-                >
-                  → Download Resume (PDF)
-                </a>
-              </div>
-            </div>
-          ),
+          content: <CVOptions onInteraction={setAwaitingInput} />,
           type: 'output',
           timestamp
         }]);
@@ -288,7 +280,349 @@ cross-validation; integrated Markowitz-style portfolio optimization.
     }
 
     setCurrentInput('');
-  }, []);
+  }, [awaitingInput]);
+
+  // Handle interactive input responses
+  const handleInteractiveInput = useCallback((input: string) => {
+    const timestamp = new Date();
+
+    // Add input line
+    setLines(prev => [...prev, {
+      id: `input-${Date.now()}`,
+      content: (
+        <div>
+          <span className="text-[#00FF88]">→</span> {input}
+        </div>
+      ),
+      type: 'input',
+      timestamp
+    }]);
+
+    // Process based on what we're waiting for
+    switch(awaitingInput) {
+      case 'cv-format':
+        handleCVFormat(input);
+        break;
+      case 'project-select':
+        handleProjectSelect(input);
+        break;
+      case 'skill-select':
+        handleSkillSelect(input);
+        break;
+      default:
+        break;
+    }
+
+    setAwaitingInput(null);
+    setCurrentInput('');
+  }, [awaitingInput]);
+
+  // Handle CV format selection
+  const handleCVFormat = (input: string) => {
+    const num = input.trim();
+    const timestamp = new Date();
+
+    switch(num) {
+      case '1':
+        setLines(prev => [...prev, {
+          id: `cv-quick-${Date.now()}`,
+          content: (
+            <div className="space-y-2">
+              <div className="text-[#00FF88]">QUICK SCAN (30 SECONDS)</div>
+              <div>• NYU CS/Math + Philosophy, Dean's List</div>
+              <div>• Built trading system: sub-20ms p99 latency</div>
+              <div>• 10× speedup on GPU Monte Carlo simulations</div>
+              <div>• $45K non-dilutive funding secured</div>
+              <div>• Python, C/C++ (CUDA), Rust, SQL, JavaScript</div>
+              <div>• PyTorch, JAX, TensorFlow, Docker, Kubernetes</div>
+            </div>
+          ),
+          type: 'output',
+          timestamp
+        }]);
+        break;
+      case '2':
+        setLines(prev => [...prev, {
+          id: `cv-tech-${Date.now()}`,
+          content: (
+            <div className="space-y-3">
+              <div className="text-[#00FF88]">TECHNICAL DEEP DIVE</div>
+              <div className="text-terminal-accent">GPU Engineering:</div>
+              <div className="ml-4">• Custom CUDA kernels for Monte Carlo (10× NumPy)</div>
+              <div className="ml-4">• Triton implementations with CUDA escapes</div>
+              <div className="ml-4">• Cryptographic PRGs (AES-CTR/ChaCha20)</div>
+              <div className="text-terminal-accent mt-2">Trading Infrastructure:</div>
+              <div className="ml-4">• Order book reconstruction with sub-20ms p99</div>
+              <div className="ml-4">• Cointegration & mean-reversion strategies</div>
+              <div className="ml-4">• Markowitz portfolio optimization</div>
+              <div className="text-terminal-accent mt-2">ML/AI Systems:</div>
+              <div className="ml-4">• EEG pipeline: 129 channels → 98% accuracy</div>
+              <div className="ml-4">• Custom ENN architecture (C++/Eigen)</div>
+              <div className="ml-4">• ManimGL rendering: 5× throughput</div>
+            </div>
+          ),
+          type: 'output',
+          timestamp
+        }]);
+        break;
+      case '3':
+        // PDF download already handled by link
+        setLines(prev => [...prev, {
+          id: `cv-pdf-${Date.now()}`,
+          content: 'Please click the download link above to get the PDF.',
+          type: 'system',
+          timestamp
+        }]);
+        break;
+      default:
+        setLines(prev => [...prev, {
+          id: `cv-error-${Date.now()}`,
+          content: `Invalid option: ${num}. Please enter 1, 2, or 3.`,
+          type: 'error',
+          timestamp
+        }]);
+    }
+  };
+
+  // Handle project selection
+  const handleProjectSelect = (input: string) => {
+    const timestamp = new Date();
+    const projects: { [key: string]: React.ReactNode } = {
+      '1': (
+        <div className="space-y-2">
+          <div className="text-[#00FF88]">STEALTH BUY-SIDE RESEARCH STACK</div>
+          <div>Status: Active | Funding: $45K non-dilutive R&D</div>
+          <div className="mt-2">• Sub-20ms p99 latency on 1B events/day</div>
+          <div>• Cointegration & mean-reversion strategies</div>
+          <div>• Custom CUDA kernels for 10× backtest speedup</div>
+          <div>• Live monitoring: P&L, VaR, drawdowns, slippage</div>
+        </div>
+      ),
+      '2': (
+        <div className="space-y-2">
+          <div className="text-[#00FF88]">EEG 2025: CONTRADICTION-AWARE NEURAL PIPELINE</div>
+          <div>Status: Published | Venue: NYU Greene HPC</div>
+          <div className="mt-2">• Adapted BICEP→ENN→Fusion from trading to EEG</div>
+          <div>• 129 channels processed with graph fusion</div>
+          <div>• 60% faster training on 8×V100 cluster</div>
+          <div>• Cross-subject alignment via contradiction operators</div>
+        </div>
+      ),
+      '3': (
+        <div className="space-y-2">
+          <div className="text-[#00FF88]">GPU MONTE CARLO ENGINE (BICEP)</div>
+          <div>Status: Demo Ready | Performance: 10× speedup</div>
+          <div className="mt-2">• Euler-Maruyama path simulation</div>
+          <div>• Sobol sequences + variance reduction</div>
+          <div>• Cryptographic PRGs for i.i.d. guarantees</div>
+          <div>• Asian & Barrier option pricing</div>
+        </div>
+      ),
+      'cuda': (
+        <div className="space-y-2">
+          <div className="text-[#00FF88]">CUDA/GPU PROJECTS</div>
+          <div>• Monte Carlo Engine: 10× NumPy baseline</div>
+          <div>• Custom kernels for order book transforms</div>
+          <div>• Triton implementations with CUDA escapes</div>
+          <div>• 8×V100 cluster optimization for EEG</div>
+        </div>
+      ),
+      'ml': (
+        <div className="space-y-2">
+          <div className="text-[#00FF88]">ML/AI PROJECTS</div>
+          <div>• EEG Neural Pipeline (98% accuracy)</div>
+          <div>• Custom ENN architecture (C++/Eigen)</div>
+          <div>• ManimGL rendering pipeline (5× throughput)</div>
+          <div>• GPT-4o educational content generation</div>
+        </div>
+      )
+    };
+
+    const content = projects[input.toLowerCase()] || projects[input];
+    if (content) {
+      setLines(prev => [...prev, {
+        id: `project-${Date.now()}`,
+        content,
+        type: 'output',
+        timestamp
+      }]);
+    } else {
+      setLines(prev => [...prev, {
+        id: `project-error-${Date.now()}`,
+        content: `Invalid selection: ${input}. Enter a number (1-8) or keyword (cuda, ml).`,
+        type: 'error',
+        timestamp
+      }]);
+    }
+  };
+
+  // Handle skill selection
+  const handleSkillSelect = (input: string) => {
+    const timestamp = new Date();
+    const inp = input.toLowerCase().trim();
+
+    if (inp === 'validate') {
+      setLines(prev => [...prev, {
+        id: `skill-validate-${Date.now()}`,
+        content: (
+          <div className="space-y-2">
+            <div className="text-[#00FF88]">GITHUB VALIDATION</div>
+            <div>• BICEP: github.com/rochmanofenna/BICEP</div>
+            <div>• ENN: github.com/rochmanofenna/ENN</div>
+            <div>• Trading Infrastructure: Private repo (NDA)</div>
+            <div>• Portfolio: github.com/rochmanofenna/ryguy-ai</div>
+          </div>
+        ),
+        type: 'output',
+        timestamp
+      }]);
+    } else if (inp === 'python' || inp === 'cuda') {
+      setLines(prev => [...prev, {
+        id: `skill-code-${Date.now()}`,
+        content: (
+          <div className="space-y-2">
+            <div className="text-[#00FF88]">CUDA KERNEL EXAMPLE</div>
+            <pre className="text-xs bg-black/30 p-2 rounded overflow-x-auto">
+{`__global__ void monte_carlo_paths(
+    float* paths, float* randoms,
+    float S0, float mu, float sigma,
+    float dt, int n_steps, int n_paths
+) {
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    if (tid < n_paths) {
+        float S = S0;
+        for (int i = 0; i < n_steps; i++) {
+            float dW = randoms[tid * n_steps + i];
+            S *= exp((mu - 0.5f*sigma*sigma)*dt +
+                     sigma*sqrt(dt)*dW);
+            paths[tid * n_steps + i] = S;
+        }
+    }
+}`}
+            </pre>
+          </div>
+        ),
+        type: 'output',
+        timestamp
+      }]);
+    } else {
+      setLines(prev => [...prev, {
+        id: `skill-error-${Date.now()}`,
+        content: `Unknown skill: ${input}. Try 'python', 'cuda', or 'validate'.`,
+        type: 'error',
+        timestamp
+      }]);
+    }
+  };
+
+  // Handle interactive keyboard events
+  useEffect(() => {
+    if (!interactiveMode) return;
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      const timestamp = new Date();
+
+      switch(interactiveMode) {
+        case 'portfolio':
+          if (key === 'b') {
+            setLines(prev => [...prev, {
+              id: `monte-carlo-${Date.now()}`,
+              content: (
+                <div className="space-y-2 border border-[#00FF88]/30 rounded p-3">
+                  <div className="text-[#00FF88]">MONTE CARLO VAR ANALYSIS</div>
+                  <div>95% VaR (1-day): $2,847</div>
+                  <div>99% VaR (1-day): $4,213</div>
+                  <div>Expected Shortfall: $5,124</div>
+                  <div className="mt-2">Simulations: 10,000 paths</div>
+                  <div>Volatility: 18.3% annualized</div>
+                </div>
+              ),
+              type: 'output',
+              timestamp
+            }]);
+            setInteractiveMode(null);
+          } else if (key === 'o') {
+            setLines(prev => [...prev, {
+              id: `orderbook-${Date.now()}`,
+              content: (
+                <div className="space-y-2 border border-[#00FF88]/30 rounded p-3">
+                  <div className="text-[#00FF88]">LIVE ORDER BOOK</div>
+                  <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <div className="text-red-500">ASKS</div>
+                      <div>100 @ 152.45</div>
+                      <div>250 @ 152.44</div>
+                      <div>500 @ 152.43</div>
+                    </div>
+                    <div>
+                      <div className="text-[#00FF88]">BIDS</div>
+                      <div>150 @ 152.42</div>
+                      <div>300 @ 152.41</div>
+                      <div>450 @ 152.40</div>
+                    </div>
+                  </div>
+                  <div className="text-terminal-muted">Spread: $0.01</div>
+                </div>
+              ),
+              type: 'output',
+              timestamp
+            }]);
+            setInteractiveMode(null);
+          }
+          break;
+
+        case 'gpu':
+          if (key === 'c') {
+            setLines(prev => [...prev, {
+              id: `cuda-source-${Date.now()}`,
+              content: (
+                <div className="space-y-2">
+                  <div className="text-[#00FF88]">CUDA KERNEL SOURCE</div>
+                  <pre className="text-xs bg-black/30 p-2 rounded overflow-x-auto">
+{`// Asian option Monte Carlo pricing
+__global__ void asian_option_kernel(
+    float* payoffs, curandState* states,
+    float S0, float K, float r, float sigma,
+    float T, int N, int paths_per_thread
+) {
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    curandState localState = states[tid];
+
+    for (int p = 0; p < paths_per_thread; p++) {
+        float sum = 0.0f;
+        float S = S0;
+        float dt = T / N;
+
+        for (int i = 0; i < N; i++) {
+            float z = curand_normal(&localState);
+            S *= exp((r - 0.5f*sigma*sigma)*dt +
+                     sigma*sqrt(dt)*z);
+            sum += S;
+        }
+
+        float avg = sum / N;
+        payoffs[tid*paths_per_thread + p] =
+            fmaxf(avg - K, 0.0f);
+    }
+
+    states[tid] = localState;
+}`}
+                  </pre>
+                </div>
+              ),
+              type: 'output',
+              timestamp
+            }]);
+            setInteractiveMode(null);
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keypress', handleKeyPress);
+    return () => window.removeEventListener('keypress', handleKeyPress);
+  }, [interactiveMode]);
 
   // Scroll to bottom when new lines added
   useEffect(() => {
@@ -345,7 +679,9 @@ cross-validation; integrated Markowitz-style portfolio optimization.
           {/* Current input line */}
           {!isInitializing && (
             <div className="flex items-center">
-              <span className="text-[#00FF88] mr-2">{INITIAL_PROMPT}</span>
+              <span className="text-[#00FF88] mr-2">
+                {awaitingInput ? '→' : INITIAL_PROMPT}
+              </span>
               <div className="flex-1 relative">
                 <input
                   ref={inputRef}
@@ -358,14 +694,14 @@ cross-validation; integrated Markowitz-style portfolio optimization.
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       executeCommand(currentInput);
-                    } else if (e.key === 'ArrowUp') {
+                    } else if (e.key === 'ArrowUp' && !awaitingInput) {
                       e.preventDefault();
                       if (historyIndex < commandHistory.length - 1) {
                         const newIndex = historyIndex + 1;
                         setHistoryIndex(newIndex);
                         setCurrentInput(commandHistory[commandHistory.length - 1 - newIndex]);
                       }
-                    } else if (e.key === 'ArrowDown') {
+                    } else if (e.key === 'ArrowDown' && !awaitingInput) {
                       e.preventDefault();
                       if (historyIndex > 0) {
                         const newIndex = historyIndex - 1;
@@ -381,6 +717,7 @@ cross-validation; integrated Markowitz-style portfolio optimization.
                   style={{ caretColor: 'transparent' }}
                   autoFocus
                   spellCheck={false}
+                  placeholder={awaitingInput ? "Enter your selection..." : ""}
                 />
                 <motion.span
                   className="inline-block w-2 h-4 bg-[#00FF88] absolute top-0"
@@ -393,7 +730,7 @@ cross-validation; integrated Markowitz-style portfolio optimization.
           )}
 
           {/* Hint */}
-          {showHint && !isInitializing && (
+          {showHint && !isInitializing && !awaitingInput && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -439,7 +776,7 @@ function TypewriterText({ text }: { text: string }) {
 }
 
 // Trading Dashboard Component
-function TradingDashboard() {
+function TradingDashboard({ onInteraction }: { onInteraction: (mode: string) => void }) {
   const [pnl, setPnl] = useState(1858.95);
 
   useEffect(() => {
@@ -448,6 +785,10 @@ function TradingDashboard() {
     }, 2000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    onInteraction('portfolio');
+  }, [onInteraction]);
 
   return (
     <div className="border border-[#00FF88]/30 rounded p-4 space-y-4">
@@ -467,7 +808,7 @@ function TradingDashboard() {
           <div>Max DD: 12% | Calmar: 2.4</div>
         </div>
       </div>
-      <div className="text-terminal-muted text-xs">
+      <div className="text-terminal-muted text-xs animate-pulse">
         [Press 'B' for Monte Carlo VaR | Press 'O' for order book]
       </div>
     </div>
@@ -526,7 +867,11 @@ Throughput: 1B ticks/day @ p99 <20ms`}
 }
 
 // Monte Carlo Demo Component
-function MonteCarloDemo() {
+function MonteCarloDemo({ onInteraction }: { onInteraction: (mode: string) => void }) {
+  useEffect(() => {
+    onInteraction('gpu');
+  }, [onInteraction]);
+
   return (
     <div className="space-y-4">
       <div className="text-[#00FF88]">=== GPU MONTE CARLO ENGINE (BICEP) ===</div>
@@ -549,7 +894,7 @@ function MonteCarloDemo() {
         <div>• Cryptographic PRGs (AES-CTR/ChaCha20)</div>
         <div>• Asian and Barrier option pricing</div>
       </div>
-      <div className="text-terminal-muted text-xs">
+      <div className="text-terminal-muted text-xs animate-pulse">
         [Press 'C' to view CUDA kernel source]
       </div>
     </div>
@@ -557,7 +902,11 @@ function MonteCarloDemo() {
 }
 
 // Skills Proof Component
-function SkillsProof() {
+function SkillsProof({ onInteraction }: { onInteraction: (mode: string | null) => void }) {
+  useEffect(() => {
+    onInteraction('skill-select');
+  }, [onInteraction]);
+
   return (
     <div className="space-y-4">
       <div className="text-[#00FF88]">=== TECHNICAL STACK ===</div>
@@ -587,15 +936,19 @@ function SkillsProof() {
           </div>
         </div>
       </div>
-      <div className="text-terminal-muted text-xs mt-4">
-        Type skill name for code examples, or 'validate' for GitHub proof
+      <div className="text-terminal-muted text-xs mt-4 animate-pulse">
+        Type skill name (e.g., 'python', 'cuda') for code examples, or 'validate' for GitHub proof
       </div>
     </div>
   );
 }
 
 // Projects List Component
-function ProjectsList() {
+function ProjectsList({ onInteraction }: { onInteraction: (mode: string | null) => void }) {
+  useEffect(() => {
+    onInteraction('project-select');
+  }, [onInteraction]);
+
   return (
     <div className="space-y-4">
       <div className="text-[#00FF88]">=== PROJECT PORTFOLIO ===</div>
@@ -614,8 +967,37 @@ function ProjectsList() {
         <div className="text-terminal-accent mt-4">ACHIEVEMENTS:</div>
         <div>[8] NYU Tandon Made Challenge........[WINNER] [$5K pre-seed]</div>
       </div>
-      <div className="text-terminal-muted text-xs mt-4">
-        Enter number or search by tech (e.g., 'cuda', 'ml')
+      <div className="text-terminal-muted text-xs mt-4 animate-pulse">
+        Enter number (1-8) or search by tech (e.g., 'cuda', 'ml')
+      </div>
+    </div>
+  );
+}
+
+// CV Options Component
+function CVOptions({ onInteraction }: { onInteraction: (mode: string | null) => void }) {
+  useEffect(() => {
+    onInteraction('cv-format');
+  }, [onInteraction]);
+
+  return (
+    <div className="space-y-2">
+      <div className="text-terminal-accent">Choose your format:</div>
+      <div>[1] Quick scan (30 seconds) - For recruiters</div>
+      <div>[2] Technical deep-dive - For engineers</div>
+      <div>[3] Download PDF - Traditional format</div>
+      <div className="mt-3">
+        <a
+          href="/Ryan_Rochmanofenna_Resume.pdf"
+          download
+          className="text-terminal-success hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          → Download Resume (PDF)
+        </a>
+      </div>
+      <div className="text-terminal-muted text-xs mt-4 animate-pulse">
+        Enter 1, 2, or 3 to select format
       </div>
     </div>
   );

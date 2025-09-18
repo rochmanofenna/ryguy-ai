@@ -246,7 +246,7 @@ breaks in production and engineer the bridges.
               <div>[3] Download PDF - Traditional format</div>
               <div className="mt-3">
                 <a
-                  href="/Ryan_Rochmanofenna_Resume.pdf"
+                  href={`${process.env.NODE_ENV === 'production' ? '/ryguy-ai' : ''}/Ryan_Rochmanofenna_Resume.pdf`}
                   download
                   className="text-terminal-success hover:underline"
                 >

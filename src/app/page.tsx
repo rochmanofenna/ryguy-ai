@@ -1,9 +1,9 @@
-import PortfolioTerminal from '@/components/PortfolioTerminal'
+import ClientWrapper from './ClientWrapper'
 
 export default function Home() {
   return (
     <main className="min-h-screen">
-      <PortfolioTerminal />
+      <ClientWrapper />
     </main>
   )
 }

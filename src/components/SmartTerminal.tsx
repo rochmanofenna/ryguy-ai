@@ -27,12 +27,12 @@ export default function SmartTerminal() {
           const data = await response.json();
           if (data.service === 'BEF Pipeline Service') {
             setServiceAvailable(true);
-            console.log('✅ BEF Pipeline Service detected - using enhanced terminal');
+            console.log('BEF Pipeline Service detected - using enhanced terminal');
             return;
           }
         }
       } catch (error) {
-        console.log('⚠️ BEF service not available - using standard terminal');
+        console.log('BEF service not available - using standard terminal');
       }
 
       setServiceAvailable(false);

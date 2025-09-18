@@ -14,36 +14,58 @@ interface TerminalLine {
 const INITIAL_PROMPT = 'ryan@rochmanofenna:~$';
 
 export default function PortfolioTerminal() {
-  const [lines, setLines] = useState<TerminalLine[]>([
-    {
-      id: 'welcome',
-      content: (
-        <div className="space-y-2">
-          <div className="text-terminal-accent animate-pulse">
-            Systems Engineer | Quantitative Developer | GPU Specialist
-          </div>
-          <div className="text-terminal-text">
-            $45K funded stealth trading system | NYU CS/Math
-          </div>
-          <div className="text-terminal-muted mt-4">
-            Type 'help' or press Cmd+K to navigate
-          </div>
-        </div>
-      ),
-      type: 'system',
-      timestamp: new Date()
-    }
-  ]);
-
+  const [lines, setLines] = useState<TerminalLine[]>([]);
   const [currentInput, setCurrentInput] = useState('');
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [showHint, setShowHint] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
   const hintTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Initial whoami animation
+  useEffect(() => {
+    const initSequence = async () => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Show command being typed
+      setLines([{
+        id: 'init-command',
+        content: `${INITIAL_PROMPT} whoami`,
+        type: 'input',
+        timestamp: new Date()
+      }]);
+
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // Show response
+      setLines(prev => [...prev, {
+        id: 'init-response',
+        content: (
+          <div className="space-y-2">
+            <div className="text-terminal-accent animate-pulse">
+              Systems Engineer | Quantitative Developer | GPU Specialist
+            </div>
+            <div className="text-terminal-text">
+              $45K funded stealth trading system | NYU CS/Math
+            </div>
+            <div className="text-terminal-muted mt-4">
+              Type 'help' or press Cmd+K to navigate
+            </div>
+          </div>
+        ),
+        type: 'system',
+        timestamp: new Date()
+      }]);
+
+      setIsInitializing(false);
+    };
+
+    initSequence();
+  }, []);
 
   // Auto-show hint after 3 seconds of inactivity
   useEffect(() => {
@@ -51,18 +73,18 @@ export default function PortfolioTerminal() {
       clearTimeout(hintTimeoutRef.current);
     }
 
-    hintTimeoutRef.current = setTimeout(() => {
-      if (lines.length === 1 && !currentInput) {
+    if (!isInitializing && lines.length > 0 && !currentInput) {
+      hintTimeoutRef.current = setTimeout(() => {
         setShowHint(true);
-      }
-    }, 3000);
+      }, 3000);
+    }
 
     return () => {
       if (hintTimeoutRef.current) {
         clearTimeout(hintTimeoutRef.current);
       }
     };
-  }, [lines, currentInput]);
+  }, [lines, currentInput, isInitializing]);
 
   // Command handlers
   const executeCommand = useCallback((command: string) => {
@@ -80,6 +102,7 @@ export default function PortfolioTerminal() {
     // Add to history
     setCommandHistory(prev => [...prev, command]);
     setHistoryIndex(-1);
+    setShowHint(false);
 
     // Handle commands
     switch(cmd) {
@@ -98,6 +121,24 @@ export default function PortfolioTerminal() {
               <div><span className="text-terminal-success">projects</span> → Browse all projects</div>
               <div><span className="text-terminal-success">cv</span> → Download resume</div>
               <div><span className="text-terminal-success">clear</span> → Clear terminal</div>
+            </div>
+          ),
+          type: 'output',
+          timestamp
+        }]);
+        break;
+
+      case 'whoami':
+        setLines(prev => [...prev, {
+          id: `output-${Date.now()}`,
+          content: (
+            <div className="space-y-2">
+              <div className="text-terminal-accent">
+                Systems Engineer | Quantitative Developer | GPU Specialist
+              </div>
+              <div className="text-terminal-text">
+                $45K funded stealth trading system | NYU CS/Math
+              </div>
             </div>
           ),
           type: 'output',
@@ -258,8 +299,16 @@ breaks in production and engineer the bridges.
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Focus input when clicking terminal
+  const handleTerminalClick = () => {
+    inputRef.current?.focus();
+  };
+
   return (
-    <div className="min-h-screen bg-[#0A0E1B] text-[#E8E9ED] p-4 sm:p-6 md:p-8">
+    <div
+      className="min-h-screen bg-[#0A0E1B] text-[#E8E9ED] p-4 sm:p-6 md:p-8"
+      onClick={handleTerminalClick}
+    >
       <div className="max-w-5xl mx-auto">
         <div
           ref={terminalRef}
@@ -283,51 +332,57 @@ breaks in production and engineer the bridges.
           </AnimatePresence>
 
           {/* Current input line */}
-          <div className="flex items-center space-x-2">
-            <span className="text-[#00FF88]">{INITIAL_PROMPT}</span>
-            <input
-              ref={inputRef}
-              type="text"
-              value={currentInput}
-              onChange={(e) => {
-                setCurrentInput(e.target.value);
-                setShowHint(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  executeCommand(currentInput);
-                } else if (e.key === 'ArrowUp') {
-                  e.preventDefault();
-                  if (historyIndex < commandHistory.length - 1) {
-                    const newIndex = historyIndex + 1;
-                    setHistoryIndex(newIndex);
-                    setCurrentInput(commandHistory[commandHistory.length - 1 - newIndex]);
-                  }
-                } else if (e.key === 'ArrowDown') {
-                  e.preventDefault();
-                  if (historyIndex > 0) {
-                    const newIndex = historyIndex - 1;
-                    setHistoryIndex(newIndex);
-                    setCurrentInput(commandHistory[commandHistory.length - 1 - newIndex]);
-                  } else if (historyIndex === 0) {
-                    setHistoryIndex(-1);
-                    setCurrentInput('');
-                  }
-                }
-              }}
-              className="flex-1 bg-transparent outline-none caret-[#00FF88]"
-              autoFocus
-              spellCheck={false}
-            />
-            <motion.span
-              className="inline-block w-2 h-4 bg-[#00FF88]"
-              animate={{ opacity: [1, 0] }}
-              transition={{ duration: 0.8, repeat: Infinity }}
-            />
-          </div>
+          {!isInitializing && (
+            <div className="flex items-center">
+              <span className="text-[#00FF88] mr-2">{INITIAL_PROMPT}</span>
+              <div className="flex-1 relative">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={currentInput}
+                  onChange={(e) => {
+                    setCurrentInput(e.target.value);
+                    setShowHint(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      executeCommand(currentInput);
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      if (historyIndex < commandHistory.length - 1) {
+                        const newIndex = historyIndex + 1;
+                        setHistoryIndex(newIndex);
+                        setCurrentInput(commandHistory[commandHistory.length - 1 - newIndex]);
+                      }
+                    } else if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      if (historyIndex > 0) {
+                        const newIndex = historyIndex - 1;
+                        setHistoryIndex(newIndex);
+                        setCurrentInput(commandHistory[commandHistory.length - 1 - newIndex]);
+                      } else if (historyIndex === 0) {
+                        setHistoryIndex(-1);
+                        setCurrentInput('');
+                      }
+                    }
+                  }}
+                  className="bg-transparent outline-none border-none text-[#E8E9ED] w-full font-mono"
+                  style={{ caretColor: 'transparent' }}
+                  autoFocus
+                  spellCheck={false}
+                />
+                <motion.span
+                  className="inline-block w-2 h-4 bg-[#00FF88] absolute top-0"
+                  style={{ left: `${currentInput.length}ch` }}
+                  animate={{ opacity: [1, 0] }}
+                  transition={{ duration: 0.8, repeat: Infinity }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Hint */}
-          {showHint && (
+          {showHint && !isInitializing && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

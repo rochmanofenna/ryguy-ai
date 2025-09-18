@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
-  basePath: '/ryguy-ai',
+  basePath: process.env.NODE_ENV === 'production' ? '/ryguy-ai' : '',
   images: {
     unoptimized: true
   }

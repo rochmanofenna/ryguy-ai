@@ -128,7 +128,8 @@ export default function PortfolioTerminal() {
           content: (
             <div className="space-y-1">
               <div className="text-terminal-accent mb-2">Available Commands:</div>
-              <div><span className="text-terminal-success">about</span> → My story and background</div>
+              <div><span className="text-terminal-success">about</span> → Professional summary</div>
+              <div><span className="text-terminal-success">story</span> → CS:GO origin story</div>
               <div><span className="text-terminal-success">experience</span> → Interactive work timeline</div>
               <div><span className="text-terminal-success">portfolio</span> → Live trading P&L dashboard</div>
               <div><span className="text-terminal-success">stack</span> → System architecture diagrams</div>
@@ -166,44 +167,29 @@ export default function PortfolioTerminal() {
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
           content: (
-            <TypewriterText text={`I was getting destroyed in CS:GO. Not just my aim - my frames. 30 FPS on dust2,
-stuttering during firefights, basically unplayable. My laptop had 12 cores but
-played like a potato.
+            <TypewriterText text={`NYU CS/Math + Philosophy
 
-Then I opened Activity Monitor mid-game. One core at 100%. Eleven cores doing nothing.
+TECH STACK:
+• Languages: Python, C/C++ (CUDA), Rust, SQL, JavaScript, TypeScript
+• ML/AI: PyTorch, JAX, TensorFlow, scikit-learn, Transformers
+• Systems: CUDA/Triton, Docker, Kubernetes, Linux, Git
+• Infrastructure: AWS (EC2/S3/Lambda), PostgreSQL, Redis, Kafka
 
-The fix wasn't upgrading - it was understanding. I learned that Source engine's main
-thread was bottlenecked on single-core performance. But I could force other processes
-off that core, disable CPU throttling, tune memory timings. Went from 30 to 60+ FPS
-on the same "trash" laptop.
+CURRENT PROJECTS:
+• Trading research stack - Sub-20ms p99 latency, 1B+ events/day
+• EEG neural pipeline - 129-channel processing on 8×V100 cluster
+• GPU Monte Carlo engine - 10× speedup over NumPy baseline
+• Custom neural network (ENN) - 98% accuracy gesture recognition
 
-The performance boost basically made me go pro - climbed from Silver 2 (bottom 5th
-percentile) to Silver Elite Master (bottom 10th percentile). Okay, still terrible,
-but 2× the frames meant I could finally blame my aim instead of my hardware.
+RECENT EXPERIENCE:
+• Systems Engineer @ Stealth Trading (2024-Present)
+• ML Engineer @ Sending Labs (Jun-Aug 2024)
+• ML Engineer @ Video Tutor AI (Apr-Jun 2024)
+• Software Engineering Intern @ Olo (2022-2023)
 
-That moment changed everything. I realized most "slow" computers aren't slow -
-they're just badly utilized.
-
-This obsession with squeezing performance out of hardware led me deeper. CS:GO taught
-me about CPU scheduling and cache locality. Then I applied it to ML training - why was
-NumPy so slow? Because it wasn't compiled with OpenBLAS. Set OMP_NUM_THREADS=12,
-suddenly my models trained 10× faster.
-
-The pattern was always the same: the hardware could do more, I just had to unlock it.
-
-Now I build trading systems that process billions of events at sub-20ms latency.
-I write CUDA kernels that outperform NumPy by 10×. But it all started with trying
-to hit headshots at more than 30 FPS.
-
-The path from gaming to quant trading isn't as weird as it sounds. Both care about
-every microsecond. Both punish inefficiency. Both reward understanding your hardware
-at the metal level.
-
-That's my edge - I learned to optimize on hardware most people threw away. Now I
-apply that same obsession to systems where microseconds mean millions.
-
-[Type 'projects' to see what I've built]
-[Type 'stack' to explore the technical details]`} />
+[Type 'story' for the CS:GO origin story]
+[Type 'projects' for detailed project info]
+[Type 'experience' for full timeline]`} />
           ),
           type: 'output',
           timestamp
@@ -269,6 +255,51 @@ apply that same obsession to systems where microseconds mean millions.
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
           content: <CVOptions onInteraction={setAwaitingInput} />,
+          type: 'output',
+          timestamp
+        }]);
+        break;
+
+      case 'story':
+        setLines(prev => [...prev, {
+          id: `output-${Date.now()}`,
+          content: (
+            <TypewriterText text={`I was getting destroyed in CS:GO. Not just my aim - my frames. 30 FPS on dust2,
+stuttering during firefights, basically unplayable. My laptop had 12 cores but
+played like a potato.
+
+Then I opened Activity Monitor mid-game. One core at 100%. Eleven cores doing nothing.
+
+The fix wasn't upgrading - it was understanding. I learned that Source engine's main
+thread was bottlenecked on single-core performance. But I could force other processes
+off that core, disable CPU throttling, tune memory timings. Went from 30 to 60+ FPS
+on the same "trash" laptop.
+
+The performance boost basically made me go pro - climbed from Silver 2 (bottom 5th
+percentile) to Silver Elite Master (bottom 10th percentile). Okay, still terrible,
+but 2× the frames meant I could finally blame my aim instead of my hardware.
+
+That moment changed everything. I realized most "slow" computers aren't slow -
+they're just badly utilized.
+
+This obsession with squeezing performance out of hardware led me deeper. CS:GO taught
+me about CPU scheduling and cache locality. Then I applied it to ML training - why was
+NumPy so slow? Because it wasn't compiled with OpenBLAS. Set OMP_NUM_THREADS=12,
+suddenly my models trained 10× faster.
+
+The pattern was always the same: the hardware could do more, I just had to unlock it.
+
+Now I build trading systems that process billions of events at sub-20ms latency.
+I write CUDA kernels that outperform NumPy by 10×. But it all started with trying
+to hit headshots at more than 30 FPS.
+
+The path from gaming to quant trading isn't as weird as it sounds. Both care about
+every microsecond. Both punish inefficiency. Both reward understanding your hardware
+at the metal level.
+
+That's my edge - I learned to optimize on hardware most people threw away. Now I
+apply that same obsession to systems where microseconds mean millions.`} />
+          ),
           type: 'output',
           timestamp
         }]);

@@ -1,7 +1,7 @@
 'use client';
 
-import MonteCarloDemo from '@/components/Projects/MonteCarlo/MonteCarloDemo';
+import RealisticMonteCarloDemo from '@/components/Projects/MonteCarlo/RealisticMonteCarloDemo';
 
 export default function MonteCarloPage() {
-  return <MonteCarloDemo />;
+  return <RealisticMonteCarloDemo />;
 }

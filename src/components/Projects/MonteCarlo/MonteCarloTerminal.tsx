@@ -29,7 +29,15 @@ export default function MonteCarloTerminal() {
       try {
         const { Terminal } = await import('@xterm/xterm');
         const { FitAddon } = await import('@xterm/addon-fit');
-        await import('@xterm/xterm/css/xterm.css');
+
+        // Add xterm styles dynamically
+        if (typeof document !== 'undefined' && !document.getElementById('xterm-styles')) {
+          const link = document.createElement('link');
+          link.id = 'xterm-styles';
+          link.rel = 'stylesheet';
+          link.href = 'https://unpkg.com/@xterm/xterm@5.3.0/css/xterm.css';
+          document.head.appendChild(link);
+        }
 
         term = new Terminal({
           theme: {

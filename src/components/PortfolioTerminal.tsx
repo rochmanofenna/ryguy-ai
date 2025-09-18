@@ -395,6 +395,9 @@ cross-validation; integrated Markowitz-style portfolio optimization.
           <div>• Cointegration & mean-reversion strategies</div>
           <div>• Custom CUDA kernels for 10× backtest speedup</div>
           <div>• Live monitoring: P&L, VaR, drawdowns, slippage</div>
+          <div className="mt-2 text-xs text-terminal-muted">
+            Architecture: Rust engine → PostgreSQL timeseries → Redis cache → Python analytics
+          </div>
         </div>
       ),
       '2': (
@@ -405,6 +408,9 @@ cross-validation; integrated Markowitz-style portfolio optimization.
           <div>• 129 channels processed with graph fusion</div>
           <div>• 60% faster training on 8×V100 cluster</div>
           <div>• Cross-subject alignment via contradiction operators</div>
+          <div className="mt-2 text-xs text-terminal-muted">
+            Research focus: Multi-subject EEG decoding with attention mechanisms
+          </div>
         </div>
       ),
       '3': (
@@ -415,6 +421,74 @@ cross-validation; integrated Markowitz-style portfolio optimization.
           <div>• Sobol sequences + variance reduction</div>
           <div>• Cryptographic PRGs for i.i.d. guarantees</div>
           <div>• Asian & Barrier option pricing</div>
+          <div className="mt-2 text-xs text-terminal-muted">
+            Key innovation: Bit-level optimized RNG with ChaCha20/AES-CTR
+          </div>
+        </div>
+      ),
+      '4': (
+        <div className="space-y-2">
+          <div className="text-[#00FF88]">CUSTOM NEURAL NETWORK (ENN)</div>
+          <div>Status: Deployed | Language: C++17</div>
+          <div className="mt-2">• Hand-rolled backprop with Eigen3 linear algebra</div>
+          <div>• AVX2 vectorization for matrix operations</div>
+          <div>• OpenMP parallel batch processing</div>
+          <div>• Real-time gesture recognition application</div>
+          <div className="mt-2 text-xs text-terminal-muted">
+            Performance: 3ms inference on CPU, no GPU required
+          </div>
+        </div>
+      ),
+      '5': (
+        <div className="space-y-2">
+          <div className="text-[#00FF88]">MANIMGL PIPELINE @ SENDING LABS</div>
+          <div>Duration: Jul-Aug 2024 | Status: Production</div>
+          <div className="mt-2">• Containerized ManimGL with EGL offscreen rendering</div>
+          <div>• Modal serverless deployment with GPU acceleration</div>
+          <div>• Queue-based job processing with retry logic</div>
+          <div>• 5× throughput, 35% cost reduction</div>
+          <div className="mt-2 text-xs text-terminal-muted">
+            Scale: 1000+ animations/day for educational content
+          </div>
+        </div>
+      ),
+      '6': (
+        <div className="space-y-2">
+          <div className="text-[#00FF88]">VIDEO TUTOR AI</div>
+          <div>Duration: Apr-Jun 2024 | Tech: GPT-4 + TTS</div>
+          <div className="mt-2">• Multi-modal content generation pipeline</div>
+          <div>• GPT-4 curriculum planning + script writing</div>
+          <div>• ElevenLabs TTS integration</div>
+          <div>• ManimGL math visualizations</div>
+          <div className="mt-2 text-xs text-terminal-muted">
+            Impact: High-concurrency system handling educational video production
+          </div>
+        </div>
+      ),
+      '7': (
+        <div className="space-y-2">
+          <div className="text-[#00FF88]">PROPHET FORECASTING @ OLO</div>
+          <div>Duration: 2022-2023 | Type: Operations Research</div>
+          <div className="mt-2">• Facebook Prophet for order volume forecasting</div>
+          <div>• M/M/c queueing theory for kitchen optimization</div>
+          <div>• SQL analytics on restaurant operations data</div>
+          <div>• Dashboard for real-time capacity planning</div>
+          <div className="mt-2 text-xs text-terminal-muted">
+            Result: Improved kitchen efficiency metrics for 100+ restaurants
+          </div>
+        </div>
+      ),
+      '8': (
+        <div className="space-y-2">
+          <div className="text-[#00FF88]">NYU TANDON MADE CHALLENGE WINNER</div>
+          <div>Award: $5K Pre-seed | Year: 2024</div>
+          <div className="mt-2">• Full-stack application (React/TypeScript/Node)</div>
+          <div>• MongoDB database with real-time sync</div>
+          <div>• WebSocket live collaboration features</div>
+          <div>• Deployed on AWS with auto-scaling</div>
+          <div className="mt-2 text-xs text-terminal-muted">
+            Competition: 50+ teams, judged on innovation and execution
+          </div>
         </div>
       ),
       'cuda': (
@@ -433,6 +507,24 @@ cross-validation; integrated Markowitz-style portfolio optimization.
           <div>• Custom ENN architecture (C++/Eigen)</div>
           <div>• ManimGL rendering pipeline (5× throughput)</div>
           <div>• GPT-4o educational content generation</div>
+        </div>
+      ),
+      'python': (
+        <div className="space-y-2">
+          <div className="text-[#00FF88]">PYTHON ECOSYSTEM EXPERTISE</div>
+          <div>• NumPy/Pandas for quantitative analysis</div>
+          <div>• PyTorch/JAX for neural network research</div>
+          <div>• Asyncio/multiprocessing for high-throughput systems</div>
+          <div>• FastAPI/Flask for microservices</div>
+        </div>
+      ),
+      'rust': (
+        <div className="space-y-2">
+          <div className="text-[#00FF88]">RUST SYSTEMS PROGRAMMING</div>
+          <div>• Low-latency order book reconstruction</div>
+          <div>• Lock-free concurrent data structures</div>
+          <div>• Zero-copy parsing for market data feeds</div>
+          <div>• Memory-safe financial calculations</div>
         </div>
       )
     };
@@ -1059,3 +1151,5 @@ function CVOptions({ onInteraction }: { onInteraction: (mode: string | null) => 
     </div>
   );
 }
+// Export components for lazy loading
+export { TradingDashboard, MonteCarloDemo };

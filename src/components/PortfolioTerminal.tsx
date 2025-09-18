@@ -332,7 +332,6 @@ cross-validation; integrated Markowitz-style portfolio optimization.
               <div>• NYU CS/Math + Philosophy, Dean's List</div>
               <div>• Built trading system: sub-20ms p99 latency</div>
               <div>• 10× speedup on GPU Monte Carlo simulations</div>
-              <div>• $45K non-dilutive funding secured</div>
               <div>• Python, C/C++ (CUDA), Rust, SQL, JavaScript</div>
               <div>• PyTorch, JAX, TensorFlow, Docker, Kubernetes</div>
             </div>
@@ -356,7 +355,7 @@ cross-validation; integrated Markowitz-style portfolio optimization.
               <div className="ml-4">• Cointegration & mean-reversion strategies</div>
               <div className="ml-4">• Markowitz portfolio optimization</div>
               <div className="text-terminal-accent mt-2">ML/AI Systems:</div>
-              <div className="ml-4">• EEG pipeline: 129 channels → 98% accuracy</div>
+              <div className="ml-4">• EEG pipeline: 129 channels neural processing</div>
               <div className="ml-4">• Custom ENN architecture (C++/Eigen)</div>
               <div className="ml-4">• ManimGL rendering: 5× throughput</div>
             </div>
@@ -391,7 +390,7 @@ cross-validation; integrated Markowitz-style portfolio optimization.
       '1': (
         <div className="space-y-2">
           <div className="text-[#00FF88]">STEALTH BUY-SIDE RESEARCH STACK</div>
-          <div>Status: Active | Funding: $45K non-dilutive R&D</div>
+          <div>Status: Active | Real capital deployment</div>
           <div className="mt-2">• Sub-20ms p99 latency on 1B events/day</div>
           <div>• Cointegration & mean-reversion strategies</div>
           <div>• Custom CUDA kernels for 10× backtest speedup</div>
@@ -430,7 +429,7 @@ cross-validation; integrated Markowitz-style portfolio optimization.
       'ml': (
         <div className="space-y-2">
           <div className="text-[#00FF88]">ML/AI PROJECTS</div>
-          <div>• EEG Neural Pipeline (98% accuracy)</div>
+          <div>• EEG Neural Pipeline (129 channels)</div>
           <div>• Custom ENN architecture (C++/Eigen)</div>
           <div>• ManimGL rendering pipeline (5× throughput)</div>
           <div>• GPT-4o educational content generation</div>
@@ -803,9 +802,9 @@ function TradingDashboard({ onInteraction }: { onInteraction: (mode: string) => 
           </div>
         </div>
         <div>
-          <div className="text-terminal-muted text-xs">METRICS</div>
-          <div>Sharpe: 1.8 | Win Rate: 57%</div>
-          <div>Max DD: 12% | Calmar: 2.4</div>
+          <div className="text-terminal-muted text-xs">LIVE STATUS</div>
+          <div>Sub-20ms p99 latency</div>
+          <div>Multiple pairs | Real capital deployment</div>
         </div>
       </div>
       <div className="text-terminal-muted text-xs animate-pulse">
@@ -823,19 +822,19 @@ function ExperienceTimeline() {
       <div>[2024-NOW] Stealth Buy-Side Research Stack.......[ACTIVE]</div>
       <div className="ml-4 text-xs text-terminal-muted">
         Architected end-to-end research/execution stack
-        Sub-20ms p99 latency | $45K non-dilutive R&D funding
+        Sub-20ms p99 latency | Real capital deployment
       </div>
-      <div>[2024-AUG] Sending Labs...........................[3 MOS]</div>
+      <div>[2024-JUL] Sending Labs...........................[2 MOS]</div>
       <div className="ml-4 text-xs text-terminal-muted">
         ManimGL pipeline | Modal/Fly.io | 5× throughput, 35% cost↓
       </div>
-      <div>[2024-JUN] Video Tutor AI.........................[3 MOS]</div>
+      <div>[2024-APR] Video Tutor AI.........................[3 MOS]</div>
       <div className="ml-4 text-xs text-terminal-muted">
-        GPT-4o + TTS + ManimGL | 500+ concurrent jobs
+        GPT-4o + TTS + ManimGL | High-concurrency pipeline
       </div>
       <div>[2022-2023] Olo...................................[INTERN]</div>
       <div className="ml-4 text-xs text-terminal-muted">
-        ARIMA/Prophet forecasting | M/M/c queueing models | 28% RMSE↓
+        Prophet forecasting | M/M/c queueing models | Operations research
       </div>
     </div>
   );
@@ -952,23 +951,81 @@ function ProjectsList({ onInteraction }: { onInteraction: (mode: string | null) 
   return (
     <div className="space-y-4">
       <div className="text-[#00FF88]">=== PROJECT PORTFOLIO ===</div>
-      <div className="space-y-2">
-        <div className="text-terminal-accent">RESEARCH & INFRASTRUCTURE:</div>
-        <div>[1] Stealth Buy-Side Research Stack.[RUNNING] [Sub-20ms p99]</div>
-        <div>[2] EEG 2025: Contradiction-Aware...[PUBLISHED] [NYU Greene]</div>
-        <div>[3] GPU Monte Carlo Engine (BICEP)..[DEMO READY] [10× speedup]</div>
-        <div>[4] Custom Neural Network (ENN)......[DEPLOYED] [98% accuracy]</div>
+      <div className="space-y-4">
+        <div className="text-terminal-accent">RESEARCH & INFRASTRUCTURE</div>
 
-        <div className="text-terminal-accent mt-4">CONTRACT WORK:</div>
-        <div>[5] ManimGL Pipeline @ Sending Labs..[COMPLETE] [5× throughput]</div>
-        <div>[6] Video Tutor AI...................[SCALED] [500+ jobs/40% cost↓]</div>
-        <div>[7] ARIMA Forecasting @ Olo..........[DEPLOYED] [28% RMSE↓]</div>
+        <div className="border-l-2 border-terminal-muted/30 pl-4 space-y-3">
+          <div>
+            <div className="text-terminal-text">1. Stealth Buy-Side Research Stack</div>
+            <div className="text-xs text-terminal-muted ml-3">
+              • Python, Rust, PostgreSQL, Redis, Kubernetes
+              • Sub-20ms p99 latency on 1B+ events/day
+            </div>
+          </div>
 
-        <div className="text-terminal-accent mt-4">ACHIEVEMENTS:</div>
-        <div>[8] NYU Tandon Made Challenge........[WINNER] [$5K pre-seed]</div>
+          <div>
+            <div className="text-terminal-text">2. EEG 2025: Contradiction-Aware Neural Decoding</div>
+            <div className="text-xs text-terminal-muted ml-3">
+              • PyTorch, JAX, 8×V100 cluster, MNE-Python
+              • Published at NYU Greene HPC, 129-channel processing
+            </div>
+          </div>
+
+          <div>
+            <div className="text-terminal-text">3. GPU Monte Carlo Engine (BICEP)</div>
+            <div className="text-xs text-terminal-muted ml-3">
+              • CUDA, Triton, NumPy, ChaCha20/AES-CTR PRGs
+              • 10× speedup over NumPy baseline
+            </div>
+          </div>
+
+          <div>
+            <div className="text-terminal-text">4. Custom Neural Network (ENN)</div>
+            <div className="text-xs text-terminal-muted ml-3">
+              • C++17, Eigen3, OpenMP, AVX2 vectorization
+              • Gesture recognition with real-time inference
+            </div>
+          </div>
+        </div>
+
+        <div className="text-terminal-accent mt-4">SYSTEMS & APPLICATIONS</div>
+
+        <div className="border-l-2 border-terminal-muted/30 pl-4 space-y-3">
+          <div>
+            <div className="text-terminal-text">5. ManimGL Pipeline @ Sending Labs</div>
+            <div className="text-xs text-terminal-muted ml-3">
+              • Python, ManimGL, Modal, Fly.io, Docker
+              • 5× throughput improvement, 35% cost reduction
+            </div>
+          </div>
+
+          <div>
+            <div className="text-terminal-text">6. Video Tutor AI</div>
+            <div className="text-xs text-terminal-muted ml-3">
+              • GPT-4, Whisper, ElevenLabs TTS, Next.js, TypeScript
+              • High-concurrency educational content generation
+            </div>
+          </div>
+
+          <div>
+            <div className="text-terminal-text">7. Prophet Forecasting @ Olo</div>
+            <div className="text-xs text-terminal-muted ml-3">
+              • Prophet, Pandas, M/M/c queueing theory, SQL
+              • Operations research for restaurant analytics
+            </div>
+          </div>
+
+          <div>
+            <div className="text-terminal-text">8. NYU Tandon Made Challenge Winner</div>
+            <div className="text-xs text-terminal-muted ml-3">
+              • React, TypeScript, Node.js, MongoDB
+              • $5K pre-seed funding for startup
+            </div>
+          </div>
+        </div>
       </div>
       <div className="text-terminal-muted text-xs mt-4 animate-pulse">
-        Enter number (1-8) or search by tech (e.g., 'cuda', 'ml')
+        Enter number (1-8) or search by tech (e.g., 'cuda', 'python', 'ml')
       </div>
     </div>
   );

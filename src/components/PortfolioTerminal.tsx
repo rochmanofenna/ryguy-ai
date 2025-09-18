@@ -51,10 +51,10 @@ export default function PortfolioTerminal() {
         content: (
           <div className="space-y-2">
             <div className="text-terminal-accent animate-pulse">
-              Systems Engineer | Quantitative Developer | GPU Specialist
+              NYU CS/Math + Philosophy | Low-Latency Infrastructure | ML Research
             </div>
             <div className="text-terminal-text">
-              $45K funded stealth trading system | NYU CS/Math
+              Building high-throughput GPU pipelines and trading systems
             </div>
             <div className="text-terminal-muted mt-4">
               Type 'help' or press Cmd+K to navigate
@@ -142,10 +142,10 @@ export default function PortfolioTerminal() {
           content: (
             <div className="space-y-2">
               <div className="text-terminal-accent">
-                Systems Engineer | Quantitative Developer | GPU Specialist
+                NYU CS/Math + Philosophy | Low-Latency Infrastructure | ML Research
               </div>
               <div className="text-terminal-text">
-                $45K funded stealth trading system | NYU CS/Math
+                Building high-throughput GPU pipelines and trading systems
               </div>
             </div>
           ),
@@ -158,19 +158,22 @@ export default function PortfolioTerminal() {
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
           content: (
-            <TypewriterText text={`I architect systems where mathematics meets microseconds.
+            <TypewriterText text={`NYU CS/Math with Philosophy minor. Dean's List, $50K annual merit scholarship.
 
-Currently building a funded algorithmic trading system that processes
-1B market events daily with sub-20ms latency. My CUDA kernels turned
-a 10-hour backtest into 1 hour.
+Built and scaled high-throughput GPU ML pipelines (Triton/CUDA → Kubernetes),
+delivering 5× faster live-trading backtests.
 
-Not your typical engineer story:
-• Raised $45K non-dilutive funding at 21
-• Built ML infrastructure for CFA educational content at scale
-• Designed neural architectures that won NYU research competitions
+Engineered pathing compute engines with custom SDE integrators + tailored RNG +
+hand-rolled GPU kernels (Triton with CUDA escapes) for bit-level efficiency.
 
-I don't just implement papers—I identify where academic theory
-breaks in production and engineer the bridges.
+Deployed GPU-accelerated generative AI pipelines with ManimGL (EGL/offscreen),
+scaling to high-volume rendering.
+
+Architected end-to-end research and execution stack unifying order book reconstruction,
+microstructure features, and venue-level analytics with sub-20ms p99 latency.
+
+Designed cointegration and mean-reversion strategies with statistically rigorous
+cross-validation; integrated Markowitz-style portfolio optimization.
 
 [Type 'portfolio' to see live trading metrics]
 [Type 'experience' to explore my journey]`} />
@@ -476,12 +479,22 @@ function ExperienceTimeline() {
   return (
     <div className="space-y-2">
       <div className="text-[#00FF88]">=== EXPERIENCE TIMELINE ===</div>
-      <div>[2024-NOW] Stealth Buy-Side Research.............[ACTIVE]</div>
-      <div>[2025-AUG] Sending Labs...........................[3 MOS]</div>
-      <div>[2025-JUN] Video Tutor AI.........................[3 MOS]</div>
-      <div>[2023-JUN] Olo....................................[4 MOS]</div>
-      <div className="mt-2 text-terminal-muted">
-        Type number [1-4] to expand role details
+      <div>[2024-NOW] Stealth Buy-Side Research Stack.......[ACTIVE]</div>
+      <div className="ml-4 text-xs text-terminal-muted">
+        Architected end-to-end research/execution stack
+        Sub-20ms p99 latency | $45K non-dilutive R&D funding
+      </div>
+      <div>[2024-AUG] Sending Labs...........................[3 MOS]</div>
+      <div className="ml-4 text-xs text-terminal-muted">
+        ManimGL pipeline | Modal/Fly.io | 5× throughput, 35% cost↓
+      </div>
+      <div>[2024-JUN] Video Tutor AI.........................[3 MOS]</div>
+      <div className="ml-4 text-xs text-terminal-muted">
+        GPT-4o + TTS + ManimGL | 500+ concurrent jobs
+      </div>
+      <div>[2022-2023] Olo...................................[INTERN]</div>
+      <div className="ml-4 text-xs text-terminal-muted">
+        ARIMA/Prophet forecasting | M/M/c queueing models | 28% RMSE↓
       </div>
     </div>
   );
@@ -516,23 +529,25 @@ Throughput: 1B ticks/day @ p99 <20ms`}
 function MonteCarloDemo() {
   return (
     <div className="space-y-4">
-      <div className="text-[#00FF88]">=== GPU MONTE CARLO ENGINE ===</div>
+      <div className="text-[#00FF88]">=== GPU MONTE CARLO ENGINE (BICEP) ===</div>
       <div className="grid grid-cols-2 gap-4">
         <div className="border border-red-500/30 rounded p-2">
-          <div className="text-red-500 text-xs mb-1">CPU (Sequential)</div>
+          <div className="text-red-500 text-xs mb-1">NumPy Baseline</div>
           <div>Time: 45.2s</div>
-          <div className="text-xs text-terminal-muted">Single thread crawling...</div>
+          <div className="text-xs text-terminal-muted">Standard implementation</div>
         </div>
         <div className="border border-[#00FF88]/30 rounded p-2">
-          <div className="text-[#00FF88] text-xs mb-1">GPU (CUDA)</div>
+          <div className="text-[#00FF88] text-xs mb-1">Custom CUDA Kernels</div>
           <div>Time: 0.003s</div>
-          <div className="text-xs text-terminal-muted">15,000× faster!</div>
+          <div className="text-xs text-terminal-muted">10× speedup achieved!</div>
         </div>
       </div>
       <div>
-        <div className="text-terminal-muted text-xs">RESULTS</div>
-        <div>Asian Option Price: $4.2371</div>
-        <div>Paths: 1,000,000 | 95% CI: [4.19, 4.28]</div>
+        <div className="text-terminal-muted text-xs">IMPLEMENTATION DETAILS</div>
+        <div>• Euler-Maruyama path simulation</div>
+        <div>• Sobol sequences + variance reduction</div>
+        <div>• Cryptographic PRGs (AES-CTR/ChaCha20)</div>
+        <div>• Asian and Barrier option pricing</div>
       </div>
       <div className="text-terminal-muted text-xs">
         [Press 'C' to view CUDA kernel source]
@@ -545,30 +560,30 @@ function MonteCarloDemo() {
 function SkillsProof() {
   return (
     <div className="space-y-4">
-      <div className="text-[#00FF88]">=== PROVEN IN PRODUCTION ===</div>
+      <div className="text-[#00FF88]">=== TECHNICAL STACK ===</div>
       <div className="space-y-3">
         <div>
-          <div className="text-terminal-accent">→ GPU Programming</div>
+          <div className="text-terminal-accent">→ Mathematics</div>
           <div className="ml-4 text-sm">
-            • 10× speedup on Monte Carlo paths [see demo]<br/>
-            • Custom CUDA kernels processing 1B ticks/day<br/>
-            • Triton implementations with measured benchmarks
+            • Linear Algebra, Probability, Optimization, Numerical Methods<br/>
+            • Stochastic Differential Equations for path simulation<br/>
+            • Cryptography (Number Theory), Discrete Math, Combinatorics
           </div>
         </div>
         <div>
-          <div className="text-terminal-accent">→ Quantitative Systems</div>
+          <div className="text-terminal-accent">→ Systems & Infrastructure</div>
           <div className="ml-4 text-sm">
-            • Live trading system with $45K funding [see P&L]<br/>
-            • Sharpe: 1.8 | Max Drawdown: 12% [see backtest]<br/>
-            • Cointegration + mean reversion strategies deployed
+            • CUDA/Triton kernels, custom GPU implementations<br/>
+            • Docker, Kubernetes, Ray, AWS (EC2, S3, Lambda)<br/>
+            • NYU Greene HPC: 8×V100 cluster optimization
           </div>
         </div>
         <div>
-          <div className="text-terminal-accent">→ ML Infrastructure</div>
+          <div className="text-terminal-accent">→ Languages & ML</div>
           <div className="ml-4 text-sm">
-            • 8×V100 cluster achieving 60% faster training<br/>
-            • EEG pipeline: 129 channels → 98% accuracy<br/>
-            • ManimGL rendering: 5× throughput improvement
+            • Python, C/C++ (CUDA/low-latency), Rust, SQL, JavaScript<br/>
+            • PyTorch, JAX, TensorFlow, scikit-learn, Optuna<br/>
+            • GNNs, Transformers, Neural ODEs
           </div>
         </div>
       </div>
@@ -585,15 +600,19 @@ function ProjectsList() {
     <div className="space-y-4">
       <div className="text-[#00FF88]">=== PROJECT PORTFOLIO ===</div>
       <div className="space-y-2">
-        <div className="text-terminal-accent">LIVE SYSTEMS:</div>
-        <div>[1] Buy-Side Trading Stack........[RUNNING] [$45K Funded]</div>
-        <div>[2] EEG Neural Pipeline...........[PUBLISHED] [NYU Greene]</div>
-        <div>[3] GPU Monte Carlo Engine........[DEMO READY] [View Code]</div>
+        <div className="text-terminal-accent">RESEARCH & INFRASTRUCTURE:</div>
+        <div>[1] Stealth Buy-Side Research Stack.[RUNNING] [Sub-20ms p99]</div>
+        <div>[2] EEG 2025: Contradiction-Aware...[PUBLISHED] [NYU Greene]</div>
+        <div>[3] GPU Monte Carlo Engine (BICEP)..[DEMO READY] [10× speedup]</div>
+        <div>[4] Custom Neural Network (ENN)......[DEPLOYED] [98% accuracy]</div>
 
-        <div className="text-terminal-accent mt-4">ARCHIVED WORK:</div>
-        <div>[4] ManimGL at Sending Labs.......[COMPLETE] [5× faster]</div>
-        <div>[5] Video Generation Pipeline.....[SCALED] [500+ jobs]</div>
-        <div>[6] ARIMA Forecasting at Olo......[DEPLOYED] [28% RMSE↓]</div>
+        <div className="text-terminal-accent mt-4">CONTRACT WORK:</div>
+        <div>[5] ManimGL Pipeline @ Sending Labs..[COMPLETE] [5× throughput]</div>
+        <div>[6] Video Tutor AI...................[SCALED] [500+ jobs/40% cost↓]</div>
+        <div>[7] ARIMA Forecasting @ Olo..........[DEPLOYED] [28% RMSE↓]</div>
+
+        <div className="text-terminal-accent mt-4">ACHIEVEMENTS:</div>
+        <div>[8] NYU Tandon Made Challenge........[WINNER] [$5K pre-seed]</div>
       </div>
       <div className="text-terminal-muted text-xs mt-4">
         Enter number or search by tech (e.g., 'cuda', 'ml')

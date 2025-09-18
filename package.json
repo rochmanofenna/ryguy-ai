@@ -29,6 +29,8 @@
     "@types/prismjs": "^1.26.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
+    "@types/react-plotly.js": "^2.6.3",
+    "@webgpu/types": "^0.1.65",
     "autoprefixer": "^10.0.0",
     "eslint": "^8.0.0",
     "eslint-config-next": "15.5.3",

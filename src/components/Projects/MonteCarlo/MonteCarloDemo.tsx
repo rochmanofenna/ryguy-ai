@@ -468,7 +468,7 @@ __global__ void monteCarloKernel(
                   plot_bgcolor: 'transparent',
                   font: { color: '#9ca3af' },
                   xaxis: { gridcolor: '#374151' },
-                  yaxis: { gridcolor: '#374151', title: 'Time (ms)' }
+                  yaxis: { gridcolor: '#374151', title: { text: 'Time (ms)' } }
                 }}
                 config={{ displayModeBar: false }}
               />
@@ -561,9 +561,9 @@ __global__ void monteCarloKernel(
                 layout={{
                   height: 500,
                   scene: {
-                    xaxis: { title: 'Strike Price' },
-                    yaxis: { title: 'Time to Maturity (years)' },
-                    zaxis: { title: 'Implied Volatility' },
+                    xaxis: { title: { text: 'Strike Price' } },
+                    yaxis: { title: { text: 'Time to Maturity (years)' } },
+                    zaxis: { title: { text: 'Implied Volatility' } },
                     camera: {
                       eye: { x: 1.5, y: 1.5, z: 1.5 }
                     }

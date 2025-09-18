@@ -30,7 +30,7 @@ export default function MonteCarloTerminal() {
         background: '#0f172a',
         foreground: '#94a3b8',
         cursor: '#06b6d4',
-        selection: '#334155',
+        selectionBackground: '#334155',
         black: '#0f172a',
         red: '#ef4444',
         green: '#10b981',

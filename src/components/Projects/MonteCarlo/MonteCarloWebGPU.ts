@@ -1,6 +1,8 @@
 // WebGPU Monte Carlo Option Pricing Engine
 // High-performance GPU implementation for Black-Scholes Monte Carlo simulation
 
+/// <reference types="@webgpu/types" />
+
 export interface OptionParams {
   S: number;     // Current stock price
   K: number;     // Strike price
@@ -220,7 +222,7 @@ export class MonteCarloWebGPU {
     const mean = results.reduce((a, b) => a + b, 0) / params.paths;
     const variance = results.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (params.paths - 1);
     const standardError = Math.sqrt(variance / params.paths);
-    const confidence95 = [
+    const confidence95: [number, number] = [
       mean - 1.96 * standardError,
       mean + 1.96 * standardError
     ];

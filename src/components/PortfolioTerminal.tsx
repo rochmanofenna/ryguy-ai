@@ -985,8 +985,10 @@ function ExperienceTimeline() {
 // System Architecture Component
 function SystemArchitecture() {
   return (
-    <div className="border border-terminal-accent/30 rounded p-4">
-      <pre className="text-xs">
+    <div className="space-y-4">
+      <div className="border border-terminal-accent/30 rounded p-4">
+        <div className="text-[#00FF88] text-sm mb-2">TRADING SYSTEM ARCHITECTURE</div>
+        <pre className="text-xs">
 {`┌─────────────────────────────────────┐
 │        TRADING SYSTEM STACK         │
 ├─────────────────────────────────────┤
@@ -1002,7 +1004,55 @@ function SystemArchitecture() {
 └─────────────────────────────────────┘
 
 Throughput: 1B ticks/day @ p99 <20ms`}
-      </pre>
+        </pre>
+      </div>
+
+      <div className="border border-terminal-accent/30 rounded p-4">
+        <div className="text-[#00FF88] text-sm mb-2">MANIMGL RENDERING PIPELINE</div>
+        <pre className="text-xs">
+{`┌────────────────────────────────────────────────┐
+│              MANIMGL PIPELINE                   │
+├────────────────────────────────────────────────┤
+│                                                │
+│   [GPT-4 Prompt]                               │
+│        ↓                                       │
+│   Scene Generator                              │
+│        ↓                                       │
+│   ┌──────────────────────────────┐            │
+│   │   Redis Task Queue           │            │
+│   │   (500+ concurrent jobs)     │            │
+│   └──────────────────────────────┘            │
+│        ↓                                       │
+│   ┌──────────────────────────────┐            │
+│   │   GPU Worker Pool            │            │
+│   │   ┌──────────┐ ┌──────────┐ │            │
+│   │   │ Worker 1 │ │ Worker 2 │ │            │
+│   │   │ (Docker) │ │ (Docker) │ │            │
+│   │   └──────────┘ └──────────┘ │            │
+│   │   ┌──────────┐ ┌──────────┐ │            │
+│   │   │ Worker 3 │ │ Worker N │ │            │
+│   │   │ (Docker) │ │ (Docker) │ │            │
+│   │   └──────────┘ └──────────┘ │            │
+│   └──────────────────────────────┘            │
+│        ↓                                       │
+│   ManimGL Renderer                             │
+│   • EGL Offscreen Rendering                    │
+│   • NVENC H.264 Encoding                       │
+│   • Frame Cache Layer                          │
+│        ↓                                       │
+│   CDN Distribution                             │
+│   (Cloudflare/S3)                             │
+└────────────────────────────────────────────────┘
+
+Performance: 5× throughput (45s → 9s render time)
+Infrastructure: Modal/Fly.io serverless GPU
+Cost Reduction: 35% via caching + batch optimization`}
+        </pre>
+      </div>
+
+      <div className="text-terminal-muted text-xs mt-4">
+        [Press ESC to return to terminal]
+      </div>
     </div>
   );
 }

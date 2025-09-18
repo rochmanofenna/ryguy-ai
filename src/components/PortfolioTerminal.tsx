@@ -134,6 +134,8 @@ export default function PortfolioTerminal() {
               <div><span className="text-terminal-success">portfolio</span> → Live trading P&L dashboard</div>
               <div><span className="text-terminal-success">stack</span> → System architecture diagrams</div>
               <div><span className="text-terminal-success">gpu</span> → Monte Carlo GPU demo</div>
+              <div><span className="text-terminal-success">monte-carlo</span> → Interactive option pricing</div>
+              <div><span className="text-terminal-success">quant-term</span> → Quant trading terminal</div>
               <div><span className="text-terminal-success">skills</span> → Proven technical skills</div>
               <div><span className="text-terminal-success">projects</span> → Browse all projects</div>
               <div><span className="text-terminal-success">cv</span> → Download resume</div>
@@ -303,6 +305,44 @@ apply that same obsession to systems where microseconds mean millions.`} />
           type: 'output',
           timestamp
         }]);
+        break;
+
+      case 'monte-carlo':
+        setLines(prev => [...prev, {
+          id: `output-${Date.now()}`,
+          content: (
+            <div className="space-y-2">
+              <div className="text-terminal-accent">Launching Monte Carlo Option Pricing Engine...</div>
+              <div className="text-terminal-success">✓ WebGPU initialized</div>
+              <div className="text-terminal-success">✓ CUDA kernels loaded</div>
+              <div className="text-terminal-muted">Opening in new window...</div>
+            </div>
+          ),
+          type: 'output',
+          timestamp
+        }]);
+        setTimeout(() => {
+          window.open('/projects/monte-carlo', '_blank');
+        }, 1000);
+        break;
+
+      case 'quant-term':
+        setLines(prev => [...prev, {
+          id: `output-${Date.now()}`,
+          content: (
+            <div className="space-y-2">
+              <div className="text-terminal-accent">Starting Quant Trading Terminal...</div>
+              <div className="text-terminal-success">✓ Market data feed connected</div>
+              <div className="text-terminal-success">✓ Risk engine initialized</div>
+              <div className="text-terminal-muted">Launching terminal interface...</div>
+            </div>
+          ),
+          type: 'output',
+          timestamp
+        }]);
+        setTimeout(() => {
+          window.open('/projects/monte-carlo-terminal', '_blank');
+        }, 1000);
         break;
 
       case 'clear':

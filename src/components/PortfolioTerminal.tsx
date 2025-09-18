@@ -166,28 +166,41 @@ export default function PortfolioTerminal() {
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
           content: (
-            <TypewriterText text={`Hey, I'm Ryan. NYU CS/Math student with a philosophy minor.
+            <TypewriterText text={`I was getting destroyed in CS:GO. Not just my aim - my frames. 30 FPS on dust2,
+stuttering during firefights, basically unplayable. My laptop had 12 cores but
+played like a potato.
 
-I started with hardware - building control systems for Hyperloop, tinkering with
-embedded systems. But I got fascinated by the intersection of low-level optimization
-and financial markets. So I took time off school to dive deep.
+Then I opened Activity Monitor mid-game. One core at 100%. Eleven cores doing nothing.
 
-These days I work on making things fast. Really fast. GPU kernels that process
-market data in microseconds. Custom neural architectures that run on constrained
-hardware. Trading systems that handle billions of events without breaking a sweat.
+The fix wasn't upgrading - it was understanding. I learned that Source engine's main
+thread was bottlenecked on single-core performance. But I could force other processes
+off that core, disable CPU throttling, tune memory timings. Went from 30 to 60+ FPS
+on the same "trash" laptop.
 
-I love the challenge of squeezing performance from silicon - whether that's writing
-CUDA kernels for Monte Carlo simulations, building lock-free data structures in Rust,
-or optimizing Python hot paths. There's something beautiful about code that runs at
-the edge of what's physically possible.
+The performance boost basically made me go pro - climbed from Silver 2 (bottom 5th
+percentile) to Silver Elite Master (bottom 10th percentile). Okay, still terrible,
+but 2× the frames meant I could finally blame my aim instead of my hardware.
 
-My recent work spans from EEG signal processing at NYU's HPC cluster to building
-real-time trading infrastructure. I've also done some contract work optimizing
-rendering pipelines and building educational content systems.
+That moment changed everything. I realized most "slow" computers aren't slow -
+they're just badly utilized.
 
-The philosophy minor keeps me grounded - reminds me to ask not just "how" but "why."
-It's useful when designing systems that need to be both technically sound and
-ethically responsible.
+This obsession with squeezing performance out of hardware led me deeper. CS:GO taught
+me about CPU scheduling and cache locality. Then I applied it to ML training - why was
+NumPy so slow? Because it wasn't compiled with OpenBLAS. Set OMP_NUM_THREADS=12,
+suddenly my models trained 10× faster.
+
+The pattern was always the same: the hardware could do more, I just had to unlock it.
+
+Now I build trading systems that process billions of events at sub-20ms latency.
+I write CUDA kernels that outperform NumPy by 10×. But it all started with trying
+to hit headshots at more than 30 FPS.
+
+The path from gaming to quant trading isn't as weird as it sounds. Both care about
+every microsecond. Both punish inefficiency. Both reward understanding your hardware
+at the metal level.
+
+That's my edge - I learned to optimize on hardware most people threw away. Now I
+apply that same obsession to systems where microseconds mean millions.
 
 [Type 'projects' to see what I've built]
 [Type 'stack' to explore the technical details]`} />

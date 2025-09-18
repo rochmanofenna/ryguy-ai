@@ -1008,45 +1008,54 @@ Throughput: 1B ticks/day @ p99 <20ms`}
       </div>
 
       <div className="border border-terminal-accent/30 rounded p-4">
-        <div className="text-[#00FF88] text-sm mb-2">MANIMGL RENDERING PIPELINE</div>
+        <div className="text-[#00FF88] text-sm mb-2">GENERATIVE MANIM PIPELINE</div>
         <pre className="text-xs">
 {`┌────────────────────────────────────────────────┐
-│              MANIMGL PIPELINE                   │
+│           GENERATIVE MANIM PIPELINE            │
 ├────────────────────────────────────────────────┤
 │                                                │
-│   [GPT-4 Prompt]                               │
-│        ↓                                       │
-│   Scene Generator                              │
+│   [User Prompt] → POST /v1/video/rendering     │
 │        ↓                                       │
 │   ┌──────────────────────────────┐            │
-│   │   Redis Task Queue           │            │
-│   │   (500+ concurrent jobs)     │            │
+│   │  Flask API (port 8080)       │            │
+│   │  • Domain Configuration      │            │
+│   │  • System Prompt Injection   │            │
 │   └──────────────────────────────┘            │
 │        ↓                                       │
 │   ┌──────────────────────────────┐            │
-│   │   GPU Worker Pool            │            │
-│   │   ┌──────────┐ ┌──────────┐ │            │
-│   │   │ Worker 1 │ │ Worker 2 │ │            │
-│   │   │ (Docker) │ │ (Docker) │ │            │
-│   │   └──────────┘ └──────────┘ │            │
-│   │   ┌──────────┐ ┌──────────┐ │            │
-│   │   │ Worker 3 │ │ Worker N │ │            │
-│   │   │ (Docker) │ │ (Docker) │ │            │
-│   │   └──────────┘ └──────────┘ │            │
+│   │  LLM Processing              │            │
+│   │  • GPT-4o / Claude / Custom  │            │
+│   │  • Storyboard Generation     │            │
+│   │  • Scene Code Creation       │            │
 │   └──────────────────────────────┘            │
 │        ↓                                       │
-│   ManimGL Renderer                             │
-│   • EGL Offscreen Rendering                    │
-│   • NVENC H.264 Encoding                       │
-│   • Frame Cache Layer                          │
+│   ┌──────────────────────────────┐            │
+│   │  Manim Render Engine         │            │
+│   │  • LaTeX Processing          │            │
+│   │  • Mathematical Animations   │            │
+│   │  • Graph Visualizations      │            │
+│   └──────────────────────────────┘            │
 │        ↓                                       │
-│   CDN Distribution                             │
-│   (Cloudflare/S3)                             │
+│   ┌──────────────────────────────┐            │
+│   │  Docker Container            │            │
+│   │  • FFmpeg Encoding           │            │
+│   │  • Cairo/Pango Rendering     │            │
+│   │  • TeXLive Full              │            │
+│   └──────────────────────────────┘            │
+│        ↓                                       │
+│   ┌──────────────────────────────┐            │
+│   │  Storage Backend             │            │
+│   │  • Local: ./media/           │            │
+│   │  • Cloud: S3/GCS             │            │
+│   └──────────────────────────────┘            │
 └────────────────────────────────────────────────┘
 
 Performance: 5× throughput (45s → 9s render time)
-Infrastructure: Modal/Fly.io serverless GPU
-Cost Reduction: 35% via caching + batch optimization`}
+Deployment: Docker + Modal/Fly.io serverless
+API Endpoints:
+  • /v1/video/rendering - Generate from prompt
+  • /v1/chat/generation - Interactive mode
+  • /v1/code/generation - Storyboard only`}
         </pre>
       </div>
 

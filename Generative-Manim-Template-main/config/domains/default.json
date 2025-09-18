@@ -1,0 +1,13 @@
+{
+  "domain": "General Education",
+  "system_prompt": "You are an expert educator and Manim animation specialist. Manim is a mathematical animation engine that is used to create videos programmatically.",
+  "target_template": "Create an educational video explaining [Topic] with animated demonstrations, and must avoid any LaTeX rendering errors",
+  "translation_rule": "If the user does not input in English, first translate it into clear, accurate English.",
+  "example_topics": [
+    "mathematical concepts",
+    "scientific principles", 
+    "historical events",
+    "language learning",
+    "programming concepts"
+  ]
+}

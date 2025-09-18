@@ -166,31 +166,31 @@ export default function PortfolioTerminal() {
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
           content: (
-            <TypewriterText text={`NYU CS/Math with Philosophy minor. Dean's List, $50K annual merit scholarship.
+            <TypewriterText text={`Hey, I'm Ryan. NYU CS/Math student with a philosophy minor.
 
-Took a gap year in 2023 to apply low-level optimization skills to algorithmic trading,
-transitioning from hardware projects (Hyperloop control systems) to quantitative finance.
+I started with hardware - building control systems for Hyperloop, tinkering with
+embedded systems. But I got fascinated by the intersection of low-level optimization
+and financial markets. So I took time off school to dive deep.
 
-Built and scaled high-throughput GPU ML pipelines (Triton/CUDA → Kubernetes),
-delivering 5× faster live-trading backtests and 10× speedups on Monte Carlo simulations.
+These days I work on making things fast. Really fast. GPU kernels that process
+market data in microseconds. Custom neural architectures that run on constrained
+hardware. Trading systems that handle billions of events without breaking a sweat.
 
-Engineered pathing compute engines with custom SDE integrators + tailored RNG +
-hand-rolled GPU kernels (Triton with CUDA escapes) for bit-level efficiency.
+I love the challenge of squeezing performance from silicon - whether that's writing
+CUDA kernels for Monte Carlo simulations, building lock-free data structures in Rust,
+or optimizing Python hot paths. There's something beautiful about code that runs at
+the edge of what's physically possible.
 
-Deployed GPU-accelerated generative AI pipelines with ManimGL (EGL/offscreen),
-scaling to high-volume rendering with 5× throughput improvement.
+My recent work spans from EEG signal processing at NYU's HPC cluster to building
+real-time trading infrastructure. I've also done some contract work optimizing
+rendering pipelines and building educational content systems.
 
-Architected end-to-end research and execution stack unifying order book reconstruction,
-microstructure features, and venue-level analytics with sub-20ms p99 latency.
+The philosophy minor keeps me grounded - reminds me to ask not just "how" but "why."
+It's useful when designing systems that need to be both technically sound and
+ethically responsible.
 
-Designed cointegration and mean-reversion strategies with statistically rigorous
-cross-validation; integrated Markowitz-style portfolio optimization.
-
-Validated custom neural network (ENN) achieving 98% accuracy on gesture recognition
-at 25 FPS — 8× smaller and 5× faster than baseline CNN-LSTM models.
-
-[Type 'portfolio' to see live trading metrics]
-[Type 'experience' to explore my journey]`} />
+[Type 'projects' to see what I've built]
+[Type 'stack' to explore the technical details]`} />
           ),
           type: 'output',
           timestamp
@@ -335,7 +335,7 @@ at 25 FPS — 8× smaller and 5× faster than baseline CNN-LSTM models.
           content: (
             <div className="space-y-2">
               <div className="text-[#00FF88]">QUICK SCAN (30 SECONDS)</div>
-              <div>• NYU CS/Math + Philosophy, Dean's List</div>
+              <div>• NYU CS/Math + Philosophy</div>
               <div>• Built trading system: sub-20ms p99 latency</div>
               <div>• 10× speedup on GPU Monte Carlo simulations</div>
               <div>• Python, C/C++ (CUDA), Rust, SQL, JavaScript</div>
@@ -487,7 +487,7 @@ at 25 FPS — 8× smaller and 5× faster than baseline CNN-LSTM models.
       '8': (
         <div className="space-y-2">
           <div className="text-[#00FF88]">NYU TANDON MADE CHALLENGE WINNER</div>
-          <div>Award: $5K Pre-seed | Year: 2024</div>
+          <div>Year: 2020-2021 | Competition Winner</div>
           <div className="mt-2">• Full-stack application (React/TypeScript/Node)</div>
           <div>• MongoDB database with real-time sync</div>
           <div>• WebSocket live collaboration features</div>
@@ -1117,7 +1117,7 @@ function ProjectsList({ onInteraction }: { onInteraction: (mode: string | null) 
             <div className="text-terminal-text">8. NYU Tandon Made Challenge Winner</div>
             <div className="text-xs text-terminal-muted ml-3">
               • React, TypeScript, Node.js, MongoDB
-              • $5K pre-seed funding for startup
+              • Competition winner among 50+ teams
             </div>
           </div>
         </div>

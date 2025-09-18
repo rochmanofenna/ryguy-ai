@@ -167,7 +167,8 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
 }`;
 
   const cudaCode = `
-// CUDA Kernel for Monte Carlo Option Pricing
+// CUDA Kernel Reference (for comparison - not executed in browser)
+// Native CUDA would run 50-100x+ faster than JavaScript
 __global__ void monteCarloKernel(
   float* results,
   float S, float K, float r, float T, float sigma,
@@ -206,7 +207,7 @@ __global__ void monteCarloKernel(
         <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
           Monte Carlo Option Pricing
         </h1>
-        <p className="text-gray-400">GPU-Accelerated Black-Scholes Monte Carlo Simulation</p>
+        <p className="text-gray-400">WebGPU-Accelerated Black-Scholes Monte Carlo Simulation</p>
         <div className="flex gap-4 mt-4 text-sm">
           <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded">
             {results?.device === 'webgpu' ? 'WebGPU Active' : 'CPU Mode'}

@@ -1,5 +1,7 @@
 // WebGPU Monte Carlo Option Pricing Engine
-// High-performance GPU implementation for Black-Scholes Monte Carlo simulation
+// Browser-based GPU acceleration for Black-Scholes Monte Carlo simulation
+// Note: WebGPU provides modest speedups (2-5x) compared to CPU in browsers,
+// not comparable to native CUDA which can achieve 50-100x+ speedups
 
 /// <reference types="@webgpu/types" />
 

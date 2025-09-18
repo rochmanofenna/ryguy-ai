@@ -74,8 +74,8 @@ export default function MonteCarloTerminal() {
         term.writeln('\\x1b[1;36m╚══════════════════════════════════════════════╝\\x1b[0m');
         term.writeln('');
         term.writeln('\\x1b[32m✓\\x1b[0m WebGPU initialized successfully');
-        term.writeln('\\x1b[32m✓\\x1b[0m CUDA kernels loaded');
-        term.writeln('\\x1b[32m✓\\x1b[0m Ready for high-frequency computations');
+        term.writeln('\\x1b[32m✓\\x1b[0m Monte Carlo engine loaded');
+        term.writeln('\\x1b[32m✓\\x1b[0m Ready for option pricing calculations');
         term.writeln('');
         term.writeln('Type \\x1b[1;33mhelp\\x1b[0m for available commands');
         term.writeln('');

@@ -34,7 +34,11 @@ export default function PortfolioTerminal() {
       // Show command being typed
       setLines([{
         id: 'init-command',
-        content: `${INITIAL_PROMPT} whoami`,
+        content: (
+          <div>
+            <span className="text-[#00FF88]">{INITIAL_PROMPT}</span> whoami
+          </div>
+        ),
         type: 'input',
         timestamp: new Date()
       }]);
@@ -94,7 +98,11 @@ export default function PortfolioTerminal() {
     // Add input line
     setLines(prev => [...prev, {
       id: `input-${Date.now()}`,
-      content: `${INITIAL_PROMPT} ${command}`,
+      content: (
+        <div>
+          <span className="text-[#00FF88]">{INITIAL_PROMPT}</span> {command}
+        </div>
+      ),
       type: 'input',
       timestamp
     }]);

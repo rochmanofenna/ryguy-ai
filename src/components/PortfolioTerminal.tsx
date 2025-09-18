@@ -168,20 +168,26 @@ export default function PortfolioTerminal() {
           content: (
             <TypewriterText text={`NYU CS/Math with Philosophy minor. Dean's List, $50K annual merit scholarship.
 
+Took a gap year in 2023 to apply low-level optimization skills to algorithmic trading,
+transitioning from hardware projects (Hyperloop control systems) to quantitative finance.
+
 Built and scaled high-throughput GPU ML pipelines (Triton/CUDA → Kubernetes),
-delivering 5× faster live-trading backtests.
+delivering 5× faster live-trading backtests and 10× speedups on Monte Carlo simulations.
 
 Engineered pathing compute engines with custom SDE integrators + tailored RNG +
 hand-rolled GPU kernels (Triton with CUDA escapes) for bit-level efficiency.
 
 Deployed GPU-accelerated generative AI pipelines with ManimGL (EGL/offscreen),
-scaling to high-volume rendering.
+scaling to high-volume rendering with 5× throughput improvement.
 
 Architected end-to-end research and execution stack unifying order book reconstruction,
 microstructure features, and venue-level analytics with sub-20ms p99 latency.
 
 Designed cointegration and mean-reversion strategies with statistically rigorous
 cross-validation; integrated Markowitz-style portfolio optimization.
+
+Validated custom neural network (ENN) achieving 98% accuracy on gesture recognition
+at 25 FPS — 8× smaller and 5× faster than baseline CNN-LSTM models.
 
 [Type 'portfolio' to see live trading metrics]
 [Type 'experience' to explore my journey]`} />
@@ -467,14 +473,14 @@ cross-validation; integrated Markowitz-style portfolio optimization.
       ),
       '7': (
         <div className="space-y-2">
-          <div className="text-[#00FF88]">PROPHET FORECASTING @ OLO</div>
-          <div>Duration: 2022-2023 | Type: Operations Research</div>
-          <div className="mt-2">• Facebook Prophet for order volume forecasting</div>
-          <div>• M/M/c queueing theory for kitchen optimization</div>
-          <div>• SQL analytics on restaurant operations data</div>
-          <div>• Dashboard for real-time capacity planning</div>
+          <div className="text-[#00FF88]">INFRASTRUCTURE AUTOMATION @ OLO</div>
+          <div>Duration: May-Aug 2022, Jun 2023 | Type: Software Engineering</div>
+          <div className="mt-2">• Terraform IaC for automated provisioning</div>
+          <div>• Cloudflare and Datadog observability integration</div>
+          <div>• C# + SQL custom restaurant filter system</div>
+          <div>• Migrated legacy DevOps to codified infrastructure</div>
           <div className="mt-2 text-xs text-terminal-muted">
-            Result: Improved kitchen efficiency metrics for 100+ restaurants
+            Impact: Streamlined deployment and monitoring for platform services
           </div>
         </div>
       ),
@@ -916,7 +922,7 @@ function ExperienceTimeline() {
         Architected end-to-end research/execution stack
         Sub-20ms p99 latency | Real capital deployment
       </div>
-      <div>[2024-JUL] Sending Labs...........................[2 MOS]</div>
+      <div>[2024-JUN] Sending Labs...........................[3 MOS]</div>
       <div className="ml-4 text-xs text-terminal-muted">
         ManimGL pipeline | Modal/Fly.io | 5× throughput, 35% cost↓
       </div>
@@ -926,7 +932,7 @@ function ExperienceTimeline() {
       </div>
       <div>[2022-2023] Olo...................................[INTERN]</div>
       <div className="ml-4 text-xs text-terminal-muted">
-        Prophet forecasting | M/M/c queueing models | Operations research
+        Infrastructure automation | Terraform IaC | Observability integration
       </div>
     </div>
   );
@@ -1100,10 +1106,10 @@ function ProjectsList({ onInteraction }: { onInteraction: (mode: string | null) 
           </div>
 
           <div>
-            <div className="text-terminal-text">7. Prophet Forecasting @ Olo</div>
+            <div className="text-terminal-text">7. Infrastructure Automation @ Olo</div>
             <div className="text-xs text-terminal-muted ml-3">
-              • Prophet, Pandas, M/M/c queueing theory, SQL
-              • Operations research for restaurant analytics
+              • Terraform, C#, SQL, Cloudflare, Datadog
+              • IaC migration and observability integration
             </div>
           </div>
 

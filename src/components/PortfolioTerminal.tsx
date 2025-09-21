@@ -134,6 +134,7 @@ export default function PortfolioTerminal() {
               <div><span className="text-terminal-success">skills</span> → Technical skills & expertise</div>
               <div><span className="text-terminal-success">education</span> → Academic background & coursework</div>
               <div><span className="text-terminal-success">trading-infra</span> → AI Trading Infrastructure details</div>
+              <div><span className="text-terminal-success">manim-demo</span> → Educational video generation demo</div>
               <div><span className="text-terminal-success">cv</span> → Download resume PDF</div>
               <div><span className="text-terminal-success">clear</span> → Clear terminal</div>
             </div>
@@ -225,6 +226,17 @@ export default function PortfolioTerminal() {
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
           content: <AITradingInfraOverview />,
+          type: 'output',
+          timestamp
+        }]);
+        break;
+
+      case 'manim-demo':
+      case 'manim':
+      case 'video-gen':
+        setLines(prev => [...prev, {
+          id: `output-${Date.now()}`,
+          content: <GenerativeManimDemo />,
           type: 'output',
           timestamp
         }]);
@@ -1099,7 +1111,7 @@ function ExperienceSection({ onInteraction }: { onInteraction: (mode: string) =>
               <div className="text-terminal-accent font-bold">Sending Labs</div>
               <div className="text-sm">Machine Learning Engineer (Contract)</div>
             </div>
-            <div className="text-xs text-terminal-muted">Jun 2025 – Aug 2025</div>
+            <div className="text-xs text-terminal-muted">Jun 2024 – Aug 2024</div>
           </div>
 
           <div className="mt-2 space-y-1 text-sm">
@@ -1115,7 +1127,7 @@ function ExperienceSection({ onInteraction }: { onInteraction: (mode: string) =>
               <div className="text-terminal-accent font-bold">Video Tutor AI</div>
               <div className="text-sm">Machine Learning Engineer (Contract)</div>
             </div>
-            <div className="text-xs text-terminal-muted">Apr 2025 – Jun 2025</div>
+            <div className="text-xs text-terminal-muted">Apr 2024 – Jun 2024</div>
           </div>
 
           <div className="mt-2 space-y-1 text-sm">
@@ -1189,6 +1201,17 @@ function ProjectsSection() {
     },
     {
       id: 3,
+      name: "Generative Manim Educational Pipeline",
+      tech: "ManimGL, GPT-4o, Docker, Flask",
+      details: [
+        "AI-powered educational video generation from natural language prompts",
+        "Domain-specific configurations for physics, chemistry, mathematics",
+        "5× throughput improvement, 35% cost reduction at Sending Labs"
+      ],
+      demo: true
+    },
+    {
+      id: 4,
       name: "Custom Neural Network (ENN) for Sequence Modeling",
       tech: "C++17, Eigen3, AVX2, OpenMP",
       details: [
@@ -1198,7 +1221,7 @@ function ProjectsSection() {
       ]
     },
     {
-      id: 4,
+      id: 5,
       name: "NYU Hyperloop Control Systems",
       tech: "C++, ROS, Embedded Systems",
       details: [
@@ -1208,7 +1231,7 @@ function ProjectsSection() {
       ]
     },
     {
-      id: 5,
+      id: 6,
       name: "NYU Tandon Made Challenge Winner",
       tech: "React, TypeScript, Node.js, MongoDB",
       details: [
@@ -1248,6 +1271,23 @@ function ProjectsSection() {
                 {project.details.map((detail, idx) => (
                   <div key={idx}>• {detail}</div>
                 ))}
+                {project.demo && (
+                  <div className="mt-2">
+                    <button
+                      onClick={() => {
+                        const event = new KeyboardEvent('keydown', { key: 'Enter' });
+                        const input = document.querySelector('input[type="text"]') as HTMLInputElement;
+                        if (input) {
+                          input.value = 'manim-demo';
+                          input.dispatchEvent(event);
+                        }
+                      }}
+                      className="text-xs text-terminal-success hover:underline"
+                    >
+                      [▶ View Interactive Demo]
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1977,6 +2017,241 @@ function BacktestingCode() {
         return positions`}
       </pre>
       <div className="text-terminal-muted text-xs">From: AI_TRADING_INFRA/src/strategy/backtest_runner.py</div>
+    </div>
+  );
+}
+
+// Generative Manim Demo Component
+function GenerativeManimDemo() {
+  const [selectedExample, setSelectedExample] = useState<string>('physics');
+  const [customPrompt, setCustomPrompt] = useState<string>('');
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [showCode, setShowCode] = useState<boolean>(false);
+
+  const examples = {
+    physics: {
+      title: "Physics: Conservation of Energy",
+      prompt: "Visualize a pendulum demonstrating conservation of mechanical energy",
+      preview: "Shows potential/kinetic energy transformation",
+      code: `class EnergyConservation(Scene):
+    def construct(self):
+        # Create pendulum
+        pivot = Dot(ORIGIN + UP * 2)
+        bob = Circle(radius=0.2, color=BLUE).shift(DOWN * 2 + RIGHT * 2)
+        rod = Line(pivot.get_center(), bob.get_center())
+        pendulum = VGroup(pivot, rod, bob)
+
+        # Energy bars
+        ke_bar = Rectangle(width=0.5, height=0.01, color=RED)
+        pe_bar = Rectangle(width=0.5, height=3, color=GREEN)
+
+        # Animate swing with energy transformation
+        self.play(Create(pendulum))
+        self.play(
+            Rotate(pendulum, angle=-PI/3, about_point=pivot.get_center()),
+            Transform(pe_bar, ke_bar),
+            rate_func=there_and_back,
+            run_time=2
+        )`
+    },
+    math: {
+      title: "Mathematics: Fourier Series",
+      prompt: "Animate how Fourier series approximates a square wave",
+      preview: "Shows sine waves combining into square wave",
+      code: `class FourierSeries(Scene):
+    def construct(self):
+        # Create axes
+        axes = Axes(x_range=[-PI, PI, PI/2], y_range=[-2, 2, 1])
+
+        # Build Fourier approximations
+        funcs = [lambda x: (4/PI) * np.sin(x)]
+        for n in range(3, 10, 2):
+            funcs.append(lambda x, n=n: (4/(n*PI)) * np.sin(n*x))
+
+        # Animate progressive approximation
+        graph = axes.plot(funcs[0], color=BLUE)
+        self.play(Create(axes), Create(graph))
+
+        for func in funcs[1:]:
+            new_graph = axes.plot(
+                lambda x: sum(f(x) for f in funcs[:funcs.index(func)+1]),
+                color=BLUE
+            )
+            self.play(Transform(graph, new_graph))`
+    },
+    chemistry: {
+      title: "Chemistry: Molecular Orbital Theory",
+      prompt: "Show the formation of molecular orbitals from atomic orbitals",
+      preview: "Visualizes bonding/antibonding orbital formation",
+      code: `class MolecularOrbitals(Scene):
+    def construct(self):
+        # Atomic orbitals
+        orbital_1 = Circle(radius=1, color=BLUE).shift(LEFT * 2)
+        orbital_2 = Circle(radius=1, color=BLUE).shift(RIGHT * 2)
+
+        # Bonding orbital (constructive interference)
+        bonding = Ellipse(width=5, height=2, color=GREEN)
+
+        # Antibonding orbital (destructive interference)
+        antibonding = VGroup(
+            Arc(radius=1, angle=PI, color=RED).shift(LEFT),
+            Arc(radius=1, angle=PI, color=RED).shift(RIGHT).rotate(PI)
+        )
+
+        # Animate orbital combination
+        self.play(Create(orbital_1), Create(orbital_2))
+        self.play(
+            Transform(VGroup(orbital_1, orbital_2), bonding),
+            run_time=2
+        )
+        self.wait()
+        self.play(Transform(bonding, antibonding))`
+    },
+    algorithms: {
+      title: "Algorithms: Quick Sort Visualization",
+      prompt: "Animate the quick sort algorithm step by step",
+      preview: "Shows pivot selection and partitioning",
+      code: `class QuickSort(Scene):
+    def construct(self):
+        # Create array of bars
+        values = [8, 3, 5, 4, 7, 6, 1, 2]
+        bars = VGroup(*[
+            Rectangle(height=val*0.3, width=0.4, color=BLUE)
+            .shift(RIGHT * (i - 3.5))
+            for i, val in enumerate(values)
+        ])
+
+        # Pivot selection
+        pivot = bars[0]
+        pivot.set_color(RED)
+
+        # Partition animation
+        self.play(Create(bars))
+        self.play(pivot.animate.set_color(RED))
+
+        # Animate swapping
+        for i, bar in enumerate(bars[1:]):
+            if values[i+1] < values[0]:
+                self.play(
+                    bar.animate.shift(LEFT * 2),
+                    rate_func=smooth,
+                    run_time=0.5
+                )`
+    }
+  };
+
+  const handleGenerate = () => {
+    setIsGenerating(true);
+    setTimeout(() => {
+      setIsGenerating(false);
+      setShowCode(true);
+    }, 2000);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="text-[#00FF88] text-lg font-bold">GENERATIVE MANIM DEMO</div>
+
+      <div className="text-sm text-terminal-text">
+        Educational video generation pipeline using LLMs + ManimGL
+        <div className="text-xs text-terminal-muted mt-1">
+          Production implementation from Sending Labs (5× throughput, 35% cost reduction)
+        </div>
+      </div>
+
+      <div className="border border-terminal-accent/30 rounded p-4 space-y-3">
+        <div className="text-terminal-accent text-sm font-semibold">Select Example Topic:</div>
+
+        <div className="grid grid-cols-2 gap-2">
+          {Object.entries(examples).map(([key, example]) => (
+            <button
+              key={key}
+              onClick={() => {
+                setSelectedExample(key);
+                setShowCode(false);
+              }}
+              className={`text-left p-2 rounded border transition-colors ${
+                selectedExample === key
+                  ? 'border-terminal-accent bg-terminal-accent/10'
+                  : 'border-terminal-muted/30 hover:border-terminal-muted'
+              }`}
+            >
+              <div className="text-xs font-semibold text-terminal-success">{example.title}</div>
+              <div className="text-xs text-terminal-muted mt-1">{example.preview}</div>
+            </button>
+          ))}
+        </div>
+
+        <div className="space-y-2">
+          <div className="text-terminal-accent text-sm">Or Enter Custom Prompt:</div>
+          <input
+            type="text"
+            value={customPrompt}
+            onChange={(e) => setCustomPrompt(e.target.value)}
+            placeholder="e.g., Explain the double-slit experiment with wave animations"
+            className="w-full bg-black/30 border border-terminal-muted/30 rounded px-3 py-2 text-sm text-terminal-text placeholder-terminal-muted/50 focus:border-terminal-accent focus:outline-none"
+          />
+        </div>
+
+        <button
+          onClick={handleGenerate}
+          disabled={isGenerating}
+          className="px-4 py-2 bg-terminal-accent/20 text-terminal-accent border border-terminal-accent rounded hover:bg-terminal-accent/30 transition-colors disabled:opacity-50 text-sm"
+        >
+          {isGenerating ? 'Generating Manim Code...' : 'Generate Animation'}
+        </button>
+
+        {showCode && (
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <div className="text-terminal-success text-sm">Generated Manim Code:</div>
+              <div className="text-xs text-terminal-muted">
+                Model: GPT-4o | Domain: {selectedExample}
+              </div>
+            </div>
+
+            <pre className="text-xs bg-black/50 p-3 rounded overflow-x-auto border border-terminal-muted/30">
+              {examples[selectedExample as keyof typeof examples].code}
+            </pre>
+
+            <div className="flex gap-2">
+              <button className="text-xs text-terminal-success hover:underline">
+                [▶ Render Video]
+              </button>
+              <button className="text-xs text-terminal-success hover:underline">
+                [📋 Copy Code]
+              </button>
+              <button className="text-xs text-terminal-success hover:underline">
+                [🔄 Regenerate]
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="border border-terminal-muted/30 rounded p-3 space-y-2">
+        <div className="text-terminal-accent text-sm">API Architecture:</div>
+        <pre className="text-xs text-terminal-muted">
+{`POST /v1/video/rendering
+├── LLM Processing (GPT-4o/Claude)
+│   ├── Domain-specific prompts
+│   ├── Storyboard generation
+│   └── Manim code creation
+├── ManimGL Rendering
+│   ├── LaTeX processing
+│   ├── Animation compilation
+│   └── FFmpeg encoding
+└── Output
+    ├── Local: ./media/
+    └── Cloud: S3/GCS`}
+        </pre>
+      </div>
+
+      <div className="text-xs text-terminal-muted">
+        Note: This demo shows the architecture. Actual rendering requires backend API.
+        <br />
+        Source: Generative-Manim-Template-main/ | Docker-ready deployment
+      </div>
     </div>
   );
 }

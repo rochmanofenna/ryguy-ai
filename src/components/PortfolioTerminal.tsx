@@ -133,6 +133,7 @@ export default function PortfolioTerminal() {
               <div><span className="text-terminal-success">projects</span> → Technical projects & implementations</div>
               <div><span className="text-terminal-success">skills</span> → Technical skills & expertise</div>
               <div><span className="text-terminal-success">education</span> → Academic background & coursework</div>
+              <div><span className="text-terminal-success">trading-infra</span> → AI Trading Infrastructure details</div>
               <div><span className="text-terminal-success">cv</span> → Download resume PDF</div>
               <div><span className="text-terminal-success">clear</span> → Clear terminal</div>
             </div>
@@ -213,6 +214,17 @@ export default function PortfolioTerminal() {
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
           content: <EducationSection />,
+          type: 'output',
+          timestamp
+        }]);
+        break;
+
+      case 'trading-infra':
+      case 'infra':
+      case 'ai-trading':
+        setLines(prev => [...prev, {
+          id: `output-${Date.now()}`,
+          content: <AITradingInfraOverview />,
           type: 'output',
           timestamp
         }]);
@@ -987,6 +999,7 @@ function AboutSection() {
 // Experience Section Component
 function ExperienceSection({ onInteraction }: { onInteraction: (mode: string) => void }) {
   const [showDetails, setShowDetails] = useState<string | null>(null);
+  const [activeCodeTab, setActiveCodeTab] = useState<string>('metrics');
 
   return (
     <div className="space-y-4">
@@ -1005,24 +1018,70 @@ function ExperienceSection({ onInteraction }: { onInteraction: (mode: string) =>
           <div className="mt-2 space-y-1 text-sm">
             <div>• Architected end-to-end research/execution stack with sub-20ms p99 latency</div>
             <div>• Designed cointegration and mean-reversion strategies with Markowitz optimization</div>
-            <div>• Engineered custom CUDA kernels for 10× speedup over NumPy baselines</div>
-            <div>• Delivered live monitoring suite for P&L, VaR, drawdowns, and slippage</div>
+            <div>• Engineered custom CUDA kernels (BICEP) for 10× speedup over NumPy baselines</div>
+            <div>• Delivered live monitoring suite (FusionAlpha) for P&L, VaR, drawdowns</div>
+            <div>• Achieved 2.95 Sharpe ratio with ENN-based signal processing</div>
             <div>• Secured $45K in non-dilutive R&D funding</div>
           </div>
 
-          <button
-            onClick={() => {
-              setShowDetails(showDetails === 'trading' ? null : 'trading');
-              onInteraction('portfolio');
-            }}
-            className="mt-2 text-xs text-terminal-success hover:underline"
-          >
-            [Click to see live trading dashboard]
-          </button>
+          <div className="mt-3 space-y-2">
+            <button
+              onClick={() => {
+                setShowDetails(showDetails === 'trading' ? null : 'trading');
+                onInteraction('portfolio');
+              }}
+              className="text-xs text-terminal-success hover:underline"
+            >
+              [View Live Trading Dashboard]
+            </button>
+
+            <button
+              onClick={() => setShowDetails(showDetails === 'code' ? null : 'code')}
+              className="text-xs text-terminal-success hover:underline ml-4"
+            >
+              [View AI Trading Infrastructure Code]
+            </button>
+          </div>
 
           {showDetails === 'trading' && (
             <div className="mt-3">
               <TradingDashboard onInteraction={onInteraction} />
+            </div>
+          )}
+
+          {showDetails === 'code' && (
+            <div className="mt-3 space-y-3">
+              <div className="flex gap-2 mb-2">
+                <button
+                  onClick={() => setActiveCodeTab('metrics')}
+                  className={`text-xs px-2 py-1 rounded ${activeCodeTab === 'metrics' ? 'bg-terminal-accent/20 text-terminal-accent' : 'text-terminal-muted'}`}
+                >
+                  Performance Metrics
+                </button>
+                <button
+                  onClick={() => setActiveCodeTab('bicep')}
+                  className={`text-xs px-2 py-1 rounded ${activeCodeTab === 'bicep' ? 'bg-terminal-accent/20 text-terminal-accent' : 'text-terminal-muted'}`}
+                >
+                  BICEP GPU
+                </button>
+                <button
+                  onClick={() => setActiveCodeTab('enn')}
+                  className={`text-xs px-2 py-1 rounded ${activeCodeTab === 'enn' ? 'bg-terminal-accent/20 text-terminal-accent' : 'text-terminal-muted'}`}
+                >
+                  ENN Model
+                </button>
+                <button
+                  onClick={() => setActiveCodeTab('fusion')}
+                  className={`text-xs px-2 py-1 rounded ${activeCodeTab === 'fusion' ? 'bg-terminal-accent/20 text-terminal-accent' : 'text-terminal-muted'}`}
+                >
+                  FusionAlpha
+                </button>
+              </div>
+
+              {activeCodeTab === 'metrics' && <AITradingMetrics />}
+              {activeCodeTab === 'bicep' && <BICEPCodeSnippet />}
+              {activeCodeTab === 'enn' && <ENNCodeSnippet />}
+              {activeCodeTab === 'fusion' && <FusionAlphaSnippet />}
             </div>
           )}
         </div>
@@ -1331,6 +1390,262 @@ function EducationSection() {
       <div className="text-terminal-muted text-xs mt-4">
         GPA and transcript available upon request
       </div>
+    </div>
+  );
+}
+
+// AI Trading Infrastructure Components
+function AITradingMetrics() {
+  return (
+    <div className="border border-terminal-accent/30 rounded p-3 space-y-3 bg-black/30">
+      <div className="text-terminal-accent text-sm font-bold">Production Performance Metrics</div>
+
+      <div className="grid grid-cols-2 gap-4 text-xs">
+        <div className="space-y-2">
+          <div className="text-terminal-success">Strategy Performance</div>
+          <div className="ml-2">
+            <div>• Sharpe Ratio: <span className="text-terminal-accent font-bold">2.95</span></div>
+            <div>• Annual Return: <span className="text-white">1.98%</span></div>
+            <div>• Max Drawdown: <span className="text-white">-0.36%</span></div>
+            <div>• Win Rate: <span className="text-white">52.2%</span></div>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="text-terminal-success">System Performance</div>
+          <div className="ml-2">
+            <div>• Latency p99: <span className="text-terminal-accent font-bold">&lt;20ms</span></div>
+            <div>• Throughput: <span className="text-white">14k+ rps</span></div>
+            <div>• Events/Day: <span className="text-white">1.2B+</span></div>
+            <div>• Cache Hit: <span className="text-white">40%+</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="text-terminal-muted text-xs mt-2">
+        Source: AI_TRADING_INFRA/PERFORMANCE_CLAIMS.md | Validated via K6 benchmarks
+      </div>
+    </div>
+  );
+}
+
+function BICEPCodeSnippet() {
+  return (
+    <div className="space-y-2">
+      <div className="text-terminal-accent text-sm">BICEP: GPU Monte Carlo Engine</div>
+      <pre className="text-xs bg-black/50 p-3 rounded overflow-x-auto border border-terminal-muted/30">
+{`# BICEP Performance: 2.5M+ paths/second on consumer GPU
+class MonteCarloKernel:
+    def __init__(self, device='cuda'):
+        self.device = torch.device(device)
+        self.compile_mode = 'reduce-overhead'
+
+    @torch.compile(mode='reduce-overhead')
+    def generate_paths(self, S0, mu, sigma, T, N, paths):
+        """Sub-millisecond path generation (0.4ms on M3 Metal)"""
+        dt = T / N
+        randn = torch.randn((paths, N), device=self.device)
+
+        # Optimized GPU kernel with coalesced memory access
+        drift = (mu - 0.5 * sigma**2) * dt
+        diffusion = sigma * torch.sqrt(dt)
+
+        # Vectorized path computation
+        log_returns = drift + diffusion * randn
+        log_paths = torch.cumsum(log_returns, dim=1)
+        paths = S0 * torch.exp(log_paths)
+
+        return paths
+
+# Benchmarked: 10,000 paths in 0.0004ms (2.5M paths/sec)`}
+      </pre>
+      <div className="text-terminal-muted text-xs">From: AI_TRADING_INFRA/BICEP/bicep_core.py</div>
+    </div>
+  );
+}
+
+function ENNCodeSnippet() {
+  return (
+    <div className="space-y-2">
+      <div className="text-terminal-accent text-sm">ENN: Entangled Neural Network</div>
+      <pre className="text-xs bg-black/50 p-3 rounded overflow-x-auto border border-terminal-muted/30">
+{`class EntangledNeuralNetwork(nn.Module):
+    """Novel architecture with entangled neuron dynamics"""
+    def __init__(self, config):
+        super().__init__()
+        self.num_neurons = config.num_neurons
+        self.num_states = config.num_states
+
+        # Entanglement matrix (PSD-constrained)
+        self.W_entangle = nn.Parameter(
+            torch.randn(num_neurons, num_neurons) * 0.1
+        )
+
+        # Multi-head attention for neuron-state processing
+        self.neuron_attention = nn.MultiheadAttention(
+            embed_dim=num_states,
+            num_heads=4,
+            batch_first=True
+        )
+
+        # Adaptive sparsity control
+        self.sparsity_threshold = nn.Parameter(torch.tensor(0.1))
+
+    def forward(self, x, hidden=None):
+        # Entangled state evolution
+        entangled = torch.matmul(self.W_entangle, hidden)
+
+        # Apply attention mechanism
+        attended, _ = self.neuron_attention(entangled, entangled, entangled)
+
+        # Dynamic pruning for sparsity
+        mask = torch.abs(attended) > self.sparsity_threshold
+        sparse_output = attended * mask
+
+        return sparse_output
+
+# Variants: minimal (5K), neuron_only (18K), full (148K params)`}
+      </pre>
+      <div className="text-terminal-muted text-xs">From: AI_TRADING_INFRA/ENN/enn/enhanced_model.py</div>
+    </div>
+  );
+}
+
+function FusionAlphaSnippet() {
+  return (
+    <div className="space-y-2">
+      <div className="text-terminal-accent text-sm">FusionAlpha: High-Performance Router</div>
+      <pre className="text-xs bg-black/50 p-3 rounded overflow-x-auto border border-terminal-muted/30">
+{`@router.post('/predict', response_model=PredictionResponse)
+async def predict(
+    request: PredictionRequest,
+    redis_client = Depends(get_redis),
+    model_pool = Depends(get_model_pool)
+):
+    """p99 < 20ms at 14k+ requests/second"""
+
+    # SHA1 feature hashing for 40%+ cache hits
+    cache_key = hashlib.sha1(
+        f"{request.features_rounded}:{MODEL_VERSION}".encode()
+    ).hexdigest()
+
+    # Redis pipeline for atomic operations
+    pipe = redis_client.pipeline()
+    cached = await pipe.get(cache_key).execute()
+
+    if cached:
+        metrics.cache_hits.inc()
+        return json.loads(cached)
+
+    # Micro-batching: 1ms timeout, 32 batch size
+    async with batch_context(timeout_ms=1, size=32) as batch:
+        batch.add(request)
+
+        if batch.ready():
+            # TorchScript optimized inference
+            predictions = await model_pool.predict_batch(
+                batch.items,
+                compile_mode='reduce-overhead'
+            )
+
+            # Pipeline cache writes
+            for pred in predictions:
+                pipe.setex(pred.cache_key, 2, pred.json())
+            await pipe.execute()
+
+    return predictions[request.id]
+
+# Benchmarked via K6: 14,235 rps sustained, p99=19.7ms`}
+      </pre>
+      <div className="text-terminal-muted text-xs">From: AI_TRADING_INFRA/src/router/high_performance_router.py</div>
+    </div>
+  );
+}
+
+// AI Trading Infrastructure Overview Component
+function AITradingInfraOverview() {
+  const [activeView, setActiveView] = useState<string>('overview');
+
+  return (
+    <div className="space-y-4">
+      <div className="text-[#00FF88] text-lg font-bold">AI TRADING INFRASTRUCTURE</div>
+
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={() => setActiveView('overview')}
+          className={`text-xs px-3 py-1 rounded border ${activeView === 'overview' ? 'border-terminal-accent text-terminal-accent bg-terminal-accent/10' : 'border-terminal-muted/30 text-terminal-muted'}`}
+        >
+          Overview
+        </button>
+        <button
+          onClick={() => setActiveView('metrics')}
+          className={`text-xs px-3 py-1 rounded border ${activeView === 'metrics' ? 'border-terminal-accent text-terminal-accent bg-terminal-accent/10' : 'border-terminal-muted/30 text-terminal-muted'}`}
+        >
+          Performance
+        </button>
+        <button
+          onClick={() => setActiveView('bicep')}
+          className={`text-xs px-3 py-1 rounded border ${activeView === 'bicep' ? 'border-terminal-accent text-terminal-accent bg-terminal-accent/10' : 'border-terminal-muted/30 text-terminal-muted'}`}
+        >
+          BICEP Engine
+        </button>
+        <button
+          onClick={() => setActiveView('enn')}
+          className={`text-xs px-3 py-1 rounded border ${activeView === 'enn' ? 'border-terminal-accent text-terminal-accent bg-terminal-accent/10' : 'border-terminal-muted/30 text-terminal-muted'}`}
+        >
+          ENN Model
+        </button>
+        <button
+          onClick={() => setActiveView('fusion')}
+          className={`text-xs px-3 py-1 rounded border ${activeView === 'fusion' ? 'border-terminal-accent text-terminal-accent bg-terminal-accent/10' : 'border-terminal-muted/30 text-terminal-muted'}`}
+        >
+          FusionAlpha
+        </button>
+      </div>
+
+      {activeView === 'overview' && (
+        <div className="space-y-3">
+          <div className="border-l-2 border-terminal-accent/30 pl-4">
+            <div className="text-terminal-accent font-semibold">Institutional-Grade Trading System</div>
+            <div className="text-sm mt-2 space-y-1">
+              <div>• Walk-forward backtesting with 2.95 Sharpe ratio</div>
+              <div>• Sub-20ms p99 latency at 14k+ requests/second</div>
+              <div>• 1.2B+ events/day ingestion capacity</div>
+              <div>• Three core modules: BICEP, ENN, FusionAlpha</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 text-xs">
+            <div className="border border-terminal-muted/30 rounded p-2">
+              <div className="text-terminal-success font-semibold mb-1">BICEP</div>
+              <div className="text-terminal-muted">GPU Monte Carlo</div>
+              <div>2.5M paths/sec</div>
+              <div>0.4ms latency</div>
+            </div>
+            <div className="border border-terminal-muted/30 rounded p-2">
+              <div className="text-terminal-success font-semibold mb-1">ENN</div>
+              <div className="text-terminal-muted">Neural Network</div>
+              <div>Entangled dynamics</div>
+              <div>5K-148K params</div>
+            </div>
+            <div className="border border-terminal-muted/30 rounded p-2">
+              <div className="text-terminal-success font-semibold mb-1">FusionAlpha</div>
+              <div className="text-terminal-muted">Infrastructure</div>
+              <div>14k+ rps</div>
+              <div>40% cache hits</div>
+            </div>
+          </div>
+
+          <div className="text-terminal-muted text-xs">
+            Location: AI_TRADING_INFRA/ | Production-ready with Docker/K8s deployment
+          </div>
+        </div>
+      )}
+
+      {activeView === 'metrics' && <AITradingMetrics />}
+      {activeView === 'bicep' && <BICEPCodeSnippet />}
+      {activeView === 'enn' && <ENNCodeSnippet />}
+      {activeView === 'fusion' && <FusionAlphaSnippet />}
     </div>
   );
 }

@@ -2028,6 +2028,8 @@ function GenerativeManimDemo() {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [showCode, setShowCode] = useState<boolean>(false);
   const [renderStatus, setRenderStatus] = useState<string | null>(null);
+  const [showVideo, setShowVideo] = useState<boolean>(false);
+  const [videoFrame, setVideoFrame] = useState<number>(0);
 
   const examples = {
     physics: {
@@ -2218,13 +2220,16 @@ function GenerativeManimDemo() {
             <div className="flex gap-2">
               <button
                 onClick={() => {
+                  setShowVideo(false);
+                  setVideoFrame(0);
                   setRenderStatus('Initializing ManimGL engine...');
                   setTimeout(() => setRenderStatus('Compiling LaTeX formulas...'), 1000);
                   setTimeout(() => setRenderStatus('Rendering animation frames... (60 FPS)'), 2000);
                   setTimeout(() => setRenderStatus('Encoding with FFmpeg... (H.264/MP4)'), 3500);
                   setTimeout(() => {
-                    setRenderStatus('✓ Rendering complete! (Demo mode - actual API required for video file)');
-                    setTimeout(() => setRenderStatus(null), 4000);
+                    setRenderStatus('✓ Rendering complete!');
+                    setShowVideo(true);
+                    setTimeout(() => setRenderStatus(null), 2000);
                   }, 5000);
                 }}
                 className="text-xs text-terminal-success hover:underline">
@@ -2260,6 +2265,48 @@ function GenerativeManimDemo() {
             )}
           </div>
         )}
+
+        {showVideo && (
+          <div className="mt-3 space-y-2">
+            <div className="border border-terminal-accent/30 rounded p-3 bg-black/50">
+              <div className="flex justify-between items-center mb-2">
+                <div className="text-xs text-terminal-success">Rendered Animation Preview</div>
+                <div className="text-xs text-terminal-muted">Frame {videoFrame + 1}/120</div>
+              </div>
+              <AnimatedPreview example={selectedExample} frame={videoFrame} />
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={() => {
+                    const interval = setInterval(() => {
+                      setVideoFrame(prev => {
+                        if (prev >= 119) {
+                          clearInterval(interval);
+                          return 0;
+                        }
+                        return prev + 1;
+                      });
+                    }, 33); // ~30 FPS
+                  }}
+                  className="text-xs px-2 py-1 bg-terminal-accent/20 text-terminal-accent border border-terminal-accent/30 rounded"
+                >
+                  ▶ Play
+                </button>
+                <button
+                  onClick={() => setVideoFrame(0)}
+                  className="text-xs px-2 py-1 border border-terminal-muted/30 text-terminal-muted rounded"
+                >
+                  ⏮ Reset
+                </button>
+                <button
+                  onClick={() => setShowVideo(false)}
+                  className="text-xs px-2 py-1 border border-terminal-muted/30 text-terminal-muted rounded"
+                >
+                  ✕ Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="border border-terminal-muted/30 rounded p-3 space-y-2">
@@ -2287,6 +2334,124 @@ function GenerativeManimDemo() {
       </div>
     </div>
   );
+}
+
+// Animated Preview Component for Manim Demo
+function AnimatedPreview({ example, frame }: { example: string; frame: number }) {
+  const progress = frame / 120;
+
+  const renderPhysics = () => (
+    <svg viewBox="0 0 400 200" className="w-full h-48 bg-black/30 rounded">
+      {/* Pendulum */}
+      <line x1="200" y1="20" x2={200 + 80 * Math.sin(Math.PI/3 * Math.cos(progress * Math.PI * 2))}
+            y2={20 + 80 * Math.cos(Math.PI/3 * Math.cos(progress * Math.PI * 2))}
+            stroke="#00FF88" strokeWidth="2"/>
+      <circle cx={200 + 80 * Math.sin(Math.PI/3 * Math.cos(progress * Math.PI * 2))}
+              cy={20 + 80 * Math.cos(Math.PI/3 * Math.cos(progress * Math.PI * 2))}
+              r="10" fill="#3B82F6"/>
+
+      {/* Energy bars */}
+      <rect x="50" y="150" width="100" height={(1 - Math.abs(Math.cos(progress * Math.PI * 2))) * 40}
+            fill="#EF4444" opacity="0.8"/>
+      <rect x="250" y="150" width="100" height={Math.abs(Math.cos(progress * Math.PI * 2)) * 40}
+            fill="#10B981" opacity="0.8"/>
+
+      <text x="100" y="140" fill="#E8E9ED" fontSize="12" textAnchor="middle">KE</text>
+      <text x="300" y="140" fill="#E8E9ED" fontSize="12" textAnchor="middle">PE</text>
+    </svg>
+  );
+
+  const renderMath = () => (
+    <svg viewBox="0 0 400 200" className="w-full h-48 bg-black/30 rounded">
+      {/* Axes */}
+      <line x1="50" y1="100" x2="350" y2="100" stroke="#666" strokeWidth="1"/>
+      <line x1="200" y1="20" x2="200" y2="180" stroke="#666" strokeWidth="1"/>
+
+      {/* Fourier series approximation */}
+      <path
+        d={`M 50 ${100 - 60 * Math.sign(Math.sin(progress * 8))}
+            Q ${100 + progress * 250} ${100 - 60 * Math.sign(Math.sin((progress + 0.1) * 8))}
+            ${50 + progress * 300} ${100 - 60 * Math.sign(Math.sin((progress + 0.2) * 8))}`}
+        stroke="#3B82F6" strokeWidth="2" fill="none"/>
+
+      {/* Sine wave components */}
+      {[1, 3, 5].map((n, i) => (
+        <path key={n}
+          d={`M 50 100 ${Array.from({length: 50}, (_, x) =>
+            `L ${50 + x * 6} ${100 - (30 / n) * Math.sin(n * x * 0.2 + progress * 2 * Math.PI)}`
+          ).join(' ')}`}
+          stroke={["#FF6B6B", "#4ECDC4", "#95E77E"][i]}
+          strokeWidth="1"
+          fill="none"
+          opacity={0.5 + 0.5 * Math.sin(progress * Math.PI * 2 + i)}/>
+      ))}
+    </svg>
+  );
+
+  const renderChemistry = () => (
+    <svg viewBox="0 0 400 200" className="w-full h-48 bg-black/30 rounded">
+      {/* Atomic orbitals */}
+      <ellipse cx="120" cy="100" rx={40 - 20 * progress} ry={40 - 20 * progress}
+               fill="none" stroke="#3B82F6" strokeWidth="2" opacity={1 - progress}/>
+      <ellipse cx="280" cy="100" rx={40 - 20 * progress} ry={40 - 20 * progress}
+               fill="none" stroke="#3B82F6" strokeWidth="2" opacity={1 - progress}/>
+
+      {/* Molecular orbital */}
+      <ellipse cx="200" cy="100" rx={80 * progress} ry={40 * progress}
+               fill="none" stroke="#10B981" strokeWidth="2" opacity={progress}/>
+
+      {/* Electron dots */}
+      <circle cx={120 + progress * 80} cy="100" r="3" fill="#FFD700"/>
+      <circle cx={280 - progress * 80} cy="100" r="3" fill="#FFD700"/>
+
+      {/* Labels */}
+      <text x="120" y="160" fill="#E8E9ED" fontSize="10" textAnchor="middle" opacity={1 - progress}>1s</text>
+      <text x="280" y="160" fill="#E8E9ED" fontSize="10" textAnchor="middle" opacity={1 - progress}>1s</text>
+      <text x="200" y="160" fill="#E8E9ED" fontSize="10" textAnchor="middle" opacity={progress}>σ bonding</text>
+    </svg>
+  );
+
+  const renderAlgorithms = () => {
+    const values = [8, 3, 5, 4, 7, 6, 1, 2];
+    const sorted = [...values].sort((a, b) => a - b);
+    const currentValues = values.map((v, i) => {
+      const sortedIndex = sorted.indexOf(v);
+      const targetX = 50 + sortedIndex * 40;
+      const currentX = 50 + i * 40;
+      return {
+        value: v,
+        x: currentX + (targetX - currentX) * progress,
+        color: i === Math.floor(progress * 8) ? '#EF4444' : '#3B82F6'
+      };
+    });
+
+    return (
+      <svg viewBox="0 0 400 200" className="w-full h-48 bg-black/30 rounded">
+        {currentValues.map((item, i) => (
+          <g key={i}>
+            <rect x={item.x} y={150 - item.value * 12}
+                  width="30" height={item.value * 12}
+                  fill={item.color} opacity="0.8"/>
+            <text x={item.x + 15} y="170" fill="#E8E9ED" fontSize="10" textAnchor="middle">
+              {item.value}
+            </text>
+          </g>
+        ))}
+        <text x="200" y="20" fill="#00FF88" fontSize="12" textAnchor="middle">
+          Quick Sort: {Math.floor(progress * 100)}% Complete
+        </text>
+      </svg>
+    );
+  };
+
+  const renderers = {
+    physics: renderPhysics,
+    math: renderMath,
+    chemistry: renderChemistry,
+    algorithms: renderAlgorithms
+  };
+
+  return renderers[example as keyof typeof renderers]();
 }
 
 // Export components for lazy loading

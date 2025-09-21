@@ -2027,6 +2027,7 @@ function GenerativeManimDemo() {
   const [customPrompt, setCustomPrompt] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [showCode, setShowCode] = useState<boolean>(false);
+  const [renderStatus, setRenderStatus] = useState<string | null>(null);
 
   const examples = {
     physics: {
@@ -2215,16 +2216,48 @@ function GenerativeManimDemo() {
             </pre>
 
             <div className="flex gap-2">
-              <button className="text-xs text-terminal-success hover:underline">
+              <button
+                onClick={() => {
+                  setRenderStatus('Initializing ManimGL engine...');
+                  setTimeout(() => setRenderStatus('Compiling LaTeX formulas...'), 1000);
+                  setTimeout(() => setRenderStatus('Rendering animation frames... (60 FPS)'), 2000);
+                  setTimeout(() => setRenderStatus('Encoding with FFmpeg... (H.264/MP4)'), 3500);
+                  setTimeout(() => {
+                    setRenderStatus('✓ Rendering complete! (Demo mode - actual API required for video file)');
+                    setTimeout(() => setRenderStatus(null), 4000);
+                  }, 5000);
+                }}
+                className="text-xs text-terminal-success hover:underline">
                 [▶ Render Video]
               </button>
-              <button className="text-xs text-terminal-success hover:underline">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(examples[selectedExample as keyof typeof examples].code);
+                  alert('Code copied to clipboard!');
+                }}
+                className="text-xs text-terminal-success hover:underline">
                 [📋 Copy Code]
               </button>
-              <button className="text-xs text-terminal-success hover:underline">
+              <button
+                onClick={() => {
+                  setShowCode(false);
+                  setTimeout(() => {
+                    setIsGenerating(true);
+                    setTimeout(() => {
+                      setIsGenerating(false);
+                      setShowCode(true);
+                    }, 1500);
+                  }, 100);
+                }}
+                className="text-xs text-terminal-success hover:underline">
                 [🔄 Regenerate]
               </button>
             </div>
+            {renderStatus && (
+              <div className="mt-2 p-2 bg-terminal-accent/10 border border-terminal-accent/30 rounded">
+                <div className="text-xs text-terminal-accent animate-pulse">{renderStatus}</div>
+              </div>
+            )}
           </div>
         )}
       </div>

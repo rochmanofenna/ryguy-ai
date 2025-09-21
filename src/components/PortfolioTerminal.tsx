@@ -1076,12 +1076,19 @@ function ExperienceSection({ onInteraction }: { onInteraction: (mode: string) =>
                 >
                   FusionAlpha
                 </button>
+                <button
+                  onClick={() => setActiveCodeTab('infra')}
+                  className={`text-xs px-2 py-1 rounded ${activeCodeTab === 'infra' ? 'bg-terminal-accent/20 text-terminal-accent' : 'text-terminal-muted'}`}
+                >
+                  Infrastructure
+                </button>
               </div>
 
               {activeCodeTab === 'metrics' && <AITradingMetrics />}
               {activeCodeTab === 'bicep' && <BICEPCodeSnippet />}
               {activeCodeTab === 'enn' && <ENNCodeSnippet />}
               {activeCodeTab === 'fusion' && <FusionAlphaSnippet />}
+              {activeCodeTab === 'infra' && <InfrastructureCode />}
             </div>
           )}
         </div>
@@ -1601,6 +1608,18 @@ function AITradingInfraOverview() {
         >
           FusionAlpha
         </button>
+        <button
+          onClick={() => setActiveView('infra')}
+          className={`text-xs px-3 py-1 rounded border ${activeView === 'infra' ? 'border-terminal-accent text-terminal-accent bg-terminal-accent/10' : 'border-terminal-muted/30 text-terminal-muted'}`}
+        >
+          Infrastructure
+        </button>
+        <button
+          onClick={() => setActiveView('backtest')}
+          className={`text-xs px-3 py-1 rounded border ${activeView === 'backtest' ? 'border-terminal-accent text-terminal-accent bg-terminal-accent/10' : 'border-terminal-muted/30 text-terminal-muted'}`}
+        >
+          Backtesting
+        </button>
       </div>
 
       {activeView === 'overview' && (
@@ -1646,6 +1665,318 @@ function AITradingInfraOverview() {
       {activeView === 'bicep' && <BICEPCodeSnippet />}
       {activeView === 'enn' && <ENNCodeSnippet />}
       {activeView === 'fusion' && <FusionAlphaSnippet />}
+      {activeView === 'infra' && <InfrastructureCode />}
+      {activeView === 'backtest' && <BacktestingCode />}
+    </div>
+  );
+}
+
+// Infrastructure Deployment Code
+function InfrastructureCode() {
+  const [infraTab, setInfraTab] = useState<string>('docker');
+
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-2">
+        <button
+          onClick={() => setInfraTab('docker')}
+          className={`text-xs px-2 py-1 rounded ${infraTab === 'docker' ? 'bg-terminal-accent/20 text-terminal-accent' : 'text-terminal-muted'}`}
+        >
+          Docker Compose
+        </button>
+        <button
+          onClick={() => setInfraTab('websocket')}
+          className={`text-xs px-2 py-1 rounded ${infraTab === 'websocket' ? 'bg-terminal-accent/20 text-terminal-accent' : 'text-terminal-muted'}`}
+        >
+          WebSocket Stream
+        </button>
+        <button
+          onClick={() => setInfraTab('ingestion')}
+          className={`text-xs px-2 py-1 rounded ${infraTab === 'ingestion' ? 'bg-terminal-accent/20 text-terminal-accent' : 'text-terminal-muted'}`}
+        >
+          NATS Ingestion
+        </button>
+      </div>
+
+      {infraTab === 'docker' && (
+        <div className="space-y-2">
+          <div className="text-terminal-accent text-sm">High-Performance Docker Stack</div>
+          <pre className="text-xs bg-black/50 p-3 rounded overflow-x-auto border border-terminal-muted/30">
+{`# compose-high-performance.yaml
+services:
+  # PostgreSQL with optimized settings
+  store:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: \${PG_PASSWORD}
+      POSTGRES_DB: trading
+    deploy:
+      resources:
+        limits: { memory: 2G }
+        reservations: { memory: 1G }
+
+  # Redis with LRU cache eviction
+  redis:
+    image: redis:7-alpine
+    command: >
+      redis-server
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+      --save "" --appendonly no
+
+  # NATS JetStream for 1.2B events/day
+  nats:
+    image: nats:2.10-alpine
+    command: >
+      nats-server --jetstream
+      --max_file_store 10GB
+      --max_mem_store 1GB
+
+  # Horizontal scaling router (3 replicas)
+  router:
+    build: ../docker/router/Dockerfile
+    environment:
+      TORCH_NUM_THREADS: 1
+      MODEL_COMPILE_MODE: reduce-overhead
+    deploy:
+      replicas: 3
+      resources:
+        limits: { cpus: '4', memory: '4G' }
+        reservations: { cpus: '2', memory: '2G' }
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3`}
+          </pre>
+          <div className="text-terminal-muted text-xs">From: AI_TRADING_INFRA/infra/compose-high-performance.yaml</div>
+        </div>
+      )}
+
+      {infraTab === 'websocket' && (
+        <div className="space-y-2">
+          <div className="text-terminal-accent text-sm">WebSocket Streaming Server</div>
+          <pre className="text-xs bg-black/50 p-3 rounded overflow-x-auto border border-terminal-muted/30">
+{`class RingBuffer:
+    """Lock-free ring buffer for 400ms p99 latency"""
+    def __init__(self, maxsize: int = 64):
+        self.buffer = [None] * maxsize
+        self.head = 0
+        self.tail = 0
+        self.size = 0
+
+class WebSocketServer:
+    """High-performance streaming with backpressure"""
+
+    async def handle_client(self, websocket, path):
+        client_queue = RingBuffer(maxsize=64)
+        subscription = ClientSubscription(
+            symbols={'SPY', 'QQQ', 'IWM'},
+            signal_types={'prediction', 'order', 'fill'},
+            max_queue_size=64
+        )
+
+        # Redis pub/sub for signal distribution
+        pubsub = self.redis.pubsub()
+        await pubsub.subscribe('signals:*')
+
+        try:
+            async for message in pubsub.listen():
+                signal = TradingSignal(**json.loads(message['data']))
+
+                # Track delivery latency for SLO
+                latency = time.time() - signal.timestamp
+                WS_DELIVERY_LATENCY.observe(latency)
+
+                # Apply backpressure if queue full
+                if client_queue.is_full():
+                    WS_DROPPED_MESSAGES.labels(reason='backpressure').inc()
+                    client_queue.pop_oldest()  # Drop oldest
+
+                # Send with 400ms p99 guarantee
+                await websocket.send(json.dumps(asdict(signal)))
+                WS_THROUGHPUT.labels(
+                    symbol=signal.symbol,
+                    type=signal.signal_type
+                ).inc()
+
+        except websockets.ConnectionClosed:
+            WS_CONNECTIONS.dec()`}
+          </pre>
+          <div className="text-terminal-muted text-xs">From: AI_TRADING_INFRA/src/streaming/websocket_server.py</div>
+        </div>
+      )}
+
+      {infraTab === 'ingestion' && (
+        <div className="space-y-2">
+          <div className="text-terminal-accent text-sm">NATS High-Throughput Ingestion</div>
+          <pre className="text-xs bg-black/50 p-3 rounded overflow-x-auto border border-terminal-muted/30">
+{`class NATSIngestion:
+    """1.2B+ events/day with zero data loss"""
+
+    def __init__(self):
+        self.batch_size = 10000
+        self.batch_timeout = 60  # seconds
+        self.s3_client = boto3.client('s3')
+
+    async def consume_stream(self):
+        """Process NATS JetStream with backpressure"""
+        nc = await nats.connect("nats://nats:4222")
+        js = nc.jetstream()
+
+        # Durable consumer for at-least-once delivery
+        consumer = await js.pull_subscribe(
+            "market.>",
+            durable="ingestion-consumer",
+            config=ConsumerConfig(
+                ack_policy=AckPolicy.EXPLICIT,
+                max_deliver=3,
+                ack_wait=30
+            )
+        )
+
+        batch = []
+        last_flush = time.time()
+
+        while True:
+            try:
+                msgs = await consumer.fetch(100, timeout=1)
+
+                for msg in msgs:
+                    event = json.loads(msg.data.decode())
+                    batch.append(event)
+
+                    # Batch write to S3 Parquet
+                    if len(batch) >= self.batch_size or \
+                       time.time() - last_flush > self.batch_timeout:
+
+                        df = pd.DataFrame(batch)
+                        partition = f"date={event['date']}/symbol={event['symbol']}"
+
+                        # Write partitioned Parquet
+                        buffer = BytesIO()
+                        df.to_parquet(buffer, compression='snappy')
+
+                        self.s3_client.put_object(
+                            Bucket='market-data',
+                            Key=f"events/{partition}/{uuid4()}.parquet",
+                            Body=buffer.getvalue()
+                        )
+
+                        # Ack messages after successful write
+                        for m in msgs:
+                            await m.ack()
+
+                        INGEST_RATE.observe(len(batch))
+                        batch.clear()
+                        last_flush = time.time()
+
+            except Exception as e:
+                logger.error(f"Ingestion error: {e}")
+                INGEST_ERRORS.inc()`}
+          </pre>
+          <div className="text-terminal-muted text-xs">From: AI_TRADING_INFRA/src/ingestion/nats_ingestion.py</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Backtesting Engine Code
+function BacktestingCode() {
+  return (
+    <div className="space-y-2">
+      <div className="text-terminal-accent text-sm">Walk-Forward Backtesting Engine</div>
+      <pre className="text-xs bg-black/50 p-3 rounded overflow-x-auto border border-terminal-muted/30">
+{`class WalkForwardBacktest:
+    """Production backtesting with 2.95 Sharpe achievement"""
+
+    def __init__(self, config: Dict):
+        # Initialize optimizers
+        self.activity_optimizer = ActivityOptimizer(config['activity'])
+        self.vol_threshold = VolatilityAdaptiveThreshold(config['adaptive'])
+        self.tx_optimizer = TransactionOptimizer(config['transaction'])
+
+        # Underhype strategy with ENN integration
+        self.underhype_engine = UnderhypeEngine(
+            confidence_threshold=2.0
+        )
+
+        # Risk controls
+        self.max_position = 0.22  # 22% max single position
+        self.max_gross = 1.20      # 120% max gross exposure
+        self.target_vol = 0.175    # 17.5% target volatility
+
+    def run_backtest(self, train_data, test_data):
+        """Walk-forward with expanding windows"""
+        results = []
+
+        for fold_date in self.config['fold_dates']:
+            # Expanding training window
+            train = train_data[train_data.index < fold_date]
+            test_fold = test_data[
+                (test_data.index >= fold_date) &
+                (test_data.index < fold_date + timedelta(days=30))
+            ]
+
+            # Fit only on train (no leakage)
+            threshold = pick_threshold(train['scores'], train['returns'])
+
+            # Apply optimizations
+            signals = self.underhype_engine.generate_signals(
+                test_fold,
+                threshold=self.vol_threshold.adjust(test_fold['volatility'])
+            )
+
+            # Activity-aware scaling
+            scaled_signals = self.activity_optimizer.scale(
+                signals,
+                activity_score=signals['activity'].mean()
+            )
+
+            # Transaction cost optimization
+            filtered_signals = self.tx_optimizer.filter(
+                scaled_signals,
+                expected_value_threshold=2.0  # 2x cost minimum
+            )
+
+            # Risk management
+            positions = self.apply_risk_controls(filtered_signals)
+
+            # Calculate returns
+            returns = positions * test_fold['forward_returns']
+            transaction_costs = self.calculate_costs(positions)
+            net_returns = returns - transaction_costs
+
+            results.append({
+                'date': fold_date,
+                'returns': net_returns.sum(),
+                'sharpe': net_returns.mean() / net_returns.std() * sqrt(252),
+                'positions': len(positions[positions != 0])
+            })
+
+        return pd.DataFrame(results)
+
+    def apply_risk_controls(self, signals):
+        """Institutional-grade risk management"""
+        positions = signals.copy()
+
+        # Single position limit
+        positions = positions.clip(-self.max_position, self.max_position)
+
+        # Gross exposure limit
+        gross = positions.abs().sum()
+        if gross > self.max_gross:
+            positions *= self.max_gross / gross
+
+        # Volatility targeting
+        realized_vol = positions.std() * sqrt(252)
+        if realized_vol > 0:
+            positions *= self.target_vol / realized_vol
+
+        return positions`}
+      </pre>
+      <div className="text-terminal-muted text-xs">From: AI_TRADING_INFRA/src/strategy/backtest_runner.py</div>
     </div>
   );
 }

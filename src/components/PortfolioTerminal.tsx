@@ -128,17 +128,12 @@ export default function PortfolioTerminal() {
           content: (
             <div className="space-y-1">
               <div className="text-terminal-accent mb-2">Available Commands:</div>
-              <div><span className="text-terminal-success">about</span> → Professional summary</div>
-              <div><span className="text-terminal-success">story</span> → CS:GO origin story</div>
-              <div><span className="text-terminal-success">experience</span> → Interactive work timeline</div>
-              <div><span className="text-terminal-success">portfolio</span> → Live trading P&L dashboard</div>
-              <div><span className="text-terminal-success">stack</span> → System architecture diagrams</div>
-              <div><span className="text-terminal-success">gpu</span> → Monte Carlo GPU demo</div>
-              <div><span className="text-terminal-success">monte-carlo</span> → Interactive option pricing</div>
-              <div><span className="text-terminal-success">quant-term</span> → Quant trading terminal</div>
-              <div><span className="text-terminal-success">skills</span> → Proven technical skills</div>
-              <div><span className="text-terminal-success">projects</span> → Browse all projects</div>
-              <div><span className="text-terminal-success">cv</span> → Download resume</div>
+              <div><span className="text-terminal-success">about</span> → Professional summary & CS:GO origin story</div>
+              <div><span className="text-terminal-success">experience</span> → Work history & live trading systems</div>
+              <div><span className="text-terminal-success">projects</span> → Technical projects & implementations</div>
+              <div><span className="text-terminal-success">skills</span> → Technical skills & expertise</div>
+              <div><span className="text-terminal-success">education</span> → Academic background & coursework</div>
+              <div><span className="text-terminal-success">cv</span> → Download resume PDF</div>
               <div><span className="text-terminal-success">clear</span> → Clear terminal</div>
             </div>
           ),
@@ -169,39 +164,8 @@ export default function PortfolioTerminal() {
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
           content: (
-            <TypewriterText text={`NYU CS/Math + Philosophy
-
-TECH STACK:
-• Languages: Python, C/C++ (CUDA), Rust, SQL, JavaScript, TypeScript
-• ML/AI: PyTorch, JAX, TensorFlow, scikit-learn, Transformers
-• Systems: CUDA/Triton, Docker, Kubernetes, Linux, Git
-• Infrastructure: AWS (EC2/S3/Lambda), PostgreSQL, Redis, Kafka
-
-CURRENT PROJECTS:
-• Trading research stack - Sub-20ms p99 latency, 1B+ events/day
-• EEG neural pipeline - 129-channel processing on 8×V100 cluster
-• GPU Monte Carlo engine - 10× speedup over NumPy baseline
-• Custom neural network (ENN) - 98% accuracy gesture recognition
-
-RECENT EXPERIENCE:
-• Systems Engineer @ Stealth Trading (2024-Present)
-• ML Engineer @ Sending Labs (Jun-Aug 2024)
-• ML Engineer @ Video Tutor AI (Apr-Jun 2024)
-• Software Engineering Intern @ Olo (2022-2023)
-
-[Type 'story' for the CS:GO origin story]
-[Type 'projects' for detailed project info]
-[Type 'experience' for full timeline]`} />
+            <AboutSection />
           ),
-          type: 'output',
-          timestamp
-        }]);
-        break;
-
-      case 'portfolio':
-        setLines(prev => [...prev, {
-          id: `output-${Date.now()}`,
-          content: <TradingDashboard onInteraction={setInteractiveMode} />,
           type: 'output',
           timestamp
         }]);
@@ -210,34 +174,17 @@ RECENT EXPERIENCE:
       case 'experience':
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
-          content: <ExperienceTimeline />,
+          content: <ExperienceSection onInteraction={setInteractiveMode} />,
           type: 'output',
           timestamp
         }]);
         break;
 
-      case 'stack':
-        setLines(prev => [...prev, {
-          id: `output-${Date.now()}`,
-          content: <SystemArchitecture />,
-          type: 'output',
-          timestamp
-        }]);
-        break;
-
-      case 'gpu':
-        setLines(prev => [...prev, {
-          id: `output-${Date.now()}`,
-          content: <MonteCarloDemo onInteraction={setInteractiveMode} />,
-          type: 'output',
-          timestamp
-        }]);
-        break;
 
       case 'skills':
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
-          content: <SkillsProof onInteraction={setAwaitingInput} />,
+          content: <SkillsSection />,
           type: 'output',
           timestamp
         }]);
@@ -246,7 +193,7 @@ RECENT EXPERIENCE:
       case 'projects':
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
-          content: <ProjectsList onInteraction={setAwaitingInput} />,
+          content: <ProjectsSection />,
           type: 'output',
           timestamp
         }]);
@@ -262,87 +209,13 @@ RECENT EXPERIENCE:
         }]);
         break;
 
-      case 'story':
+      case 'education':
         setLines(prev => [...prev, {
           id: `output-${Date.now()}`,
-          content: (
-            <TypewriterText text={`I was getting destroyed in CS:GO. Not just my aim - my frames. 30 FPS on dust2,
-stuttering during firefights, basically unplayable. My laptop had 12 cores but
-played like a potato.
-
-Then I opened Activity Monitor mid-game. One core at 100%. Eleven cores doing nothing.
-
-The fix wasn't upgrading - it was understanding. I learned that Source engine's main
-thread was bottlenecked on single-core performance. But I could force other processes
-off that core, disable CPU throttling, tune memory timings. Went from 30 to 60+ FPS
-on the same "trash" laptop.
-
-The performance boost basically made me go pro - climbed from Silver 2 (bottom 5th
-percentile) to Silver Elite Master (bottom 10th percentile). Okay, still terrible,
-but 2× the frames meant I could finally blame my aim instead of my hardware.
-
-That moment changed everything. I realized most "slow" computers aren't slow -
-they're just badly utilized.
-
-This obsession with squeezing performance out of hardware led me deeper. CS:GO taught
-me about CPU scheduling and cache locality. Then I applied it to ML training - why was
-NumPy so slow? Because it wasn't compiled with OpenBLAS. Set OMP_NUM_THREADS=12,
-suddenly my models trained 10× faster.
-
-The pattern was always the same: the hardware could do more, I just had to unlock it.
-
-Now I build trading systems that process billions of events at sub-20ms latency.
-I write CUDA kernels that outperform NumPy by 10×. But it all started with trying
-to hit headshots at more than 30 FPS.
-
-The path from gaming to quant trading isn't as weird as it sounds. Both care about
-every microsecond. Both punish inefficiency. Both reward understanding your hardware
-at the metal level.
-
-That's my edge - I learned to optimize on hardware most people threw away. Now I
-apply that same obsession to systems where microseconds mean millions.`} />
-          ),
+          content: <EducationSection />,
           type: 'output',
           timestamp
         }]);
-        break;
-
-      case 'monte-carlo':
-        setLines(prev => [...prev, {
-          id: `output-${Date.now()}`,
-          content: (
-            <div className="space-y-2">
-              <div className="text-terminal-accent">Launching Monte Carlo Option Pricing Engine...</div>
-              <div className="text-terminal-success">✓ WebGPU initialized</div>
-              <div className="text-terminal-success">✓ CUDA kernels loaded</div>
-              <div className="text-terminal-muted">Opening in new window...</div>
-            </div>
-          ),
-          type: 'output',
-          timestamp
-        }]);
-        setTimeout(() => {
-          window.open('/projects/monte-carlo', '_blank');
-        }, 1000);
-        break;
-
-      case 'quant-term':
-        setLines(prev => [...prev, {
-          id: `output-${Date.now()}`,
-          content: (
-            <div className="space-y-2">
-              <div className="text-terminal-accent">Starting Quant Trading Terminal...</div>
-              <div className="text-terminal-success">✓ Market data feed connected</div>
-              <div className="text-terminal-success">✓ Risk engine initialized</div>
-              <div className="text-terminal-muted">Launching terminal interface...</div>
-            </div>
-          ),
-          type: 'output',
-          timestamp
-        }]);
-        setTimeout(() => {
-          window.open('/projects/monte-carlo-terminal', '_blank');
-        }, 1000);
         break;
 
       case 'clear':
@@ -917,7 +790,7 @@ __global__ void asian_option_kernel(
               animate={{ opacity: 1 }}
               className="text-terminal-muted text-xs mt-4"
             >
-              Try 'portfolio' to see live trading metrics →
+              Try 'experience' to see work history →
             </motion.div>
           )}
         </div>
@@ -996,116 +869,6 @@ function TradingDashboard({ onInteraction }: { onInteraction: (mode: string) => 
   );
 }
 
-// Experience Timeline Component
-function ExperienceTimeline() {
-  return (
-    <div className="space-y-2">
-      <div className="text-[#00FF88]">=== EXPERIENCE TIMELINE ===</div>
-      <div>[2024-NOW] Stealth Buy-Side Research Stack.......[ACTIVE]</div>
-      <div className="ml-4 text-xs text-terminal-muted">
-        Architected end-to-end research/execution stack
-        Sub-20ms p99 latency | Real capital deployment
-      </div>
-      <div>[2024-JUN] Sending Labs...........................[3 MOS]</div>
-      <div className="ml-4 text-xs text-terminal-muted">
-        ManimGL pipeline | Modal/Fly.io | 5× throughput, 35% cost↓
-      </div>
-      <div>[2024-APR] Video Tutor AI.........................[3 MOS]</div>
-      <div className="ml-4 text-xs text-terminal-muted">
-        GPT-4o + TTS + ManimGL | High-concurrency pipeline
-      </div>
-      <div>[2022-2023] Olo...................................[INTERN]</div>
-      <div className="ml-4 text-xs text-terminal-muted">
-        Infrastructure automation | Terraform IaC | Observability integration
-      </div>
-    </div>
-  );
-}
-
-// System Architecture Component
-function SystemArchitecture() {
-  return (
-    <div className="space-y-4">
-      <div className="border border-terminal-accent/30 rounded p-4">
-        <div className="text-[#00FF88] text-sm mb-2">TRADING SYSTEM ARCHITECTURE</div>
-        <pre className="text-xs">
-{`┌─────────────────────────────────────┐
-│        TRADING SYSTEM STACK         │
-├─────────────────────────────────────┤
-│  React Dashboard                    │
-│       ↓                             │
-│  FastAPI + WebSocket                │
-│       ↓                             │
-│  Kafka Event Stream                 │
-│       ↓                             │
-│  CUDA Compute Engine                │
-│       ↓                             │
-│  Order Router (FIX 4.4)            │
-└─────────────────────────────────────┘
-
-Throughput: 1B ticks/day @ p99 <20ms`}
-        </pre>
-      </div>
-
-      <div className="border border-terminal-accent/30 rounded p-4">
-        <div className="text-[#00FF88] text-sm mb-2">GENERATIVE MANIM PIPELINE</div>
-        <pre className="text-xs">
-{`┌────────────────────────────────────────────────┐
-│           GENERATIVE MANIM PIPELINE            │
-├────────────────────────────────────────────────┤
-│                                                │
-│   [User Prompt] → POST /v1/video/rendering     │
-│        ↓                                       │
-│   ┌──────────────────────────────┐            │
-│   │  Flask API (port 8080)       │            │
-│   │  • Domain Configuration      │            │
-│   │  • System Prompt Injection   │            │
-│   └──────────────────────────────┘            │
-│        ↓                                       │
-│   ┌──────────────────────────────┐            │
-│   │  LLM Processing              │            │
-│   │  • GPT-4o / Claude / Custom  │            │
-│   │  • Storyboard Generation     │            │
-│   │  • Scene Code Creation       │            │
-│   └──────────────────────────────┘            │
-│        ↓                                       │
-│   ┌──────────────────────────────┐            │
-│   │  Manim Render Engine         │            │
-│   │  • LaTeX Processing          │            │
-│   │  • Mathematical Animations   │            │
-│   │  • Graph Visualizations      │            │
-│   └──────────────────────────────┘            │
-│        ↓                                       │
-│   ┌──────────────────────────────┐            │
-│   │  Docker Container            │            │
-│   │  • FFmpeg Encoding           │            │
-│   │  • Cairo/Pango Rendering     │            │
-│   │  • TeXLive Full              │            │
-│   └──────────────────────────────┘            │
-│        ↓                                       │
-│   ┌──────────────────────────────┐            │
-│   │  Storage Backend             │            │
-│   │  • Local: ./media/           │            │
-│   │  • Cloud: S3/GCS             │            │
-│   └──────────────────────────────┘            │
-└────────────────────────────────────────────────┘
-
-Performance: 5× throughput (45s → 9s render time)
-Deployment: Docker + Modal/Fly.io serverless
-API Endpoints:
-  • /v1/video/rendering - Generate from prompt
-  • /v1/chat/generation - Interactive mode
-  • /v1/code/generation - Storyboard only`}
-        </pre>
-      </div>
-
-      <div className="text-terminal-muted text-xs mt-4">
-        [Press ESC to return to terminal]
-      </div>
-    </div>
-  );
-}
-
 // Monte Carlo Demo Component
 function MonteCarloDemo({ onInteraction }: { onInteraction: (mode: string) => void }) {
   useEffect(() => {
@@ -1140,138 +903,6 @@ function MonteCarloDemo({ onInteraction }: { onInteraction: (mode: string) => vo
     </div>
   );
 }
-
-// Skills Proof Component
-function SkillsProof({ onInteraction }: { onInteraction: (mode: string | null) => void }) {
-  useEffect(() => {
-    onInteraction('skill-select');
-  }, [onInteraction]);
-
-  return (
-    <div className="space-y-4">
-      <div className="text-[#00FF88]">=== TECHNICAL STACK ===</div>
-      <div className="space-y-3">
-        <div>
-          <div className="text-terminal-accent">→ Mathematics</div>
-          <div className="ml-4 text-sm">
-            • Linear Algebra, Probability, Optimization, Numerical Methods<br/>
-            • Stochastic Differential Equations for path simulation<br/>
-            • Cryptography (Number Theory), Discrete Math, Combinatorics
-          </div>
-        </div>
-        <div>
-          <div className="text-terminal-accent">→ Systems & Infrastructure</div>
-          <div className="ml-4 text-sm">
-            • CUDA/Triton kernels, custom GPU implementations<br/>
-            • Docker, Kubernetes, Ray, AWS (EC2, S3, Lambda)<br/>
-            • NYU Greene HPC: 8×V100 cluster optimization
-          </div>
-        </div>
-        <div>
-          <div className="text-terminal-accent">→ Languages & ML</div>
-          <div className="ml-4 text-sm">
-            • Python, C/C++ (CUDA/low-latency), Rust, SQL, JavaScript<br/>
-            • PyTorch, JAX, TensorFlow, scikit-learn, Optuna<br/>
-            • GNNs, Transformers, Neural ODEs
-          </div>
-        </div>
-      </div>
-      <div className="text-terminal-muted text-xs mt-4 animate-pulse">
-        Type skill name (e.g., 'python', 'cuda') for code examples, or 'validate' for GitHub proof
-      </div>
-    </div>
-  );
-}
-
-// Projects List Component
-function ProjectsList({ onInteraction }: { onInteraction: (mode: string | null) => void }) {
-  useEffect(() => {
-    onInteraction('project-select');
-  }, [onInteraction]);
-
-  return (
-    <div className="space-y-4">
-      <div className="text-[#00FF88]">=== PROJECT PORTFOLIO ===</div>
-      <div className="space-y-4">
-        <div className="text-terminal-accent">RESEARCH & INFRASTRUCTURE</div>
-
-        <div className="border-l-2 border-terminal-muted/30 pl-4 space-y-3">
-          <div>
-            <div className="text-terminal-text">1. Stealth Buy-Side Research Stack</div>
-            <div className="text-xs text-terminal-muted ml-3">
-              • Python, Rust, PostgreSQL, Redis, Kubernetes
-              • Sub-20ms p99 latency on 1B+ events/day
-            </div>
-          </div>
-
-          <div>
-            <div className="text-terminal-text">2. EEG 2025: Contradiction-Aware Neural Decoding</div>
-            <div className="text-xs text-terminal-muted ml-3">
-              • PyTorch, JAX, 8×V100 cluster, MNE-Python
-              • Published at NYU Greene HPC, 129-channel processing
-            </div>
-          </div>
-
-          <div>
-            <div className="text-terminal-text">3. GPU Monte Carlo Engine (BICEP)</div>
-            <div className="text-xs text-terminal-muted ml-3">
-              • CUDA, Triton, NumPy, ChaCha20/AES-CTR PRGs
-              • 10× speedup over NumPy baseline
-            </div>
-          </div>
-
-          <div>
-            <div className="text-terminal-text">4. Custom Neural Network (ENN)</div>
-            <div className="text-xs text-terminal-muted ml-3">
-              • C++17, Eigen3, OpenMP, AVX2 vectorization
-              • Gesture recognition with real-time inference
-            </div>
-          </div>
-        </div>
-
-        <div className="text-terminal-accent mt-4">SYSTEMS & APPLICATIONS</div>
-
-        <div className="border-l-2 border-terminal-muted/30 pl-4 space-y-3">
-          <div>
-            <div className="text-terminal-text">5. ManimGL Pipeline @ Sending Labs</div>
-            <div className="text-xs text-terminal-muted ml-3">
-              • Python, ManimGL, Modal, Fly.io, Docker
-              • 5× throughput improvement, 35% cost reduction
-            </div>
-          </div>
-
-          <div>
-            <div className="text-terminal-text">6. Video Tutor AI</div>
-            <div className="text-xs text-terminal-muted ml-3">
-              • GPT-4, Whisper, ElevenLabs TTS, Next.js, TypeScript
-              • High-concurrency educational content generation
-            </div>
-          </div>
-
-          <div>
-            <div className="text-terminal-text">7. Infrastructure Automation @ Olo</div>
-            <div className="text-xs text-terminal-muted ml-3">
-              • Terraform, C#, SQL, Cloudflare, Datadog
-              • IaC migration and observability integration
-            </div>
-          </div>
-
-          <div>
-            <div className="text-terminal-text">8. NYU Tandon Made Challenge Winner</div>
-            <div className="text-xs text-terminal-muted ml-3">
-              • React, TypeScript, Node.js, MongoDB
-              • Competition winner among 50+ teams
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="text-terminal-muted text-xs mt-4 animate-pulse">
-        Enter number (1-8) or search by tech (e.g., 'cuda', 'python', 'ml')
-      </div>
-    </div>
-  );
-}
-
 // CV Options Component
 function CVOptions({ onInteraction }: { onInteraction: (mode: string | null) => void }) {
   useEffect(() => {
@@ -1300,5 +931,409 @@ function CVOptions({ onInteraction }: { onInteraction: (mode: string | null) => 
     </div>
   );
 }
+// About Section Component
+function AboutSection() {
+  return (
+    <div className="space-y-4">
+      <div className="text-[#00FF88] text-lg font-bold">ABOUT ME</div>
+
+      <div className="space-y-2">
+        <div className="text-terminal-accent">NYU CS/Math + Philosophy | Low-Latency Infrastructure | ML Research</div>
+        <div className="text-terminal-text">
+          Building high-throughput GPU pipelines and trading systems where microseconds matter.
+        </div>
+      </div>
+
+      <div className="border-l-2 border-terminal-muted/30 pl-4 space-y-3">
+        <div>
+          <div className="text-terminal-accent">Origin Story: From CS:GO to Quant Trading</div>
+          <div className="text-sm mt-1">
+            Started by optimizing CS:GO from 30 to 60+ FPS on a "trash" laptop by understanding CPU scheduling
+            and cache locality. That obsession with squeezing performance out of hardware led me to build trading
+            systems processing billions of events at sub-20ms latency and CUDA kernels that outperform NumPy by 10×.
+          </div>
+          <div className="text-xs text-terminal-muted mt-2">
+            The path from gaming to quant isn't weird - both care about every microsecond, punish inefficiency,
+            and reward understanding hardware at the metal level.
+          </div>
+        </div>
+
+        <div>
+          <div className="text-terminal-accent">Current Focus</div>
+          <div className="text-sm mt-1">
+            • Architecting end-to-end research and execution stacks for trading
+            • Custom CUDA kernels for Monte Carlo simulation and order book transforms
+            • EEG neural pipelines with contradiction-aware decoding
+            • High-concurrency ML infrastructure for content generation
+          </div>
+        </div>
+
+        <div>
+          <div className="text-terminal-accent">Philosophy</div>
+          <div className="text-sm mt-1">
+            Most "slow" computers aren't slow - they're just badly utilized. My edge is optimizing on hardware
+            most people throw away, then applying that obsession to systems where microseconds mean millions.
+          </div>
+        </div>
+      </div>
+
+      <div className="text-terminal-muted text-xs mt-4">
+        [Type 'experience' to see work history | 'projects' for technical implementations]
+      </div>
+    </div>
+  );
+}
+
+// Experience Section Component
+function ExperienceSection({ onInteraction }: { onInteraction: (mode: string) => void }) {
+  const [showDetails, setShowDetails] = useState<string | null>(null);
+
+  return (
+    <div className="space-y-4">
+      <div className="text-[#00FF88] text-lg font-bold">EXPERIENCE</div>
+
+      <div className="space-y-4">
+        <div className="border border-terminal-accent/30 rounded p-3">
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="text-terminal-accent font-bold">Stealth Buy-Side Research Stack</div>
+              <div className="text-sm">Systems Engineer — ML, Low-Latency Infrastructure, and Alpha Research</div>
+            </div>
+            <div className="text-xs text-terminal-muted">Jun 2024 – Present</div>
+          </div>
+
+          <div className="mt-2 space-y-1 text-sm">
+            <div>• Architected end-to-end research/execution stack with sub-20ms p99 latency</div>
+            <div>• Designed cointegration and mean-reversion strategies with Markowitz optimization</div>
+            <div>• Engineered custom CUDA kernels for 10× speedup over NumPy baselines</div>
+            <div>• Delivered live monitoring suite for P&L, VaR, drawdowns, and slippage</div>
+            <div>• Secured $45K in non-dilutive R&D funding</div>
+          </div>
+
+          <button
+            onClick={() => {
+              setShowDetails(showDetails === 'trading' ? null : 'trading');
+              onInteraction('portfolio');
+            }}
+            className="mt-2 text-xs text-terminal-success hover:underline"
+          >
+            [Click to see live trading dashboard]
+          </button>
+
+          {showDetails === 'trading' && (
+            <div className="mt-3">
+              <TradingDashboard onInteraction={onInteraction} />
+            </div>
+          )}
+        </div>
+
+        <div className="border border-terminal-muted/30 rounded p-3">
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="text-terminal-accent font-bold">Sending Labs</div>
+              <div className="text-sm">Machine Learning Engineer (Contract)</div>
+            </div>
+            <div className="text-xs text-terminal-muted">Jun 2025 – Aug 2025</div>
+          </div>
+
+          <div className="mt-2 space-y-1 text-sm">
+            <div>• Designed ManimGL pipeline for protocol SDK visualizations</div>
+            <div>• Integrated distributed GPU rendering with Modal/Fly.io</div>
+            <div>• Achieved 5× throughput improvement and 35% cost reduction</div>
+          </div>
+        </div>
+
+        <div className="border border-terminal-muted/30 rounded p-3">
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="text-terminal-accent font-bold">Video Tutor AI</div>
+              <div className="text-sm">Machine Learning Engineer (Contract)</div>
+            </div>
+            <div className="text-xs text-terminal-muted">Apr 2025 – Jun 2025</div>
+          </div>
+
+          <div className="mt-2 space-y-1 text-sm">
+            <div>• Architected AI educational content pipeline using GPT-4o, TTS, and ManimGL</div>
+            <div>• Deployed Redis-backed task queue for 500+ concurrent render jobs</div>
+            <div>• Cut compute spend by ~40% via caching and batching</div>
+          </div>
+        </div>
+
+        <div className="border border-terminal-muted/30 rounded p-3">
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="text-terminal-accent font-bold">Olo</div>
+              <div className="text-sm">Software Engineering Intern</div>
+            </div>
+            <div className="text-xs text-terminal-muted">May 2022 – Aug 2022; Jun 2023</div>
+          </div>
+
+          <div className="mt-2 space-y-1 text-sm">
+            <div>• Automated infrastructure provisioning with Terraform IaC</div>
+            <div>• Integrated Cloudflare and Datadog observability into platform services</div>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <button
+            onClick={() => {
+              setShowDetails(showDetails === 'gpu' ? null : 'gpu');
+              onInteraction('gpu');
+            }}
+            className="text-terminal-success hover:underline text-sm"
+          >
+            [View GPU Monte Carlo Engine Demo]
+          </button>
+
+          {showDetails === 'gpu' && (
+            <div className="mt-3">
+              <MonteCarloDemo onInteraction={onInteraction} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Projects Section Component
+function ProjectsSection() {
+  const [selectedProject, setSelectedProject] = useState<number | null>(null);
+
+  const projects = [
+    {
+      id: 1,
+      name: "EEG 2025: Contradiction-Aware Neural Pipeline",
+      tech: "PyTorch, JAX, 8×V100 cluster",
+      details: [
+        "Adapted BICEP→ENN→Fusion framework from quant trading to EEG IV-2a (129 channels)",
+        "Combined stochastic path simulation with temporal encoders and graph fusion",
+        "Achieved ~60% faster training on NYU Greene HPC via custom CUDA kernels"
+      ]
+    },
+    {
+      id: 2,
+      name: "GPU Monte Carlo Engine for Derivative Pricing (BICEP)",
+      tech: "CUDA, Triton, ChaCha20/AES-CTR",
+      details: [
+        "Implemented CUDA-accelerated Euler-Maruyama path simulation with Sobol sequences",
+        "Extended with cryptographic PRGs to ensure i.i.d. Gaussian increments",
+        "Achieved 10× speedup over NumPy baseline for Asian and Barrier options"
+      ]
+    },
+    {
+      id: 3,
+      name: "Custom Neural Network (ENN) for Sequence Modeling",
+      tech: "C++17, Eigen3, AVX2, OpenMP",
+      details: [
+        "Developed compact recurrent cell with PSD-constrained entanglement matrix",
+        "Implemented full backprop-through-time with spectral regularization",
+        "Deployed in real-time gesture recognition: 98% accuracy at 25 FPS"
+      ]
+    },
+    {
+      id: 4,
+      name: "NYU Hyperloop Control Systems",
+      tech: "C++, ROS, Embedded Systems",
+      details: [
+        "Designed control algorithms for pod stability and braking",
+        "Implemented real-time sensor fusion for position tracking",
+        "Contributed to team achieving Design Excellence award"
+      ]
+    },
+    {
+      id: 5,
+      name: "NYU Tandon Made Challenge Winner",
+      tech: "React, TypeScript, Node.js, MongoDB",
+      details: [
+        "Built biomedical/computer vision venture prototype",
+        "Implemented real-time collaboration with WebSocket",
+        "Won competition among 50+ teams, awarded $5k pre-seed"
+      ]
+    }
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="text-[#00FF88] text-lg font-bold">PROJECTS</div>
+
+      <div className="space-y-3">
+        {projects.map((project) => (
+          <div key={project.id} className="border-l-2 border-terminal-muted/30 pl-4">
+            <button
+              onClick={() => setSelectedProject(selectedProject === project.id ? null : project.id)}
+              className="text-left w-full hover:text-terminal-accent transition-colors"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="text-terminal-text font-semibold">
+                    {project.id}. {project.name}
+                  </span>
+                  <div className="text-xs text-terminal-muted mt-1">{project.tech}</div>
+                </div>
+                <span className="text-xs text-terminal-muted">
+                  {selectedProject === project.id ? '[-]' : '[+]'}
+                </span>
+              </div>
+            </button>
+
+            {selectedProject === project.id && (
+              <div className="mt-2 ml-4 space-y-1 text-sm text-terminal-text">
+                {project.details.map((detail, idx) => (
+                  <div key={idx}>• {detail}</div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 space-y-2">
+        <div className="text-xs text-terminal-muted">
+          Additional Projects: Infrastructure at Olo, ManimGL Pipeline at Sending Labs,
+          Video Tutor AI educational content generation
+        </div>
+        <div className="flex gap-4">
+          <a
+            href="https://github.com/rochmanofenna"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-terminal-success hover:underline text-sm"
+          >
+            [View GitHub]
+          </a>
+          <button
+            onClick={() => window.open('/projects/monte-carlo', '_blank')}
+            className="text-terminal-success hover:underline text-sm"
+          >
+            [Launch Monte Carlo Demo]
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Skills Section Component
+function SkillsSection() {
+  return (
+    <div className="space-y-4">
+      <div className="text-[#00FF88] text-lg font-bold">TECHNICAL SKILLS</div>
+
+      <div className="space-y-4">
+        <div>
+          <div className="text-terminal-accent font-semibold mb-2">Mathematics</div>
+          <div className="ml-4 text-sm space-y-1">
+            <div>• Linear Algebra, Probability, Optimization, Numerical Methods</div>
+            <div>• Stochastic Differential Equations, Pseudo RNGs</div>
+            <div>• Cryptography (Number Theory), Discrete Mathematics, Combinatorics</div>
+          </div>
+        </div>
+
+        <div>
+          <div className="text-terminal-accent font-semibold mb-2">Programming</div>
+          <div className="ml-4 text-sm space-y-1">
+            <div>• <span className="text-terminal-success">Languages:</span> Python, C/C++ (CUDA/low-latency), Rust, SQL, JavaScript, Bash, Go</div>
+            <div>• <span className="text-terminal-success">ML/AI:</span> PyTorch, JAX, TensorFlow, scikit-learn, Optuna</div>
+            <div>• <span className="text-terminal-success">Architectures:</span> GNNs, Transformers, Neural ODEs</div>
+          </div>
+        </div>
+
+        <div>
+          <div className="text-terminal-accent font-semibold mb-2">Systems & Infrastructure</div>
+          <div className="ml-4 text-sm space-y-1">
+            <div>• <span className="text-terminal-success">GPU:</span> CUDA/Triton kernels, Custom implementations, HPC (NYU Greene)</div>
+            <div>• <span className="text-terminal-success">Cloud:</span> AWS (EC2, S3, Lambda), Docker, Kubernetes, Ray</div>
+            <div>• <span className="text-terminal-success">Data:</span> PostgreSQL, Redis, Kafka, TimescaleDB</div>
+            <div>• <span className="text-terminal-success">DevOps:</span> Git, Linux, Terraform, CI/CD pipelines</div>
+          </div>
+        </div>
+
+        <div className="border border-terminal-accent/30 rounded p-3 mt-4">
+          <div className="text-terminal-accent text-sm mb-2">Sample CUDA Kernel</div>
+          <pre className="text-xs bg-black/30 p-2 rounded overflow-x-auto">
+{`__global__ void monte_carlo_paths(
+    float* paths, curandState* states,
+    float S0, float K, float r, float sigma,
+    float T, int N, int paths_per_thread
+) {
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    curandState localState = states[tid];
+
+    for (int p = 0; p < paths_per_thread; p++) {
+        float S = S0;
+        for (int i = 0; i < N; i++) {
+            float z = curand_normal(&localState);
+            S *= exp((r - 0.5f*sigma*sigma)*dt +
+                     sigma*sqrt(dt)*z);
+        }
+        paths[tid*paths_per_thread + p] = fmaxf(S - K, 0.0f);
+    }
+}`}
+          </pre>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Education Section Component
+function EducationSection() {
+  return (
+    <div className="space-y-4">
+      <div className="text-[#00FF88] text-lg font-bold">EDUCATION</div>
+
+      <div className="border border-terminal-accent/30 rounded p-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <div className="text-terminal-accent font-bold">New York University</div>
+            <div className="text-sm mt-1">B.A. in Computer Science & Mathematics, Minor in Philosophy</div>
+          </div>
+          <div className="text-xs text-terminal-muted">Expected May 2026</div>
+        </div>
+
+        <div className="mt-3 space-y-2">
+          <div>
+            <div className="text-terminal-success text-sm font-semibold">Relevant Coursework:</div>
+            <div className="ml-4 text-sm mt-1 grid grid-cols-2 gap-2">
+              <div>• Linear Algebra</div>
+              <div>• Cryptography (Number Theory)</div>
+              <div>• Algorithms</div>
+              <div>• Data Structures</div>
+              <div>• Operating & Distributed Systems</div>
+              <div>• Discrete Mathematics</div>
+              <div>• Natural Language Processing</div>
+              <div>• Combinatorics</div>
+            </div>
+          </div>
+
+          <div>
+            <div className="text-terminal-success text-sm font-semibold">Honors & Awards:</div>
+            <div className="ml-4 text-sm mt-1">
+              <div>• Dean's List</div>
+              <div>• $50,000 Annual Merit Scholarship</div>
+              <div>• NYU Tandon Made Challenge Winner (2020-2021)</div>
+              <div>• 2x Finalist with $5k pre-seed funding</div>
+            </div>
+          </div>
+
+          <div>
+            <div className="text-terminal-success text-sm font-semibold">Leadership & Activities:</div>
+            <div className="ml-4 text-sm mt-1">
+              <div>• NYU Hyperloop (2021-2022): Control Systems</div>
+              <div>• NYU Web Publishing Consultant</div>
+              <div>• Greek Life: Nu Alpha Phi</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="text-terminal-muted text-xs mt-4">
+        GPA and transcript available upon request
+      </div>
+    </div>
+  );
+}
+
 // Export components for lazy loading
 export { TradingDashboard, MonteCarloDemo };
